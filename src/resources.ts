@@ -1,9 +1,19 @@
+export type Resources = Awaited<ReturnType<typeof loadResources>>;
+
+interface Texture {
+  width: number;
+  height: number;
+  canvas: HTMLCanvasElement;
+}
+
 export async function loadResources(callback: (fraction: number) => void) {
-  const promises: Record<string, Promise<HTMLImageElement>> = {
-    playerZero: loadSprite("RD3.png"),
-    playerZeroNormal: loadSprite("RD3N.png"),
-    enemyZero: loadSprite("tribase-u3-d0.png"),
-    enemyZeroNormal: loadSprite("st3normal.png"),
+  const promises: Record<string, Promise<Texture>> = {
+    playerZero: loadTexture("RD3.png"),
+    playerZeroNormal: loadTexture("RD3N.png"),
+    ship0: loadTexture("F5S4.png"),
+    ship0n: loadTexture("F5S4N.png"),
+    enemyZero: loadTexture("tribase-u3-d0.png"),
+    enemyZeroNormal: loadTexture("st3normal.png"),
   };
 
   const total = Object.keys(promises).length;
@@ -19,7 +29,7 @@ export async function loadResources(callback: (fraction: number) => void) {
 
   await Promise.all(Object.values(promises));
 
-  const results: Record<string, HTMLImageElement> = {};
+  const results: Record<string, Texture> = {};
 
   for (const key of Object.keys(promises)) {
     results[key] = await promises[key];
@@ -28,8 +38,22 @@ export async function loadResources(callback: (fraction: number) => void) {
   return results;
 }
 
-async function loadSprite(url: string) {
-  return await loadImage(url);
+async function loadTexture(url: string) {
+  const img = await loadImage(url);
+  const size = Math.max(img.width, img.height);
+  let pot = 1;
+  while (pot < size) {
+    pot *= 2;
+  }
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = pot;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0, pot, pot);
+  return {
+    width: img.width,
+    height: img.height,
+    canvas,
+  };
 }
 
 function loadImage(url: string) {
