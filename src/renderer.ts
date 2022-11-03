@@ -43,11 +43,11 @@ export class Renderer {
 
     const model = mat4.create();
     mat4.rotateZ(model, model, performance.now() * 0.001);
-    mat4.scale(model, model, [this.resources["ship0"].width * 0.005, this.resources["ship0"].height * 0.005, 1]);
+    mat4.scale(model, model, [this.resources["ship0"].aspect, 1, 1]);
     const view = mat4.lookAt(mat4.create(), [0, 0, 1], [0, 0, 0], [0, 1, 0]);
     const fovv = 1;
     const fovh = (fovv * this.canvas.width) / this.canvas.height;
-    const projection = mat4.ortho(mat4.create(), -fovh, fovh, -fovv, fovv, 0, 2);
+    const projection = mat4.ortho(mat4.create(), -fovh, fovh, -fovv, fovv, 0, 1000);
 
     this.renderSprite({
       model,

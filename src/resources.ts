@@ -1,8 +1,8 @@
 export type Resources = Awaited<ReturnType<typeof loadResources>>;
 
-interface Texture {
-  width: number;
-  height: number;
+export interface Texture {
+  aspect: number;
+  image: HTMLImageElement;
   canvas: HTMLCanvasElement;
 }
 
@@ -38,9 +38,9 @@ export async function loadResources(callback: (fraction: number) => void) {
   return results;
 }
 
-async function loadTexture(url: string) {
-  const img = await loadImage(url);
-  const size = Math.max(img.width, img.height);
+async function loadTexture(url: string): Promise<Texture> {
+  const image = await loadImage(url);
+  const size = Math.max(image.width, image.height);
   let pot = 1;
   while (pot < size) {
     pot *= 2;
@@ -48,10 +48,10 @@ async function loadTexture(url: string) {
   const canvas = document.createElement("canvas");
   canvas.width = canvas.height = pot;
   const ctx = canvas.getContext("2d")!;
-  ctx.drawImage(img, 0, 0, pot, pot);
+  ctx.drawImage(image, 0, 0, pot, pot);
   return {
-    width: img.width,
-    height: img.height,
+    aspect: image.width / image.height,
+    image,
     canvas,
   };
 }
