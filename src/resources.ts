@@ -11,8 +11,8 @@ export interface Texture {
 
 export async function loadResources(callback: (fraction: number) => void) {
   const promises: Record<string, Promise<Texture>> = {
-    playerZero: loadTexture("RD3.png", 0.5, true),
-    ship0: loadTexture("F5S4.png", 1.0, true),
+    ship0: loadTexture("RD3.png", 0.5, true),
+    ship1: loadTexture("F5S4.png", 1.0, true),
   };
 
   const total = Object.keys(promises).length;

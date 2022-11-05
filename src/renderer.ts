@@ -162,6 +162,24 @@ export class Renderer {
       viewport,
     });
 
+    for (const enemy of state.enemies) {
+      mat4.identity(model);
+      mat4.translate(model, model, [enemy.position[0], enemy.position[1], 0]);
+      mat4.rotateZ(model, model, enemy.rotation);
+      mat4.scale(model, model, [
+        (enemy.texture.scale * enemy.texture.original.width) / enemy.texture.original.height,
+        enemy.texture.scale,
+        1,
+      ]);
+      this.renderSprite({
+        albedo: this.getTexture(enemy.texture),
+        model,
+        view,
+        projection,
+        viewport,
+      });
+    }
+
     const sparks: vec2[] = [];
     colors = [];
     for (const spark of state.sparks) {
