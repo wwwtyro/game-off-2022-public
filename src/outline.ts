@@ -9,9 +9,9 @@ export function modulo(n: number, m: number) {
 export function generateOutline(texture: Texture) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
-  canvas.width = texture.image.width;
-  canvas.height = texture.image.height;
-  ctx.drawImage(texture.image, 0, 0);
+  canvas.width = texture.original.width;
+  canvas.height = texture.original.height;
+  ctx.drawImage(texture.original, 0, 0);
 
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -110,11 +110,14 @@ export function generateOutline(texture: Texture) {
 
   // Normalize the path. This is specific to this game arch, so might remove if/when making it a library.
   for (let i = 0; i < path.length; i++) {
-    path[i][0] -= 0.5 * texture.image.width;
-    path[i][1] -= 0.5 * texture.image.height;
-    path[i][0] /= texture.image.width;
-    path[i][1] /= texture.image.height;
+    path[i][0] -= 0.5 * texture.original.width;
+    path[i][1] -= 0.5 * texture.original.height;
+    path[i][0] /= texture.original.height;
+    path[i][1] /= texture.original.height;
   }
+
+  // Make it a full loop.
+  path.push(path[0]);
 
   return path;
 }
