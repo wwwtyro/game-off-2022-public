@@ -16,5 +16,8 @@ varying vec2 vUV;
 
 void main() {
   vec4 color = texture2D(albedo, vUV);
+  if (color.a < 1.0 / 255.0) {
+    discard;
+  }
   gl_FragColor = vec4(color);
 }
