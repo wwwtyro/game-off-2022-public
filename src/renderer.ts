@@ -1,10 +1,9 @@
-import { mat4 } from "gl-matrix";
+import { mat4, vec2 } from "gl-matrix";
 import REGL, { Regl } from "regl";
 
 import spriteShader from "./glsl/sprite.glsl?raw";
 import lineShader from "./glsl/lines.glsl?raw";
 import { Resources, Texture } from "./resources";
-import { modulo } from "./outline";
 import { State } from "./main";
 
 export class Renderer {
@@ -12,9 +11,14 @@ export class Renderer {
   private textures = new Map<Texture, REGL.Texture>();
   private renderSprite: REGL.DrawCommand;
   private renderLines: REGL.DrawCommand;
+  private tempBuffer1: REGL.Buffer;
+  private tempBuffer2: REGL.Buffer;
 
   constructor(private canvas: HTMLCanvasElement, private resources: Resources) {
     this.regl = REGL({ canvas, extensions: ["angle_instanced_arrays"] });
+
+    this.tempBuffer1 = this.regl.buffer(1);
+    this.tempBuffer2 = this.regl.buffer(1);
 
     this.renderSprite = this.regl({
       vert: spriteShader.split("glsl-split")[0],
@@ -106,70 +110,62 @@ export class Renderer {
 
     const model = mat4.create();
     const view = mat4.lookAt(mat4.create(), [0, 0, 1], [0, 0, 0], [0, 1, 0]);
-    const fovv = 1.5;
+    const fovv = state.camera.fov;
     const fovh = (fovv * this.canvas.width) / this.canvas.height;
-    const projection = mat4.ortho(mat4.create(), -fovh, fovh, -fovv, fovv, 0, 1000);
+    const projection = mat4.ortho(
+      mat4.create(),
+      state.camera.position[0] - fovh,
+      state.camera.position[0] + fovh,
+      state.camera.position[1] - fovv,
+      state.camera.position[1] + fovv,
+      0,
+      1000
+    );
 
     this.regl.clear({ color: [0, 0, 0, 1], depth: 1 });
 
-    // const points = [];
-    // for (let i = 0; i < state.player.outline.length; i++) {
-    //   points.push(state.player.outline[i + 0]);
-    //   points.push(state.player.outline[modulo(i + 1, state.player.outline.length)]);
-    // }
-
-    // mat4.identity(model);
-    // mat4.rotateZ(model, model, state.player.sprite.rotation);
-
     let colors: number[] = [];
-    // for (let i = 0; i < points.length / 2; i++) {
-    //   colors.push(1, 0.5, 1, 1);
-    // }
-
-    // this.renderLines({
-    //   model,
-    //   view,
-    //   projection,
-    //   viewport,
-    //   colors,
-    //   width: 0.005,
-    //   points: points,
-    //   segments: points.length / 2,
-    // });
-
-    const beams: number[] = [];
+    const beams: vec2[] = [];
     colors = [];
     for (const beam of state.beams) {
-      beams.push(...beam.lastPosition, ...beam.position);
+      beams.push(beam.lastPosition, beam.position);
       colors.push(0.5, 0.5, 1, 1);
     }
+
+    this.tempBuffer1(colors);
+    this.tempBuffer2(beams);
 
     this.renderLines({
       model: mat4.create(),
       view,
       projection,
       viewport,
-      colors,
+      colors: this.tempBuffer1,
       width: 0.01,
-      points: beams,
+      points: this.tempBuffer2,
       segments: beams.length / 2,
     });
 
     mat4.identity(model);
-    mat4.rotateZ(model, model, state.player.sprite.rotation);
-    mat4.scale(model, model, [state.player.sprite.texture.original.width / state.player.sprite.texture.original.height, 1, 1]);
+    mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
+    mat4.rotateZ(model, model, state.player.rotation);
+    mat4.scale(model, model, [
+      (state.player.texture.scale * state.player.texture.original.width) / state.player.texture.original.height,
+      state.player.texture.scale,
+      1,
+    ]);
     this.renderSprite({
-      albedo: this.getTexture(state.player.sprite.texture),
+      albedo: this.getTexture(state.player.texture),
       model,
       view,
       projection,
       viewport,
     });
 
-    const sparks: number[] = [];
+    const sparks: vec2[] = [];
     colors = [];
     for (const spark of state.sparks) {
-      sparks.push(...spark.lastPosition, ...spark.position);
+      sparks.push(spark.lastPosition, spark.position);
       colors.push(2 * spark.energy, 1 * spark.energy, 0.5 * spark.energy, spark.energy);
     }
 

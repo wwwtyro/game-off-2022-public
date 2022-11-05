@@ -1,14 +1,7 @@
 import { vec2 } from "gl-matrix";
-import RAPIER from "@dimforge/rapier2d-compat";
-import { generateOutline } from "./outline";
+import RAPIER, { ColliderDesc } from "@dimforge/rapier2d-compat";
 import { Renderer } from "./renderer";
 import { loadResources, Resources, Texture } from "./resources";
-
-export interface Sprite {
-  texture: Texture;
-  location: vec2;
-  rotation: number;
-}
 
 export interface Beam {
   position: vec2;
@@ -26,18 +19,25 @@ export interface Spark {
   energy: number;
 }
 
+const colliderDescs = new Map<Texture, ColliderDesc>();
+
+function getColliderDesc(texture: Texture): RAPIER.ColliderDesc {
+  if (texture.outline === undefined) {
+    throw new Error("No outline available for collider.");
+  }
+  if (!colliderDescs.has(texture)) {
+    const desc = RAPIER.ColliderDesc.polyline(new Float32Array(texture.outline.flat()));
+    colliderDescs.set(texture, desc);
+  }
+  return colliderDescs.get(texture)!;
+}
+
 export type State = ReturnType<typeof buildState>;
 
 function buildState(resources: Resources) {
-  const playerSprite: Sprite = {
-    texture: resources["ship0"],
-    location: vec2.fromValues(0, 0),
-    rotation: 0,
-  };
+  const playerTexture = resources["playerZero"];
 
-  const playerOutline = generateOutline(playerSprite.texture);
-
-  const playerColliderDesc = RAPIER.ColliderDesc.polyline(new Float32Array(playerOutline.flat()));
+  const playerColliderDesc = getColliderDesc(playerTexture);
 
   const world = new RAPIER.World({ x: 0, y: 0 });
   const playerCollider = world.createCollider(playerColliderDesc);
@@ -51,13 +51,22 @@ function buildState(resources: Resources) {
       dt: 0,
     },
     world,
+    camera: {
+      position: vec2.fromValues(0, 0),
+      fov: 2,
+    },
     player: {
-      sprite: playerSprite,
+      texture: playerTexture,
+      position: vec2.fromValues(0, 0),
+      rotation: 0,
+      velocity: vec2.fromValues(0, 0),
+      acceleration: 10.0,
+      drag: 2,
       collider: playerCollider,
-      outline: playerOutline,
     },
     beams: [] as Beam[],
     sparks: [] as Spark[],
+    keys: {} as Record<string, boolean>,
   };
 }
 
@@ -68,7 +77,12 @@ async function main() {
 
   const state = buildState(resources);
 
-  // const outline = await generateOutline(resources["enemyZero"]);
+  window.addEventListener("keydown", (e) => {
+    state.keys[e.code] = true;
+  });
+  window.addEventListener("keyup", (e) => {
+    state.keys[e.code] = false;
+  });
 
   const canvas = document.getElementById("render-canvas") as HTMLCanvasElement;
   canvas.style.display = "block";
@@ -78,14 +92,43 @@ async function main() {
     state.time.dt = 0.001 * performance.now() - state.time.now;
     state.time.now += state.time.dt;
 
+    // Needs to be called after adding colliders and before casting rays against them.
     state.world.step();
 
+    // Update player position.
+    const acceleration = vec2.fromValues(0, 0);
+    if (state.keys.KeyA) {
+      acceleration[0] -= state.player.acceleration;
+    }
+    if (state.keys.KeyD) {
+      acceleration[0] += state.player.acceleration;
+    }
+    if (state.keys.KeyS) {
+      acceleration[1] -= state.player.acceleration;
+    }
+    if (state.keys.KeyW) {
+      acceleration[1] += state.player.acceleration;
+    }
+    const drag = vec2.scale(vec2.create(), state.player.velocity, -state.player.drag);
+    vec2.add(acceleration, acceleration, drag);
+    vec2.scaleAndAdd(state.player.velocity, state.player.velocity, acceleration, state.time.dt);
+    vec2.scaleAndAdd(state.player.position, state.player.position, state.player.velocity, state.time.dt);
+
     // Update player rotation.
-    state.player.sprite.rotation += state.time.dt * 0.2;
+    state.player.rotation += state.time.dt * 0.2;
+
+    // Update camera position.
+
+    vec2.scaleAndAdd(
+      state.camera.position,
+      state.camera.position,
+      vec2.sub(vec2.create(), state.player.position, state.camera.position),
+      0.05
+    );
 
     // Update collider positions.
-    state.player.collider.setRotation(state.player.sprite.rotation);
-    state.player.collider.setTranslation({ x: state.player.sprite.location[0], y: state.player.sprite.location[1] });
+    state.player.collider.setRotation(state.player.rotation);
+    state.player.collider.setTranslation({ x: state.player.position[0], y: state.player.position[1] });
 
     // Remove all aged beams.
     const MAX_BEAM_AGE = 2;
@@ -98,7 +141,7 @@ async function main() {
     });
 
     // Create new beams
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 10; i++) {
       const theta = Math.random() * 2 * Math.PI;
       const radius = 2 + 1 * Math.random();
       state.beams.push({

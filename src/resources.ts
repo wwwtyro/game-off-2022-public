@@ -1,18 +1,18 @@
+import { generateOutline } from "./outline";
+
 export type Resources = Awaited<ReturnType<typeof loadResources>>;
 
 export interface Texture {
   original: HTMLImageElement;
   powerOfTwo: HTMLCanvasElement;
+  outline?: number[][];
+  scale: number;
 }
 
 export async function loadResources(callback: (fraction: number) => void) {
   const promises: Record<string, Promise<Texture>> = {
-    playerZero: loadTexture("RD3.png"),
-    playerZeroNormal: loadTexture("RD3N.png"),
-    ship0: loadTexture("F5S4.png"),
-    ship0n: loadTexture("F5S4N.png"),
-    enemyZero: loadTexture("tribase-u3-d0.png"),
-    enemyZeroNormal: loadTexture("st3normal.png"),
+    playerZero: loadTexture("RD3.png", 0.5, true),
+    ship0: loadTexture("F5S4.png", 1.0, true),
   };
 
   const total = Object.keys(promises).length;
@@ -37,7 +37,7 @@ export async function loadResources(callback: (fraction: number) => void) {
   return results;
 }
 
-async function loadTexture(url: string): Promise<Texture> {
+async function loadTexture(url: string, scale: number, outline: boolean): Promise<Texture> {
   const original = await loadImage(url);
   const size = Math.max(original.width, original.height);
   let pot = 1;
@@ -48,10 +48,19 @@ async function loadTexture(url: string): Promise<Texture> {
   powerOfTwo.width = powerOfTwo.height = pot;
   const ctx = powerOfTwo.getContext("2d")!;
   ctx.drawImage(original, 0, 0, pot, pot);
-  return {
-    original: original,
+  const texture: Texture = {
+    original,
     powerOfTwo,
+    scale,
   };
+  if (outline) {
+    texture.outline = generateOutline(texture);
+    for (const point of texture.outline) {
+      point[0] *= scale;
+      point[1] *= scale;
+    }
+  }
+  return texture;
 }
 
 function loadImage(url: string) {
