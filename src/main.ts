@@ -1,4 +1,4 @@
-import { vec2 } from "gl-matrix";
+import { vec2, vec3 } from "gl-matrix";
 import RAPIER, { ColliderDesc, Collider } from "@dimforge/rapier2d-compat";
 import { Renderer } from "./renderer";
 import { loadResources, Resources, Texture } from "./resources";
@@ -18,6 +18,7 @@ export interface Spark {
   direction: vec2;
   velocity: number;
   energy: number;
+  decay: number;
 }
 
 const colliderDescs = new Map<Texture, ColliderDesc>();
@@ -117,6 +118,14 @@ async function main() {
     // Needs to be called after adding colliders and before casting rays against them.
     state.world.step();
 
+    // Update enemy positions.
+    for (const enemy of state.enemies) {
+      enemy.rotation += 0.1 * state.time.dt;
+      enemy.velocity[0] = 1 * Math.cos(enemy.rotation);
+      enemy.velocity[1] = 1 * Math.sin(enemy.rotation);
+      vec2.scaleAndAdd(enemy.position, enemy.position, enemy.velocity, state.time.dt);
+    }
+
     // Update player position.
     const acceleration = vec2.fromValues(0, 0);
     let accelerated = false;
@@ -163,13 +172,14 @@ async function main() {
     }
     state.player.rotation += 0.1 * dr;
 
-    // Update camera position.
+    // Update camera.
     vec2.scaleAndAdd(
       state.camera.position,
       state.camera.position,
       vec2.sub(vec2.create(), state.player.position, state.camera.position),
       0.05
     );
+    state.camera.fov = 2 + 0.1 * vec2.length(state.player.velocity);
 
     // Update collider positions.
     state.player.collider.setRotation(state.player.rotation);
@@ -185,7 +195,7 @@ async function main() {
 
     // Remove all tired sparks.
     state.sparks = state.sparks.filter((spark) => {
-      spark.energy *= 0.8;
+      spark.energy *= spark.decay;
       return spark.energy > 1 / 255;
     });
 
@@ -236,6 +246,7 @@ async function main() {
             ),
             velocity: Math.random(),
             energy: 4 * Math.random(),
+            decay: 0.2 * Math.random() + 0.7,
           });
         }
         return false;

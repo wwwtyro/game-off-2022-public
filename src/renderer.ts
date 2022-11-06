@@ -2,6 +2,7 @@ import { mat4, vec2 } from "gl-matrix";
 import REGL, { Regl } from "regl";
 
 import spriteShader from "./glsl/sprite.glsl?raw";
+import surfaceShader from "./glsl/surface.glsl?raw";
 import lineShader from "./glsl/lines.glsl?raw";
 import { Resources, Texture } from "./resources";
 import { State } from "./main";
@@ -11,10 +12,11 @@ export class Renderer {
   private textures = new Map<Texture, REGL.Texture>();
   private renderSprite: REGL.DrawCommand;
   private renderLines: REGL.DrawCommand;
+  private renderSurface: REGL.DrawCommand;
   private tempBuffer1: REGL.Buffer;
   private tempBuffer2: REGL.Buffer;
 
-  constructor(private canvas: HTMLCanvasElement, private resources: Resources) {
+  constructor(private canvas: HTMLCanvasElement, resources: Resources) {
     this.regl = REGL({ canvas, extensions: ["angle_instanced_arrays"] });
 
     this.tempBuffer1 = this.regl.buffer(1);
@@ -33,6 +35,31 @@ export class Renderer {
         model: this.regl.prop<any, any>("model"),
         view: this.regl.prop<any, any>("view"),
         projection: this.regl.prop<any, any>("projection"),
+      },
+
+      depth: {
+        enable: false,
+        mask: false,
+      },
+
+      count: 6,
+      viewport: this.regl.prop<any, any>("viewport"),
+    });
+
+    this.renderSurface = this.regl({
+      vert: surfaceShader.split("glsl-split")[0],
+      frag: surfaceShader.split("glsl-split")[1],
+
+      attributes: {
+        position: [-1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1],
+      },
+
+      uniforms: {
+        tSand: this.getTexture(resources["sand0"]),
+        tNoise: this.getTexture(resources["noise0"]),
+        tMetal: this.getTexture(resources["metal0"]),
+        offset: this.regl.prop<any, any>("offset"),
+        range: this.regl.prop<any, any>("range"),
       },
 
       depth: {
@@ -97,7 +124,10 @@ export class Renderer {
 
   private getTexture(texture: Texture) {
     if (!this.textures.has(texture)) {
-      this.textures.set(texture, this.regl.texture({ data: texture.powerOfTwo, min: "linear mipmap linear", mag: "linear" }));
+      this.textures.set(
+        texture,
+        this.regl.texture({ data: texture.powerOfTwo, min: "linear mipmap linear", mag: "linear", wrap: "repeat" })
+      );
     }
     return this.textures.get(texture);
   }
@@ -108,10 +138,19 @@ export class Renderer {
 
     const viewport = { x: 0, y: 0, width: this.canvas.width, height: this.canvas.height };
 
-    const model = mat4.create();
-    const view = mat4.lookAt(mat4.create(), [0, 0, 1], [0, 0, 0], [0, 1, 0]);
+    this.regl.clear({ color: [0, 0, 0, 1], depth: 1 });
+
     const fovv = state.camera.fov;
     const fovh = (fovv * this.canvas.width) / this.canvas.height;
+
+    this.renderSurface({
+      offset: state.camera.position,
+      range: [fovh, fovv],
+      viewport,
+    });
+
+    const model = mat4.create();
+    const view = mat4.lookAt(mat4.create(), [0, 0, 1], [0, 0, 0], [0, 1, 0]);
     const projection = mat4.ortho(
       mat4.create(),
       state.camera.position[0] - fovh,
@@ -121,8 +160,6 @@ export class Renderer {
       0,
       1000
     );
-
-    this.regl.clear({ color: [0, 0, 0, 1], depth: 1 });
 
     let colors: number[] = [];
     const beams: vec2[] = [];
