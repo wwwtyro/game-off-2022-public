@@ -1,9 +1,94 @@
 import { vec2 } from "gl-matrix";
-import { imageDataGet } from "./image-data";
-import { Texture } from "./resources";
+import { modulo } from "../util";
+import { game } from "./game";
 
-export function modulo(n: number, m: number) {
-  return ((n % m) + m) % m;
+export async function loadingScreen() {
+  const loadingDiv = document.getElementById("loading")!;
+  loadingDiv.style.display = "block";
+  const resources = await loadResources((fraction: number) => {
+    loadingDiv.innerText = `Loading ${Math.round(100 * fraction)}%`;
+  });
+  loadingDiv.style.display = "none";
+  game(resources);
+}
+
+export type Resources = Awaited<ReturnType<typeof loadResources>>;
+
+export interface Texture {
+  original: HTMLImageElement;
+  powerOfTwo: HTMLCanvasElement;
+  outline?: number[][];
+  scale: number;
+}
+
+export async function loadResources(callback: (fraction: number) => void) {
+  const promises: Record<string, Promise<Texture>> = {
+    ship0: loadTexture("RD3.png", 0.5, true),
+    ship1: loadTexture("F5S4.png", 0.5, true),
+    sand0: loadTexture("Sand_001_COLOR.png", 1.0, false),
+    noise0: loadTexture("noise.jpg", 1.0, false),
+    metal0: loadTexture("Metal_Plate_047_basecolor.jpg", 1.0, false),
+  };
+
+  const total = Object.keys(promises).length;
+  let sum = 0;
+
+  for (const key of Object.keys(promises)) {
+    promises[key] = promises[key].then((value) => {
+      sum++;
+      callback(sum / total);
+      return value;
+    });
+  }
+
+  await Promise.all(Object.values(promises));
+
+  const results: Record<string, Texture> = {};
+
+  for (const key of Object.keys(promises)) {
+    results[key] = await promises[key];
+  }
+
+  return results;
+}
+
+async function loadTexture(url: string, scale: number, outline: boolean): Promise<Texture> {
+  const original = await loadImage(url);
+  const size = Math.max(original.width, original.height);
+  let pot = 1;
+  while (pot < size) {
+    pot *= 2;
+  }
+  const powerOfTwo = document.createElement("canvas");
+  powerOfTwo.width = powerOfTwo.height = pot;
+  const ctx = powerOfTwo.getContext("2d")!;
+  ctx.drawImage(original, 0, 0, pot, pot);
+  const texture: Texture = {
+    original,
+    powerOfTwo,
+    scale,
+  };
+  if (outline) {
+    texture.outline = generateOutline(texture);
+    for (const point of texture.outline) {
+      point[0] *= scale;
+      point[1] *= scale;
+    }
+  }
+  return texture;
+}
+
+function loadImage(url: string) {
+  return new Promise<HTMLImageElement>((accept, reject) => {
+    const img = new Image();
+    img.src = `/static/${url}`;
+    img.onload = () => {
+      accept(img);
+    };
+    img.onerror = () => {
+      reject();
+    };
+  });
 }
 
 export function generateOutline(texture: Texture) {
@@ -139,4 +224,17 @@ function hasNeighbor(data: ImageData, x: number, y: number) {
     }
   }
   return false;
+}
+
+export function imageDataGet(data: ImageData, x: number, y: number) {
+  const offset = 4 * (y * data.width + x);
+  return [data.data[offset + 0], data.data[offset + 1], data.data[offset + 2], data.data[offset + 3]];
+}
+
+export function imageDataSet(data: ImageData, x: number, y: number, value: number[]) {
+  const offset = 4 * (y * data.width + x);
+  data.data[offset + 0] = value[0];
+  data.data[offset + 1] = value[1];
+  data.data[offset + 2] = value[2];
+  data.data[offset + 3] = value[3];
 }
