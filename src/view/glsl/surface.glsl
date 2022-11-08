@@ -20,7 +20,7 @@ void main() {
   float noise = texture2D(tNoise, vUV * 0.001).r;
   vec3 metal = texture2D(tMetal, vUV * 0.25).rgb;
   vec3 sand = 0.333 * texture2D(tSand, vUV * 0.5).rgb;
-  float delta = 0.1;
+  float delta = 0.05;
   float mx = smoothstep(0.5 - delta, 0.5 + delta, noise);
   vec3 color = mix(metal, sand, mx);
   gl_FragColor = vec4(shadow * color, 1);

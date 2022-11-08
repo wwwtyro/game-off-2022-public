@@ -88,7 +88,9 @@ export async function game(resources: Resources) {
       vec2.sub(vec2.create(), state.player.position, state.camera.position),
       0.05
     );
-    state.camera.fov = 2 + 0.1 * vec2.length(state.player.velocity);
+    const targetFov = 2 + 0.4 * vec2.length(state.player.velocity);
+    const df = targetFov > state.camera.fov ? 0.1 : 0.001;
+    state.camera.fov += df * (targetFov - state.camera.fov);
 
     // Update collider positions.
     state.player.collider.setRotation(state.player.rotation);

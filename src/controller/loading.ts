@@ -17,17 +17,18 @@ export type Resources = Awaited<ReturnType<typeof loadResources>>;
 export interface Texture {
   original: HTMLImageElement;
   powerOfTwo: HTMLCanvasElement;
+  powerOfTwoNormal: HTMLCanvasElement;
   outline?: number[][];
   scale: number;
 }
 
 export async function loadResources(callback: (fraction: number) => void) {
   const promises: Record<string, Promise<Texture>> = {
-    ship0: loadTexture("RD3.png", 0.5, true),
-    ship1: loadTexture("F5S4.png", 0.5, true),
-    sand0: loadTexture("Sand_001_COLOR.png", 1.0, false),
-    noise0: loadTexture("noise.jpg", 1.0, false),
-    metal0: loadTexture("Metal_Plate_047_basecolor.jpg", 1.0, false),
+    ship0: loadTexture("destroyer.png", "nn5.png", 0.5, true),
+    ship1: loadTexture("blueshuttlenoweps.png", "cnormal.png", 0.25, true),
+    sand0: loadTexture("Sand_001_COLOR.png", "Sand_001_NRM.png", 1.0, false),
+    noise0: loadTexture("noise.jpg", "noise.jpg", 1.0, false),
+    metal0: loadTexture("Metal_Plate_047_basecolor.jpg", "Metal_Plate_047_normal.jpg", 1.0, false),
   };
 
   const total = Object.keys(promises).length;
@@ -52,8 +53,7 @@ export async function loadResources(callback: (fraction: number) => void) {
   return results;
 }
 
-async function loadTexture(url: string, scale: number, outline: boolean): Promise<Texture> {
-  const original = await loadImage(url);
+function pot(original: HTMLImageElement) {
   const size = Math.max(original.width, original.height);
   let pot = 1;
   while (pot < size) {
@@ -63,9 +63,19 @@ async function loadTexture(url: string, scale: number, outline: boolean): Promis
   powerOfTwo.width = powerOfTwo.height = pot;
   const ctx = powerOfTwo.getContext("2d")!;
   ctx.drawImage(original, 0, 0, pot, pot);
+  return powerOfTwo;
+}
+
+async function loadTexture(url: string, urlNormal: string, scale: number, outline: boolean): Promise<Texture> {
+  const [original, normal] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
+
+  const powerOfTwo = pot(original);
+  const powerOfTwoNormal = pot(normal);
+
   const texture: Texture = {
     original,
     powerOfTwo,
+    powerOfTwoNormal,
     scale,
   };
   if (outline) {

@@ -6,12 +6,12 @@ import spriteShader from "./glsl/sprite.glsl?raw";
 import shadowShader from "./glsl/shadow.glsl?raw";
 import surfaceShader from "./glsl/surface.glsl?raw";
 import lineShader from "./glsl/lines.glsl?raw";
-import { Resources, Texture } from "../controller/loading";
+import { Resources } from "../controller/loading";
 import { State } from "../model/model";
 
 export class Renderer {
   private regl: Regl;
-  private textures = new Map<Texture, REGL.Texture>();
+  private textures = new Map<HTMLCanvasElement, REGL.Texture>();
   private renderBlur: REGL.DrawCommand;
   private renderSprite: REGL.DrawCommand;
   private renderLines: REGL.DrawCommand;
@@ -43,7 +43,9 @@ export class Renderer {
       },
 
       uniforms: {
-        albedo: this.regl.prop<any, any>("albedo"),
+        tAlbedo: this.regl.prop<any, any>("albedo"),
+        tNormal: this.regl.prop<any, any>("normal"),
+        rotation: this.regl.prop<any, any>("rotation"),
         model: this.regl.prop<any, any>("model"),
         view: this.regl.prop<any, any>("view"),
         projection: this.regl.prop<any, any>("projection"),
@@ -117,9 +119,9 @@ export class Renderer {
       },
 
       uniforms: {
-        tSand: this.getTexture(resources["sand0"]),
-        tNoise: this.getTexture(resources["noise0"]),
-        tMetal: this.getTexture(resources["metal0"]),
+        tSand: this.getTexture(resources["sand0"].powerOfTwo),
+        tNoise: this.getTexture(resources["noise0"].powerOfTwo),
+        tMetal: this.getTexture(resources["metal0"].powerOfTwo),
         tShadow: this.fbShadow[0],
         offset: this.regl.prop<any, any>("offset"),
         range: this.regl.prop<any, any>("range"),
@@ -194,11 +196,11 @@ export class Renderer {
     });
   }
 
-  private getTexture(texture: Texture) {
+  private getTexture(texture: HTMLCanvasElement) {
     if (!this.textures.has(texture)) {
       this.textures.set(
         texture,
-        this.regl.texture({ data: texture.powerOfTwo, min: "linear mipmap linear", mag: "linear", wrap: "repeat" })
+        this.regl.texture({ data: texture, min: "linear mipmap linear", mag: "linear", wrap: "repeat", flipY: true })
       );
     }
     return this.textures.get(texture);
@@ -242,7 +244,7 @@ export class Renderer {
       1,
     ]);
     this.renderShadow({
-      albedo: this.getTexture(state.player.texture),
+      albedo: this.getTexture(state.player.texture.powerOfTwo),
       model,
       view,
       projection,
@@ -259,7 +261,7 @@ export class Renderer {
         1,
       ]);
       this.renderShadow({
-        albedo: this.getTexture(enemy.texture),
+        albedo: this.getTexture(enemy.texture.powerOfTwo),
         model,
         view,
         projection,
@@ -268,7 +270,7 @@ export class Renderer {
     }
 
     // Blur the shadows.
-    for (let i = 0; i < 2; i++) {
+    for (let i = 0; i < 8; i++) {
       this.renderBlur({
         resolution: [shadowWidth, shadowHeight],
         direction: [1, 0],
@@ -326,7 +328,9 @@ export class Renderer {
       1,
     ]);
     this.renderSprite({
-      albedo: this.getTexture(state.player.texture),
+      albedo: this.getTexture(state.player.texture.powerOfTwo),
+      normal: this.getTexture(state.player.texture.powerOfTwoNormal),
+      rotation: state.player.rotation,
       model,
       view,
       projection,
@@ -343,7 +347,9 @@ export class Renderer {
         1,
       ]);
       this.renderSprite({
-        albedo: this.getTexture(enemy.texture),
+        albedo: this.getTexture(enemy.texture.powerOfTwo),
+        normal: this.getTexture(enemy.texture.powerOfTwoNormal),
+        rotation: enemy.rotation,
         model,
         view,
         projection,
