@@ -2,10 +2,11 @@ import { mat4, vec2 } from "gl-matrix";
 import REGL, { Regl } from "regl";
 
 import spriteShader from "./glsl/sprite.glsl?raw";
+import shadowShader from "./glsl/shadow.glsl?raw";
 import surfaceShader from "./glsl/surface.glsl?raw";
 import lineShader from "./glsl/lines.glsl?raw";
-import { Resources, Texture } from "./resources";
-import { State } from "./main";
+import { Resources, Texture } from "../controller/loading";
+import { State } from "../model/model";
 
 export class Renderer {
   private regl: Regl;
@@ -13,14 +14,18 @@ export class Renderer {
   private renderSprite: REGL.DrawCommand;
   private renderLines: REGL.DrawCommand;
   private renderSurface: REGL.DrawCommand;
+  private renderShadow: REGL.DrawCommand;
   private tempBuffer1: REGL.Buffer;
   private tempBuffer2: REGL.Buffer;
+  private fbShadow: REGL.Framebuffer2D;
 
   constructor(private canvas: HTMLCanvasElement, resources: Resources) {
     this.regl = REGL({ canvas, extensions: ["angle_instanced_arrays"] });
 
     this.tempBuffer1 = this.regl.buffer(1);
     this.tempBuffer2 = this.regl.buffer(1);
+
+    this.fbShadow = this.regl.framebuffer();
 
     this.renderSprite = this.regl({
       vert: spriteShader.split("glsl-split")[0],
@@ -46,6 +51,31 @@ export class Renderer {
       viewport: this.regl.prop<any, any>("viewport"),
     });
 
+    this.renderShadow = this.regl({
+      vert: shadowShader.split("glsl-split")[0],
+      frag: shadowShader.split("glsl-split")[1],
+
+      attributes: {
+        position: [-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5],
+      },
+
+      uniforms: {
+        albedo: this.regl.prop<any, any>("albedo"),
+        model: this.regl.prop<any, any>("model"),
+        view: this.regl.prop<any, any>("view"),
+        projection: this.regl.prop<any, any>("projection"),
+      },
+
+      depth: {
+        enable: false,
+        mask: false,
+      },
+
+      count: 6,
+      viewport: this.regl.prop<any, any>("viewport"),
+      framebuffer: this.fbShadow,
+    });
+
     this.renderSurface = this.regl({
       vert: surfaceShader.split("glsl-split")[0],
       frag: surfaceShader.split("glsl-split")[1],
@@ -58,6 +88,7 @@ export class Renderer {
         tSand: this.getTexture(resources["sand0"]),
         tNoise: this.getTexture(resources["noise0"]),
         tMetal: this.getTexture(resources["metal0"]),
+        tShadow: this.fbShadow,
         offset: this.regl.prop<any, any>("offset"),
         range: this.regl.prop<any, any>("range"),
       },
@@ -136,19 +167,12 @@ export class Renderer {
     this.canvas.width = this.canvas.clientWidth;
     this.canvas.height = this.canvas.clientHeight;
 
-    const viewport = { x: 0, y: 0, width: this.canvas.width, height: this.canvas.height };
-
-    this.regl.clear({ color: [0, 0, 0, 1], depth: 1 });
+    this.fbShadow.resize(this.canvas.width, this.canvas.height);
 
     const fovv = state.camera.fov;
     const fovh = (fovv * this.canvas.width) / this.canvas.height;
 
-    this.renderSurface({
-      offset: state.camera.position,
-      range: [fovh, fovv],
-      viewport,
-    });
-
+    const viewport = { x: 0, y: 0, width: this.canvas.width, height: this.canvas.height };
     const model = mat4.create();
     const view = mat4.lookAt(mat4.create(), [0, 0, 1], [0, 0, 0], [0, 1, 0]);
     const projection = mat4.ortho(
@@ -160,6 +184,51 @@ export class Renderer {
       0,
       1000
     );
+
+    // Render shadows.
+    this.regl.clear({ color: [1, 1, 1, 1], framebuffer: this.fbShadow });
+
+    mat4.identity(model);
+    mat4.translate(model, model, [state.player.position[0] - 0.25, state.player.position[1] - 0.25, 0]);
+    mat4.rotateZ(model, model, state.player.rotation);
+    mat4.scale(model, model, [
+      (state.player.texture.scale * state.player.texture.original.width) / state.player.texture.original.height,
+      state.player.texture.scale,
+      1,
+    ]);
+    this.renderShadow({
+      albedo: this.getTexture(state.player.texture),
+      model,
+      view,
+      projection,
+      viewport,
+    });
+
+    for (const enemy of state.enemies) {
+      mat4.identity(model);
+      mat4.translate(model, model, [enemy.position[0] - 0.25, enemy.position[1] - 0.25, 0]);
+      mat4.rotateZ(model, model, enemy.rotation);
+      mat4.scale(model, model, [
+        (enemy.texture.scale * enemy.texture.original.width) / enemy.texture.original.height,
+        enemy.texture.scale,
+        1,
+      ]);
+      this.renderShadow({
+        albedo: this.getTexture(enemy.texture),
+        model,
+        view,
+        projection,
+        viewport,
+      });
+    }
+
+    this.regl.clear({ color: [0, 0, 0, 1], depth: 1 });
+
+    this.renderSurface({
+      offset: state.camera.position,
+      range: [fovh, fovv],
+      viewport,
+    });
 
     let colors: number[] = [];
     const beams: vec2[] = [];
