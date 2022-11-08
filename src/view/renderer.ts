@@ -1,6 +1,7 @@
 import { mat4, vec2 } from "gl-matrix";
 import REGL, { Regl } from "regl";
 
+import blurShader from "./glsl/blur.glsl?raw";
 import spriteShader from "./glsl/sprite.glsl?raw";
 import shadowShader from "./glsl/shadow.glsl?raw";
 import surfaceShader from "./glsl/surface.glsl?raw";
@@ -11,21 +12,27 @@ import { State } from "../model/model";
 export class Renderer {
   private regl: Regl;
   private textures = new Map<Texture, REGL.Texture>();
+  private renderBlur: REGL.DrawCommand;
   private renderSprite: REGL.DrawCommand;
   private renderLines: REGL.DrawCommand;
   private renderSurface: REGL.DrawCommand;
   private renderShadow: REGL.DrawCommand;
   private tempBuffer1: REGL.Buffer;
   private tempBuffer2: REGL.Buffer;
-  private fbShadow: REGL.Framebuffer2D;
+  private tempArray1: Array<number | vec2> = [];
+  private tempArray2: Array<number | vec2> = [];
+  private fbShadow: REGL.Framebuffer2D[];
 
   constructor(private canvas: HTMLCanvasElement, resources: Resources) {
-    this.regl = REGL({ canvas, extensions: ["angle_instanced_arrays"] });
+    this.regl = REGL({ canvas, extensions: ["angle_instanced_arrays", "OES_texture_float", "OES_texture_float_linear"] });
 
     this.tempBuffer1 = this.regl.buffer(1);
     this.tempBuffer2 = this.regl.buffer(1);
 
-    this.fbShadow = this.regl.framebuffer();
+    this.fbShadow = [
+      this.regl.framebuffer({ color: this.regl.texture({ min: "linear", mag: "linear" }) }),
+      this.regl.framebuffer({ color: this.regl.texture({ min: "linear", mag: "linear" }) }),
+    ];
 
     this.renderSprite = this.regl({
       vert: spriteShader.split("glsl-split")[0],
@@ -73,7 +80,32 @@ export class Renderer {
 
       count: 6,
       viewport: this.regl.prop<any, any>("viewport"),
-      framebuffer: this.fbShadow,
+      framebuffer: this.fbShadow[0],
+    });
+
+    this.renderBlur = this.regl({
+      vert: blurShader.split("glsl-split")[0],
+      frag: blurShader.split("glsl-split")[1],
+
+      attributes: {
+        position: [-1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1],
+      },
+
+      uniforms: {
+        resolution: this.regl.prop<any, any>("resolution"),
+        direction: this.regl.prop<any, any>("direction"),
+        taps: this.regl.prop<any, any>("taps"),
+        tSource: this.regl.prop<any, any>("source"),
+      },
+
+      depth: {
+        enable: false,
+        mask: false,
+      },
+
+      count: 6,
+      viewport: this.regl.prop<any, any>("viewport"),
+      framebuffer: this.regl.prop<any, any>("framebuffer"),
     });
 
     this.renderSurface = this.regl({
@@ -88,7 +120,7 @@ export class Renderer {
         tSand: this.getTexture(resources["sand0"]),
         tNoise: this.getTexture(resources["noise0"]),
         tMetal: this.getTexture(resources["metal0"]),
-        tShadow: this.fbShadow,
+        tShadow: this.fbShadow[0],
         offset: this.regl.prop<any, any>("offset"),
         range: this.regl.prop<any, any>("range"),
       },
@@ -147,9 +179,18 @@ export class Renderer {
         face: "back",
       },
 
+      blend: {
+        enable: true,
+        func: {
+          src: "src alpha",
+          dst: "one minus src alpha",
+        },
+      },
+
       count: roundCapJoin.count,
       instances: this.regl.prop<any, any>("segments"),
       viewport: this.regl.prop<any, any>("viewport"),
+      framebuffer: this.regl.prop<any, any>("framebuffer"),
     });
   }
 
@@ -167,7 +208,11 @@ export class Renderer {
     this.canvas.width = this.canvas.clientWidth;
     this.canvas.height = this.canvas.clientHeight;
 
-    this.fbShadow.resize(this.canvas.width, this.canvas.height);
+    const shadowWidth = Math.round(1 * this.canvas.width);
+    const shadowHeight = Math.round(1 * this.canvas.height);
+    const shadowViewport = { x: 0, y: 0, width: shadowWidth, height: shadowHeight };
+    this.fbShadow[0].resize(shadowWidth, shadowHeight);
+    this.fbShadow[1].resize(shadowWidth, shadowHeight);
 
     const fovv = state.camera.fov;
     const fovh = (fovv * this.canvas.width) / this.canvas.height;
@@ -186,7 +231,7 @@ export class Renderer {
     );
 
     // Render shadows.
-    this.regl.clear({ color: [1, 1, 1, 1], framebuffer: this.fbShadow });
+    this.regl.clear({ color: [1, 1, 1, 1], framebuffer: this.fbShadow[0] });
 
     mat4.identity(model);
     mat4.translate(model, model, [state.player.position[0] - 0.25, state.player.position[1] - 0.25, 0]);
@@ -201,7 +246,7 @@ export class Renderer {
       model,
       view,
       projection,
-      viewport,
+      viewport: shadowViewport,
     });
 
     for (const enemy of state.enemies) {
@@ -218,7 +263,27 @@ export class Renderer {
         model,
         view,
         projection,
-        viewport,
+        viewport: shadowViewport,
+      });
+    }
+
+    // Blur the shadows.
+    for (let i = 0; i < 2; i++) {
+      this.renderBlur({
+        resolution: [shadowWidth, shadowHeight],
+        direction: [1, 0],
+        taps: 13,
+        source: this.fbShadow[0],
+        framebuffer: this.fbShadow[1],
+        viewport: shadowViewport,
+      });
+      this.renderBlur({
+        resolution: [shadowWidth, shadowHeight],
+        direction: [0, 1],
+        taps: 13,
+        source: this.fbShadow[1],
+        framebuffer: this.fbShadow[0],
+        viewport: shadowViewport,
       });
     }
 
@@ -230,26 +295,26 @@ export class Renderer {
       viewport,
     });
 
-    let colors: number[] = [];
-    const beams: vec2[] = [];
-    colors = [];
+    this.tempArray1.length = 0;
+    this.tempArray2.length = 0;
     for (const beam of state.beams) {
-      beams.push(beam.lastPosition, beam.position);
-      colors.push(0.5, 0.5, 1, 1);
+      this.tempArray1.push(0.5, 1, 1, 1);
+      this.tempArray2.push(beam.lastPosition, beam.position);
     }
 
-    this.tempBuffer1(colors);
-    this.tempBuffer2(beams);
+    this.tempBuffer1(this.tempArray1);
+    this.tempBuffer2(this.tempArray2);
 
     this.renderLines({
       model: mat4.create(),
       view,
       projection,
       viewport,
-      colors: this.tempBuffer1,
       width: 0.01,
+      colors: this.tempBuffer1,
       points: this.tempBuffer2,
-      segments: beams.length / 2,
+      segments: state.beams.length,
+      framebuffer: null,
     });
 
     mat4.identity(model);
@@ -286,22 +351,26 @@ export class Renderer {
       });
     }
 
-    const sparks: vec2[] = [];
-    colors = [];
+    this.tempArray1.length = 0;
+    this.tempArray2.length = 0;
     for (const spark of state.sparks) {
-      sparks.push(spark.lastPosition, spark.position);
-      colors.push(2 * spark.energy, 1 * spark.energy, 0.5 * spark.energy, spark.energy);
+      this.tempArray1.push(2 * spark.energy, 1 * spark.energy, 0.5 * spark.energy, spark.energy);
+      this.tempArray2.push(spark.lastPosition, spark.position);
     }
+
+    this.tempBuffer1(this.tempArray1);
+    this.tempBuffer2(this.tempArray2);
 
     this.renderLines({
       model: mat4.create(),
       view,
       projection,
       viewport,
-      colors,
       width: 0.005,
-      points: sparks,
-      segments: sparks.length / 2,
+      colors: this.tempBuffer1,
+      points: this.tempBuffer2,
+      segments: state.sparks.length,
+      framebuffer: null,
     });
   }
 }

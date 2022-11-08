@@ -19,5 +19,5 @@ void main() {
   if (alpha < 0.5) {
     discard;
   }
-  gl_FragColor = vec4(0.5, 0.0, 0.0, 0.0);
+  gl_FragColor = vec4(0.25, 0.0, 0.0, 0.0);
 }
