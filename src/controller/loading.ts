@@ -25,7 +25,7 @@ export interface Texture {
 export async function loadResources(callback: (fraction: number) => void) {
   const promises: Record<string, Promise<Texture>> = {
     ship0: loadTexture("destroyer.png", "nn5.png", 0.5, true),
-    ship1: loadTexture("blueshuttlenoweps.png", "cnormal.png", 0.25, true),
+    ship1: loadTexture("blueshuttlenoweps.png", "cnormal.png", 0.35, true),
     sand0: loadTexture("Sand_001_COLOR.png", "Sand_001_NRM.png", 1.0, false),
     noise0: loadTexture("noise.jpg", "noise.jpg", 1.0, false),
     metal0: loadTexture("Metal_Plate_047_basecolor.jpg", "Metal_Plate_047_normal.jpg", 1.0, false),
@@ -66,6 +66,39 @@ function pot(original: HTMLImageElement) {
   return powerOfTwo;
 }
 
+function patchNormals(texture: Texture) {
+  const canvas = texture.powerOfTwoNormal;
+  const ctx = canvas.getContext("2d")!;
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  let totalX = 0.0;
+  let totalY = 0.0;
+  let total = 0;
+  for (let x = 0; x < canvas.width; x++) {
+    for (let y = 0; y < canvas.height; y++) {
+      const normal = imageDataGet(imageData, x, y);
+      if (normal[3] < 127) {
+        continue;
+      }
+      totalX += normal[0];
+      totalY += normal[1];
+      total++;
+    }
+  }
+  const averageX = totalX / total;
+  const averageY = totalY / total;
+  const dx = Math.round(127.5 - averageX);
+  const dy = Math.round(127.5 - averageY);
+  for (let x = 0; x < canvas.width; x++) {
+    for (let y = 0; y < canvas.height; y++) {
+      const normal = imageDataGet(imageData, x, y);
+      normal[0] += dx;
+      normal[1] += dy;
+      imageDataSet(imageData, x, y, normal);
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+}
+
 async function loadTexture(url: string, urlNormal: string, scale: number, outline: boolean): Promise<Texture> {
   const [original, normal] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
 
@@ -84,6 +117,7 @@ async function loadTexture(url: string, urlNormal: string, scale: number, outlin
       point[0] *= scale;
       point[1] *= scale;
     }
+    patchNormals(texture);
   }
   return texture;
 }

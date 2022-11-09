@@ -17,12 +17,10 @@ varying vec2 vUV;
 
 void main() {
   vec4 color = texture2D(tAlbedo, vUV);
-  if (color.a < 0.5) {
+  if (color.a < 0.75) {
     discard;
   }
   vec3 normal = texture2D(tNormal, vUV).rgb * 2.0 - 1.0;
-  normal.x -= 0.3;
-  normal.y -= 0.1;
   normal = normalize(normal);
   float cos_r = cos(rotation);
   float sin_r = sin(rotation);
@@ -30,8 +28,8 @@ void main() {
   float y = sin_r * normal.x + cos_r * normal.y;
   normal.x = x;
   normal.y = y;
-  float light = dot(normal, normalize(vec3(2, 0, 1)));
+  float light = dot(normal, normalize(vec3(1, 1, 2)));
   light = clamp(light, 0.0, 1.0);
-  float plight = pow(light, 4.0);
-  gl_FragColor = vec4((16.0 * plight + light) * color.rgb, 1.0);
+  float plight = pow(light, 12.0);
+  gl_FragColor = vec4(1.0 * plight + 1.0 * light * color.rgb, 1.0);
 }
