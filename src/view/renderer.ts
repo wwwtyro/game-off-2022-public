@@ -8,6 +8,7 @@ import surfaceShader from "./glsl/surface.glsl?raw";
 import lineShader from "./glsl/lines.glsl?raw";
 import { Resources } from "../controller/loading";
 import { State } from "../model/model";
+import { modulo } from "../util";
 
 export class Renderer {
   private regl: Regl;
@@ -19,8 +20,8 @@ export class Renderer {
   private renderShadow: REGL.DrawCommand;
   private tempBuffer1: REGL.Buffer;
   private tempBuffer2: REGL.Buffer;
-  private tempArray1: Array<number | vec2> = [];
-  private tempArray2: Array<number | vec2> = [];
+  private tempArray1: Array<number | number[] | vec2> = [];
+  private tempArray2: Array<number | number[] | vec2> = [];
   private fbShadow: REGL.Framebuffer2D[];
 
   constructor(private canvas: HTMLCanvasElement, resources: Resources) {
@@ -345,6 +346,34 @@ export class Renderer {
       viewport,
     });
 
+    // Render player outline.
+    if (true) {
+      this.tempArray1.length = 0;
+      this.tempArray2.length = 0;
+      for (let i = 0; i < state.player.texture.outline!.length; i++) {
+        const p0 = state.player.texture.outline![i + 0];
+        const p1 = state.player.texture.outline![modulo(i + 1, state.player.texture.outline!.length)];
+        this.tempArray1.push(p0, p1);
+        this.tempArray2.push(1, 1, 1, 1);
+      }
+      this.tempBuffer1(this.tempArray1);
+      this.tempBuffer2(this.tempArray2);
+      mat4.identity(model);
+      mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
+      mat4.rotateZ(model, model, state.player.rotation);
+      this.renderLines({
+        model,
+        view,
+        projection,
+        viewport,
+        width: 0.01,
+        points: this.tempBuffer1,
+        colors: this.tempBuffer2,
+        segments: this.tempArray1.length / 2,
+        framebuffer: null,
+      });
+    }
+
     // Render the enemies.
     for (const enemy of state.enemies) {
       mat4.identity(model);
@@ -364,6 +393,36 @@ export class Renderer {
         projection,
         viewport,
       });
+    }
+
+    // Render enemy outlines.
+    if (true) {
+      for (const enemy of state.enemies) {
+        this.tempArray1.length = 0;
+        this.tempArray2.length = 0;
+        for (let i = 0; i < enemy.texture.outline!.length; i++) {
+          const p0 = enemy.texture.outline![i + 0];
+          const p1 = enemy.texture.outline![modulo(i + 1, enemy.texture.outline!.length)];
+          this.tempArray1.push(p0, p1);
+          this.tempArray2.push(1, 1, 1, 1);
+        }
+        this.tempBuffer1(this.tempArray1);
+        this.tempBuffer2(this.tempArray2);
+        mat4.identity(model);
+        mat4.translate(model, model, [enemy.position[0], enemy.position[1], 0]);
+        mat4.rotateZ(model, model, enemy.rotation);
+        this.renderLines({
+          model,
+          view,
+          projection,
+          viewport,
+          width: 0.01,
+          points: this.tempBuffer1,
+          colors: this.tempBuffer2,
+          segments: this.tempArray1.length / 2,
+          framebuffer: null,
+        });
+      }
     }
 
     // Render the sparks.

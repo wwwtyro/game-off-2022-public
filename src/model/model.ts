@@ -104,7 +104,7 @@ export function buildState(resources: Resources): State {
     beams: [],
     sparks: [],
     keys: {},
-    level: 100,
+    level: 1,
     levelEndTimestamp: null,
   };
 

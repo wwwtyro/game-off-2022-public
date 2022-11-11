@@ -101,6 +101,7 @@ function patchNormals(texture: Texture) {
 }
 
 async function loadTexture(url: string, urlNormal: string, scale: number, outline: boolean): Promise<Texture> {
+  console.profile("Load Texture");
   const [original, normal] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
 
   const powerOfTwo = pot(original);
@@ -120,6 +121,7 @@ async function loadTexture(url: string, urlNormal: string, scale: number, outlin
     }
     patchNormals(texture);
   }
+  console.profileEnd("Load Texture");
   return texture;
 }
 
@@ -137,11 +139,12 @@ function loadImage(url: string) {
 }
 
 export function generateOutline(texture: Texture) {
+  const operatingScale = 1.0;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
-  canvas.width = texture.original.width;
-  canvas.height = texture.original.height;
-  ctx.drawImage(texture.original, 0, 0);
+  canvas.width = Math.round(operatingScale * texture.original.width);
+  canvas.height = Math.round(operatingScale * texture.original.height);
+  ctx.drawImage(texture.original, 0, 0, canvas.width, canvas.height);
 
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
