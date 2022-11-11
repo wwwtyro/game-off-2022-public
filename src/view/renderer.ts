@@ -291,18 +291,23 @@ export class Renderer {
       });
     }
 
+    // Render the surface.
     this.regl.clear({ color: [0, 0, 0, 1], depth: 1 });
-
     this.renderSurface({
       offset: state.camera.position,
       range: [fovh, fovv],
       viewport,
     });
 
+    // Render the beams.
     this.tempArray1.length = 0;
     this.tempArray2.length = 0;
     for (const beam of state.beams) {
-      this.tempArray1.push(0.5, 1, 1, 1);
+      if (beam.team === "player") {
+        this.tempArray1.push(0.5, 1, 1, 1);
+      } else {
+        this.tempArray1.push(1, 0.5, 0.25, 1);
+      }
       this.tempArray2.push(beam.lastPosition, beam.position);
     }
 
@@ -321,6 +326,7 @@ export class Renderer {
       framebuffer: null,
     });
 
+    // Render the player.
     mat4.identity(model);
     mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
     mat4.rotateZ(model, model, state.player.rotation);
@@ -339,6 +345,7 @@ export class Renderer {
       viewport,
     });
 
+    // Render the enemies.
     for (const enemy of state.enemies) {
       mat4.identity(model);
       mat4.translate(model, model, [enemy.position[0], enemy.position[1], 0]);
@@ -359,6 +366,7 @@ export class Renderer {
       });
     }
 
+    // Render the sparks.
     this.tempArray1.length = 0;
     this.tempArray2.length = 0;
     for (const spark of state.sparks) {

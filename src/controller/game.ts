@@ -30,6 +30,8 @@ export async function game(resources: Resources) {
   const state = buildState(resources);
   initLevel(state, resources);
 
+  (window as any).state = state; // Degub.
+
   window.addEventListener("keydown", (e) => {
     state.keys[e.code] = true;
   });
@@ -48,15 +50,15 @@ export async function game(resources: Resources) {
     // Needs to be called after adding colliders and before casting rays against them.
     state.world.step();
 
-    // Update enemy positions.
-    for (const enemy of state.enemies) {
-      enemy.rotation += 0.1 * state.time.dt;
-      if (!enemy.isCore) {
-        enemy.velocity[0] = 1 * Math.cos(enemy.rotation);
-        enemy.velocity[1] = 1 * Math.sin(enemy.rotation);
-        vec2.scaleAndAdd(enemy.position, enemy.position, enemy.velocity, state.time.dt);
-      }
-    }
+    // // Update enemy positions.
+    // for (const enemy of state.enemies) {
+    //   enemy.rotation += 0.1 * state.time.dt;
+    //   if (!enemy.isCore) {
+    //     enemy.velocity[0] = 1 * Math.cos(enemy.rotation);
+    //     enemy.velocity[1] = 1 * Math.sin(enemy.rotation);
+    //     vec2.scaleAndAdd(enemy.position, enemy.position, enemy.velocity, state.time.dt);
+    //   }
+    // }
 
     // Update player position.
     const rawAcceleration = vec2.fromValues(0, 0);
@@ -92,10 +94,10 @@ export async function game(resources: Resources) {
         nearestDrone = enemy;
       }
     }
-    if (nearestDrone !== null && !accelerated) {
+    if (nearestDrone !== null && minDist < 5) {
       const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), nearestDrone.position, state.player.position));
       state.player.targetRotation = Math.atan2(de[1], de[0]);
-    } else {
+    } else if (accelerated) {
       const q = vec2.normalize(vec2.create(), rawAcceleration);
       state.player.targetRotation = Math.atan2(q[1], q[0]);
     }
@@ -107,6 +109,27 @@ export async function game(resources: Resources) {
     }
     state.player.rotation += 0.1 * dr;
 
+    // Update enemy rotations.
+    for (const enemy of state.enemies) {
+      if (enemy.isCore) {
+        enemy.rotation += 0.1 * state.time.dt;
+        continue;
+      }
+      const dist = vec2.distance(enemy.position, state.player.position);
+      if (dist < 5) {
+        const de = vec2.sub(vec2.create(), state.player.position, enemy.position);
+        vec2.normalize(de, de);
+        enemy.targetRotation = Math.atan2(de[1], de[0]);
+      }
+      enemy.targetRotation = modulo(enemy.targetRotation, 2 * Math.PI);
+      enemy.rotation = modulo(enemy.rotation, 2 * Math.PI);
+      let dr = enemy.targetRotation - enemy.rotation;
+      if (Math.abs(dr) > Math.PI) {
+        dr = -Math.sign(dr) * (2 * Math.PI - Math.abs(dr));
+      }
+      enemy.rotation += 0.1 * dr;
+    }
+
     // Update camera.
     vec2.scaleAndAdd(
       state.camera.position,
@@ -114,7 +137,7 @@ export async function game(resources: Resources) {
       vec2.sub(vec2.create(), state.player.position, state.camera.position),
       0.05
     );
-    const targetFov = 2 + 0.1 * vec2.length(state.player.velocity);
+    const targetFov = 4 + 0.1 * vec2.length(state.player.velocity);
     const df = targetFov > state.camera.fov ? 0.1 : 0.001;
     state.camera.fov += df * (targetFov - state.camera.fov);
 
@@ -136,10 +159,9 @@ export async function game(resources: Resources) {
       return spark.energy > 1 / 255;
     });
 
-    // Create new beams
+    // Fire player weapons.
     if (!accelerated) {
       const direction = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
-      vec2.normalize(direction, direction);
       for (let i = 0; i < 1; i++) {
         const position = vec2.add(vec2.create(), state.player.position, vec2.random(vec2.create(), 0.01));
         state.beams.push({
@@ -148,6 +170,30 @@ export async function game(resources: Resources) {
           direction: vec2.clone(direction),
           velocity: 2 + 2 * Math.random() + vec2.length(state.player.velocity),
           timestamp: state.time.now,
+          team: "player",
+        });
+      }
+    }
+
+    // Fire enemy weapons.
+    for (const enemy of state.enemies) {
+      if (enemy.isCore) {
+        continue;
+      }
+      const dist = vec2.distance(state.player.position, enemy.position);
+      if (dist > 5) {
+        continue;
+      }
+      const direction = vec2.fromValues(Math.cos(enemy.rotation), Math.sin(enemy.rotation));
+      for (let i = 0; i < 1; i++) {
+        const position = vec2.add(vec2.create(), enemy.position, vec2.random(vec2.create(), 0.01));
+        state.beams.push({
+          position,
+          lastPosition: vec2.clone(position),
+          direction: vec2.clone(direction),
+          velocity: 2 + 2 * Math.random() + vec2.length(state.player.velocity),
+          timestamp: state.time.now,
+          team: "enemy",
         });
       }
     }
@@ -172,7 +218,14 @@ export async function game(resources: Resources) {
       ray.dir.x = beam.direction[0];
       ray.dir.y = beam.direction[1];
       const hit = state.world.castRayAndGetNormal(ray, 100, true);
-      if (hit !== null && hit.collider !== state.player.collider && hit.toi < beam.velocity * state.time.dt * 1.5) {
+      if (hit !== null && hit.toi < beam.velocity * state.time.dt * 1.5) {
+        // Skip friendly fire.
+        if (beam.team === "enemy" && hit.collider !== state.player.collider) {
+          return true;
+        }
+        if (beam.team === "player" && hit.collider === state.player.collider) {
+          return true;
+        }
         // We hit something, create some sparks!
         while (Math.random() < 0.99) {
           state.sparks.push({
@@ -187,9 +240,13 @@ export async function game(resources: Resources) {
             decay: 0.2 * Math.random() + 0.7,
           });
         }
-        const enemy = state.enemies.find((e) => e.collider === hit.collider);
-        if (enemy) {
-          enemy.armor -= 1;
+        if (hit.collider === state.player.collider) {
+          state.player.armor -= 1;
+        } else {
+          const enemy = state.enemies.find((e) => e.collider === hit.collider);
+          if (enemy) {
+            enemy.armor -= 1;
+          }
         }
         return false;
       }

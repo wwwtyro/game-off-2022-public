@@ -8,6 +8,7 @@ export interface Beam {
   direction: vec2;
   velocity: number;
   timestamp: number;
+  team: "player" | "enemy";
 }
 
 export interface Spark {
