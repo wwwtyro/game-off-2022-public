@@ -94,7 +94,9 @@ export async function game(resources: Resources) {
         nearestDrone = enemy;
       }
     }
+    let targetting = false;
     if (nearestDrone !== null && minDist < 5) {
+      targetting = true;
       const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), nearestDrone.position, state.player.position));
       state.player.targetRotation = Math.atan2(de[1], de[0]);
     } else if (accelerated) {
@@ -160,7 +162,7 @@ export async function game(resources: Resources) {
     });
 
     // Fire player weapons.
-    if (!accelerated) {
+    if (!accelerated && targetting) {
       const direction = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
       for (let i = 0; i < 1; i++) {
         const position = vec2.add(vec2.create(), state.player.position, vec2.random(vec2.create(), 0.01));

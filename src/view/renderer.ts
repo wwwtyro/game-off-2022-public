@@ -306,7 +306,7 @@ export class Renderer {
       if (beam.team === "player") {
         this.tempArray1.push(0.5, 1, 1, 1);
       } else {
-        this.tempArray1.push(1, 0.5, 0.25, 1);
+        this.tempArray1.push(1, 1, 0.5, 1);
       }
       this.tempArray2.push(beam.lastPosition, beam.position);
     }
