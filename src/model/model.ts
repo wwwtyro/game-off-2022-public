@@ -38,6 +38,7 @@ export interface Drone {
   collider: Collider;
   position: vec2;
   velocity: vec2;
+  force: vec2;
   rotation: number;
   targetRotation: number;
   acceleration: number;
@@ -57,6 +58,7 @@ export function createDrone(world: RAPIER.World, texture: Texture): Drone {
     rotation: 0,
     targetRotation: 0,
     velocity: vec2.fromValues(0, 0),
+    force: vec2.fromValues(0, 0),
     acceleration: 10,
     drag: 2,
     armor: 100,
@@ -102,7 +104,7 @@ export function buildState(resources: Resources): State {
     beams: [],
     sparks: [],
     keys: {},
-    level: 0,
+    level: 100,
     levelEndTimestamp: null,
   };
 

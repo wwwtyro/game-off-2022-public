@@ -5,6 +5,7 @@ import { animationFrame, modulo } from "../util";
 import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
 import { Resources } from "./loading";
+import { winGame } from "./win-game";
 
 const vec2Origin = vec2.fromValues(0, 0);
 
@@ -17,7 +18,7 @@ function initLevel(state: State, resources: Resources) {
   state.enemies.length = 0;
   state.enemies.push(enemyCore);
 
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 5; i++) {
     const enemy = createDrone(state.world, resources["ship1"]);
     vec2.random(enemy.position, Math.random() * 12);
     vec2.add(enemy.position, enemy.position, enemyCore.position);
@@ -50,15 +51,37 @@ export async function game(resources: Resources) {
     // Needs to be called after adding colliders and before casting rays against them.
     state.world.step();
 
-    // // Update enemy positions.
-    // for (const enemy of state.enemies) {
-    //   enemy.rotation += 0.1 * state.time.dt;
-    //   if (!enemy.isCore) {
-    //     enemy.velocity[0] = 1 * Math.cos(enemy.rotation);
-    //     enemy.velocity[1] = 1 * Math.sin(enemy.rotation);
-    //     vec2.scaleAndAdd(enemy.position, enemy.position, enemy.velocity, state.time.dt);
-    //   }
-    // }
+    // Update enemy positions.
+    for (const enemy of state.enemies) {
+      if (enemy.isCore) {
+        continue;
+      }
+      vec2.set(enemy.force, 0, 0);
+      for (const enemy2 of state.enemies) {
+        if (enemy2 === enemy) {
+          continue;
+        }
+        const toEnemy2 = vec2.subtract(vec2.create(), enemy2.position, enemy.position);
+        const distToEnemy2 = vec2.length(toEnemy2);
+        if (enemy2.isCore && distToEnemy2 > 5) {
+          vec2.scaleAndAdd(enemy.force, enemy.force, vec2.normalize(vec2.create(), toEnemy2), enemy.acceleration * 0.125);
+        } else if (distToEnemy2 < 2) {
+          vec2.scaleAndAdd(enemy.force, enemy.force, vec2.normalize(vec2.create(), toEnemy2), -enemy.acceleration * 0.25);
+        }
+      }
+      const toPlayer = vec2.subtract(vec2.create(), state.player.position, enemy.position);
+      const distToPlayer = vec2.length(toPlayer);
+      if (distToPlayer < 2 && distToPlayer > 1) {
+        vec2.scaleAndAdd(enemy.force, enemy.force, vec2.normalize(vec2.create(), toPlayer), enemy.acceleration * 1);
+      }
+      if (Math.random() < 1 / 60) {
+        vec2.add(enemy.force, enemy.force, vec2.random(vec2.create(), Math.random() * 100));
+      }
+      const drag = vec2.scale(vec2.create(), enemy.velocity, -enemy.drag);
+      const acceleration = vec2.add(vec2.create(), enemy.force, drag);
+      vec2.scaleAndAdd(enemy.velocity, enemy.velocity, acceleration, state.time.dt);
+      vec2.scaleAndAdd(enemy.position, enemy.position, enemy.velocity, state.time.dt);
+    }
 
     // Update player position.
     const rawAcceleration = vec2.fromValues(0, 0);
@@ -288,6 +311,10 @@ export async function game(resources: Resources) {
 
     // If the level has ended, handle the necessary updates.
     if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 1.0) {
+      if (state.level === 100) {
+        await winGame(state);
+        return;
+      }
       await levelEnd(state);
       state.levelEndTimestamp = null;
       state.level++;
