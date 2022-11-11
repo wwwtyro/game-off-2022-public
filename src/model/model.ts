@@ -32,8 +32,6 @@ function getColliderDesc(texture: Texture): RAPIER.ColliderDesc {
   return colliderDescs.get(texture)!;
 }
 
-export type State = ReturnType<typeof buildState>;
-
 export interface Drone {
   texture: Texture;
   collider: Collider;
@@ -43,9 +41,12 @@ export interface Drone {
   targetRotation: number;
   acceleration: number;
   drag: number;
+  armor: number;
+  shield: number;
+  isCore: boolean;
 }
 
-function createDrone(world: RAPIER.World, texture: Texture): Drone {
+export function createDrone(world: RAPIER.World, texture: Texture): Drone {
   const collider = world.createCollider(getColliderDesc(texture));
   collider.setMass(0);
   return {
@@ -57,10 +58,32 @@ function createDrone(world: RAPIER.World, texture: Texture): Drone {
     velocity: vec2.fromValues(0, 0),
     acceleration: 10,
     drag: 2,
+    armor: 100,
+    shield: 0,
+    isCore: false,
   };
 }
 
-export function buildState(resources: Resources) {
+export interface State {
+  time: {
+    now: number;
+    dt: number;
+  };
+  world: RAPIER.World;
+  camera: {
+    position: vec2;
+    fov: number;
+  };
+  player: Drone;
+  enemies: Drone[];
+  beams: Beam[];
+  sparks: Spark[];
+  keys: Record<string, boolean>;
+  level: number;
+  levelEndTimestamp: number | null;
+}
+
+export function buildState(resources: Resources): State {
   const world = new RAPIER.World({ x: 0, y: 0 });
 
   const state = {
@@ -74,18 +97,13 @@ export function buildState(resources: Resources) {
       fov: 2,
     },
     player: createDrone(world, resources["ship0"]),
-    enemies: [] as Drone[],
-    beams: [] as Beam[],
-    sparks: [] as Spark[],
-    keys: {} as Record<string, boolean>,
+    enemies: [],
+    beams: [],
+    sparks: [],
+    keys: {},
+    level: 0,
+    levelEndTimestamp: null,
   };
-
-  for (let i = 0; i < 100; i++) {
-    const enemy = createDrone(world, resources["ship1"]);
-    vec2.random(enemy.position, Math.random() * 64);
-    enemy.rotation = Math.random() * 2 * Math.PI;
-    state.enemies.push(enemy);
-  }
 
   return state;
 }

@@ -26,6 +26,7 @@ export async function loadResources(callback: (fraction: number) => void) {
   const promises: Record<string, Promise<Texture>> = {
     ship0: loadTexture("destroyer.png", "nn5.png", 0.5, true),
     ship1: loadTexture("blueshuttlenoweps.png", "cnormal.png", 0.35, true),
+    core0: loadTexture("tribase-u1-d0.png", "st1normal.png", 3.0, true),
     sand0: loadTexture("Sand_001_COLOR.png", "Sand_001_NRM.png", 1.0, false),
     noise0: loadTexture("noise.jpg", "noise.jpg", 1.0, false),
     metal0: loadTexture("Metal_Plate_047_basecolor.jpg", "Metal_Plate_047_normal.jpg", 1.0, false),
@@ -243,6 +244,7 @@ export function generateOutline(texture: Texture) {
     path[i][1] -= 0.5 * texture.original.height;
     path[i][0] /= texture.original.height;
     path[i][1] /= texture.original.height;
+    path[i][1] *= -1;
   }
 
   // Make it a full loop.

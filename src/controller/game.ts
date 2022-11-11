@@ -1,12 +1,34 @@
 import RAPIER from "@dimforge/rapier2d-compat";
 import { vec2 } from "gl-matrix";
-import { buildState, Drone } from "../model/model";
+import { buildState, createDrone, Drone, State } from "../model/model";
 import { animationFrame, modulo } from "../util";
 import { Renderer } from "../view/renderer";
+import { levelEnd } from "./level-end";
 import { Resources } from "./loading";
+
+const vec2Origin = vec2.fromValues(0, 0);
+
+function initLevel(state: State, resources: Resources) {
+  const enemyCore = createDrone(state.world, resources["core0"]);
+  enemyCore.isCore = true;
+  enemyCore.armor = 200;
+  vec2.random(enemyCore.position, Math.random() * 10);
+
+  state.enemies.length = 0;
+  state.enemies.push(enemyCore);
+
+  for (let i = 0; i < 1; i++) {
+    const enemy = createDrone(state.world, resources["ship1"]);
+    vec2.random(enemy.position, Math.random() * 12);
+    vec2.add(enemy.position, enemy.position, enemyCore.position);
+    enemy.rotation = Math.random() * 2 * Math.PI;
+    state.enemies.push(enemy);
+  }
+}
 
 export async function game(resources: Resources) {
   const state = buildState(resources);
+  initLevel(state, resources);
 
   window.addEventListener("keydown", (e) => {
     state.keys[e.code] = true;
@@ -29,32 +51,34 @@ export async function game(resources: Resources) {
     // Update enemy positions.
     for (const enemy of state.enemies) {
       enemy.rotation += 0.1 * state.time.dt;
-      enemy.velocity[0] = 1 * Math.cos(enemy.rotation);
-      enemy.velocity[1] = 1 * Math.sin(enemy.rotation);
-      vec2.scaleAndAdd(enemy.position, enemy.position, enemy.velocity, state.time.dt);
+      if (!enemy.isCore) {
+        enemy.velocity[0] = 1 * Math.cos(enemy.rotation);
+        enemy.velocity[1] = 1 * Math.sin(enemy.rotation);
+        vec2.scaleAndAdd(enemy.position, enemy.position, enemy.velocity, state.time.dt);
+      }
     }
 
     // Update player position.
-    const acceleration = vec2.fromValues(0, 0);
+    const rawAcceleration = vec2.fromValues(0, 0);
     let accelerated = false;
     if (state.keys.KeyA) {
-      acceleration[0] -= state.player.acceleration;
+      rawAcceleration[0] -= state.player.acceleration;
       accelerated = true;
     }
     if (state.keys.KeyD) {
-      acceleration[0] += state.player.acceleration;
+      rawAcceleration[0] += state.player.acceleration;
       accelerated = true;
     }
     if (state.keys.KeyS) {
-      acceleration[1] -= state.player.acceleration;
+      rawAcceleration[1] -= state.player.acceleration;
       accelerated = true;
     }
     if (state.keys.KeyW) {
-      acceleration[1] += state.player.acceleration;
+      rawAcceleration[1] += state.player.acceleration;
       accelerated = true;
     }
     const drag = vec2.scale(vec2.create(), state.player.velocity, -state.player.drag);
-    vec2.add(acceleration, acceleration, drag);
+    const acceleration = vec2.add(vec2.create(), rawAcceleration, drag);
     vec2.scaleAndAdd(state.player.velocity, state.player.velocity, acceleration, state.time.dt);
     vec2.scaleAndAdd(state.player.position, state.player.position, state.player.velocity, state.time.dt);
 
@@ -68,9 +92,12 @@ export async function game(resources: Resources) {
         nearestDrone = enemy;
       }
     }
-    if (nearestDrone !== null) {
+    if (nearestDrone !== null && !accelerated) {
       const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), nearestDrone.position, state.player.position));
       state.player.targetRotation = Math.atan2(de[1], de[0]);
+    } else {
+      const q = vec2.normalize(vec2.create(), rawAcceleration);
+      state.player.targetRotation = Math.atan2(q[1], q[0]);
     }
     state.player.targetRotation = modulo(state.player.targetRotation, 2 * Math.PI);
     state.player.rotation = modulo(state.player.rotation, 2 * Math.PI);
@@ -112,13 +139,14 @@ export async function game(resources: Resources) {
     // Create new beams
     if (!accelerated) {
       const direction = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
+      vec2.normalize(direction, direction);
       for (let i = 0; i < 1; i++) {
         const position = vec2.add(vec2.create(), state.player.position, vec2.random(vec2.create(), 0.01));
         state.beams.push({
           position,
+          lastPosition: vec2.clone(position),
           direction: vec2.clone(direction),
           velocity: 2 + 2 * Math.random() + vec2.length(state.player.velocity),
-          lastPosition: vec2.clone(position),
           timestamp: state.time.now,
         });
       }
@@ -159,10 +187,53 @@ export async function game(resources: Resources) {
             decay: 0.2 * Math.random() + 0.7,
           });
         }
+        const enemy = state.enemies.find((e) => e.collider === hit.collider);
+        if (enemy) {
+          enemy.armor -= 1;
+        }
         return false;
       }
       return true;
     });
+
+    // Remove any dead enemies.
+    state.enemies = state.enemies.filter((enemy) => {
+      if (enemy.armor > 0) {
+        return true;
+      }
+      for (let i = 0; i < 10; i++) {
+        for (const point of enemy.texture.outline!) {
+          const p = vec2.clone(point as vec2);
+          vec2.rotate(p, p, vec2Origin, enemy.rotation);
+          vec2.add(p, p, enemy.position);
+          state.sparks.push({
+            position: p,
+            lastPosition: vec2.clone(p),
+            direction: vec2.random(vec2.create(), 1),
+            velocity: Math.random(),
+            energy: 4 * Math.random(),
+            decay: 0.2 * Math.random() + 0.7,
+          });
+        }
+      }
+      state.world.removeCollider(enemy.collider, false);
+      return false;
+    });
+
+    // Check to see if we've completed the level.
+    if (state.levelEndTimestamp === null) {
+      if (state.enemies.length === 0) {
+        state.levelEndTimestamp = state.time.now;
+      }
+    }
+
+    // If the level has ended, handle the necessary updates.
+    if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 1.0) {
+      await levelEnd(state);
+      state.levelEndTimestamp = null;
+      state.level++;
+      initLevel(state, resources);
+    }
 
     renderer.render(state);
     await animationFrame();
