@@ -9,7 +9,7 @@ export async function loadingScreen() {
     loadingDiv.innerText = `Loading ${Math.round(100 * fraction)}%`;
   });
   loadingDiv.style.display = "none";
-  game(resources);
+  await game(resources);
 }
 
 export type Resources = Awaited<ReturnType<typeof loadResources>>;

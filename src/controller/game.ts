@@ -12,7 +12,7 @@ const vec2Origin = vec2.fromValues(0, 0);
 function initLevel(state: State, resources: Resources) {
   const enemyCore = createDrone(state.world, resources["core0"]);
   enemyCore.isCore = true;
-  enemyCore.armor = 1; //state.level;
+  enemyCore.armor = 0.9 * state.level;
   vec2.random(enemyCore.position, Math.random() * 1);
 
   state.enemies.length = 0;
@@ -20,7 +20,7 @@ function initLevel(state: State, resources: Resources) {
 
   for (let i = 0; i < 1; i++) {
     const enemy = createDrone(state.world, resources["ship1"]);
-    enemy.armor = 1; //state.level;
+    enemy.armor = 0.9 * state.level;
     vec2.random(enemy.position, Math.random() * 1);
     vec2.add(enemy.position, enemy.position, enemyCore.position);
     enemy.rotation = Math.random() * 2 * Math.PI;
@@ -196,6 +196,7 @@ export async function game(resources: Resources) {
           direction: vec2.clone(direction),
           velocity: 2 + 2 * Math.random() + vec2.length(state.player.velocity),
           timestamp: state.time.now,
+          power: state.player.weaponPower,
           team: "player",
         });
       }
@@ -223,6 +224,7 @@ export async function game(resources: Resources) {
           direction: vec2.clone(direction),
           velocity: 2 + 2 * Math.random() + vec2.length(state.player.velocity),
           timestamp: state.time.now,
+          power: enemy.weaponPower,
           team: "enemy",
         });
       }
@@ -272,11 +274,11 @@ export async function game(resources: Resources) {
           });
         }
         if (hit.collider === state.player.collider) {
-          state.player.armor -= 1;
+          state.player.armor -= beam.power;
         } else {
           const enemy = state.enemies.find((e) => e.collider === hit.collider);
           if (enemy) {
-            enemy.armor -= 1;
+            enemy.armor -= beam.power;
           }
         }
         return false;

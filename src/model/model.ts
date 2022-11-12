@@ -8,6 +8,7 @@ export interface Beam {
   direction: vec2;
   velocity: number;
   timestamp: number;
+  power: number;
   team: "player" | "enemy";
 }
 
@@ -48,6 +49,7 @@ export interface Drone {
   isCore: boolean;
   firingRate: number;
   lastFired: number;
+  weaponPower: number;
 }
 
 export function createDrone(world: RAPIER.World, texture: Texture): Drone {
@@ -67,6 +69,7 @@ export function createDrone(world: RAPIER.World, texture: Texture): Drone {
     shield: 0,
     isCore: false,
     firingRate: 1,
+    weaponPower: 1,
     lastFired: 0,
   };
 }

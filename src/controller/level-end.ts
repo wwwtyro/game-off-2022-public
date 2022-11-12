@@ -41,10 +41,9 @@ export async function levelEnd(state: State) {
 
   for (const upgrade of selectedUpgrades) {
     const upgradeDiv = document.createElement("div");
-    upgradeDiv.style.cursor = "pointer";
-    upgradeDiv.classList.add(upgrade.color);
+    upgradeDiv.classList.add("upgrade");
     upgradeDiv.innerHTML = `
-      <img src="/static/${upgrade.icon}" style="vertical-align: middle; margin-right: 32px" width=64>
+      <img src="/static/${upgrade.icon}" style="vertical-align: middle; margin-right: 32px" class="${upgrade.color}" width=64>
       ${upgrade.label}
     `;
     upgradeDiv.onclick = () => {
