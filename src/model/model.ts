@@ -19,6 +19,12 @@ export interface Spark {
   velocity: number;
   energy: number;
   decay: number;
+  smokey: boolean;
+}
+
+export interface Flame {
+  position: vec2;
+  age: number;
 }
 
 const colliderDescs = new Map<Texture, ColliderDesc>();
@@ -90,6 +96,7 @@ export interface State {
   enemies: Drone[];
   beams: Beam[];
   sparks: Spark[];
+  flames: Flame[];
   keys: Record<string, boolean>;
   level: number;
   levelEndTimestamp: number | null;
@@ -112,6 +119,7 @@ export function buildState(resources: Resources): State {
     enemies: [],
     beams: [],
     sparks: [],
+    flames: [],
     keys: {},
     level: 1,
     levelEndTimestamp: null,

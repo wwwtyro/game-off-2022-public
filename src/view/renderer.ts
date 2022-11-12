@@ -3,6 +3,7 @@ import REGL, { Regl } from "regl";
 
 import blurShader from "./glsl/blur.glsl?raw";
 import spriteShader from "./glsl/sprite.glsl?raw";
+import flameShader from "./glsl/flame.glsl?raw";
 import shadowShader from "./glsl/shadow.glsl?raw";
 import surfaceShader from "./glsl/surface.glsl?raw";
 import lineShader from "./glsl/lines.glsl?raw";
@@ -17,6 +18,7 @@ export class Renderer {
   private textures = new Map<HTMLCanvasElement, REGL.Texture>();
   private renderBlur: REGL.DrawCommand;
   private renderSprite: REGL.DrawCommand;
+  private renderFlame: REGL.DrawCommand;
   private renderLines: REGL.DrawCommand;
   private renderSurface: REGL.DrawCommand;
   private renderShadow: REGL.DrawCommand;
@@ -60,6 +62,55 @@ export class Renderer {
       },
 
       count: 6,
+      viewport: this.regl.prop<any, any>("viewport"),
+    });
+
+    this.renderFlame = this.regl({
+      vert: flameShader.split("glsl-split")[0],
+      frag: flameShader.split("glsl-split")[1],
+
+      attributes: {
+        position: {
+          buffer: this.regl.buffer([-1, -1, 1, -1, 1, 1, -1, -1, 1, 1, -1, 1]),
+          divisor: 0,
+        },
+        center: {
+          buffer: this.regl.prop<any, any>("points"),
+          divisor: 1,
+        },
+        age: {
+          buffer: this.regl.prop<any, any>("age"),
+          divisor: 1,
+        },
+      },
+
+      uniforms: {
+        flameout: 0.5,
+        smokeout: 3.0,
+        view: this.regl.prop<any, any>("view"),
+        projection: this.regl.prop<any, any>("projection"),
+      },
+
+      depth: {
+        enable: false,
+        mask: false,
+      },
+
+      cull: {
+        enable: true,
+        face: "back",
+      },
+
+      blend: {
+        enable: true,
+        func: {
+          src: "src alpha",
+          dst: "one minus src alpha",
+        },
+      },
+
+      count: 6,
+      instances: this.regl.prop<any, any>("instances"),
       viewport: this.regl.prop<any, any>("viewport"),
     });
 
@@ -418,7 +469,7 @@ export class Renderer {
           view,
           projection,
           viewport,
-          width: 0.01,
+          width: 0.025,
           points: this.tempBuffer1,
           colors: this.tempBuffer2,
           segments: this.tempArray1.length / 2,
@@ -427,6 +478,24 @@ export class Renderer {
       }
     }
 
+    // Render the flames.
+    this.tempArray1.length = 0;
+    this.tempArray2.length = 0;
+    for (const flame of state.flames) {
+      this.tempArray1.push(flame.position);
+      this.tempArray2.push(flame.age);
+    }
+    this.tempBuffer1(this.tempArray1);
+    this.tempBuffer2(this.tempArray2);
+    this.renderFlame({
+      points: this.tempBuffer1,
+      age: this.tempBuffer2,
+      instances: state.flames.length,
+      view,
+      projection,
+      viewport,
+    });
+
     // Render the sparks.
     this.tempArray1.length = 0;
     this.tempArray2.length = 0;
@@ -434,16 +503,14 @@ export class Renderer {
       this.tempArray1.push(2 * spark.energy, 1 * spark.energy, 0.5 * spark.energy, spark.energy);
       this.tempArray2.push(spark.lastPosition, spark.position);
     }
-
     this.tempBuffer1(this.tempArray1);
     this.tempBuffer2(this.tempArray2);
-
     this.renderLines({
       model: mat4.create(),
       view,
       projection,
       viewport,
-      width: 0.005,
+      width: 0.01,
       colors: this.tempBuffer1,
       points: this.tempBuffer2,
       segments: state.sparks.length,

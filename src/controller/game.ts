@@ -12,7 +12,7 @@ const vec2Origin = vec2.fromValues(0, 0);
 function initLevel(state: State, resources: Resources) {
   const enemyCore = createDrone(state.world, resources["core0"]);
   enemyCore.isCore = true;
-  enemyCore.armor = 0.9 * state.level;
+  enemyCore.armor = 5 * state.level;
   // vec2.random(enemyCore.position, Math.random() * 1);
   vec2.set(enemyCore.position, 0, 2);
 
@@ -21,7 +21,7 @@ function initLevel(state: State, resources: Resources) {
 
   for (let i = 0; i < 3; i++) {
     const enemy = createDrone(state.world, resources["ship1"]);
-    enemy.armor = 0.9 * state.level;
+    enemy.armor = 5 * state.level;
     vec2.random(enemy.position, Math.random() * 1);
     vec2.add(enemy.position, enemy.position, enemyCore.position);
     enemy.rotation = Math.random() * 2 * Math.PI;
@@ -186,6 +186,14 @@ export async function game(resources: Resources) {
       return spark.energy > 1 / 255;
     });
 
+    // Update all flames.
+    for (const flame of state.flames) {
+      flame.age += state.time.dt;
+    }
+
+    // Remove all aged flames.
+    state.flames = state.flames.filter((f) => f.age < 3.0);
+
     // Fire player weapons.
     if (!accelerated && playerIsTargetingEnemy && state.time.now - state.player.lastFired > 1 / state.player.firingRate) {
       const direction = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
@@ -248,6 +256,12 @@ export async function game(resources: Resources) {
     for (const spark of state.sparks) {
       vec2.copy(spark.lastPosition, spark.position);
       vec2.scaleAndAdd(spark.position, spark.position, spark.direction, state.time.dt * spark.velocity * spark.energy);
+      if (spark.smokey && Math.random() < 0.1) {
+        state.flames.push({
+          position: vec2.clone(spark.position), //vec2.add(vec2.create(), spark.position, vec2.random(vec2.create(), Math.random() * 0.05)),
+          age: 0,
+        });
+      }
     }
 
     // Get rid of any beams that hit something.
@@ -276,8 +290,9 @@ export async function game(resources: Resources) {
               vec2.add(vec2.create(), vec2.fromValues(hit.normal.x, hit.normal.y), vec2.random(vec2.create(), 1.25))
             ),
             velocity: Math.random(),
-            energy: 4 * Math.random(),
+            energy: 2 * -Math.log(1 - Math.random()),
             decay: 0.2 * Math.random() + 0.7,
+            smokey: false,
           });
         }
         if (hit.collider === state.player.collider) {
@@ -298,18 +313,24 @@ export async function game(resources: Resources) {
       if (enemy.armor > 0) {
         return true;
       }
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 32; i++) {
         for (const point of enemy.texture.outline!) {
           const p = vec2.clone(point as vec2);
           vec2.rotate(p, p, vec2Origin, enemy.rotation);
           vec2.add(p, p, enemy.position);
+          vec2.scaleAndAdd(p, enemy.position, vec2.sub(vec2.create(), p, enemy.position), Math.random());
           state.sparks.push({
             position: p,
             lastPosition: vec2.clone(p),
             direction: vec2.random(vec2.create(), 1),
             velocity: Math.random(),
-            energy: 4 * Math.random(),
-            decay: 0.2 * Math.random() + 0.7,
+            energy: 8 * -Math.log(1 - Math.random()),
+            decay: 0.9 * Math.random(),
+            smokey: true,
+          });
+          state.flames.push({
+            position: vec2.clone(p),
+            age: -0 * Math.random(),
           });
         }
       }
