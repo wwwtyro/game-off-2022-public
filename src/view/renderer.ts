@@ -380,53 +380,6 @@ export class Renderer {
       framebuffer: null,
     });
 
-    // Render the player.
-    mat4.identity(model);
-    mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
-    mat4.rotateZ(model, model, state.player.rotation);
-    mat4.scale(model, model, [
-      (state.player.texture.scale * state.player.texture.original.width) / state.player.texture.original.height,
-      state.player.texture.scale,
-      1,
-    ]);
-    this.renderSprite({
-      albedo: this.getTexture(state.player.texture.powerOfTwo),
-      normal: this.getTexture(state.player.texture.powerOfTwoNormal),
-      rotation: state.player.rotation,
-      model,
-      view,
-      projection,
-      viewport,
-    });
-
-    // Render player outline.
-    if (DEBUG) {
-      this.tempArray1.length = 0;
-      this.tempArray2.length = 0;
-      for (let i = 0; i < state.player.texture.outline!.length; i++) {
-        const p0 = state.player.texture.outline![i + 0];
-        const p1 = state.player.texture.outline![modulo(i + 1, state.player.texture.outline!.length)];
-        this.tempArray1.push(p0, p1);
-        this.tempArray2.push(1, 1, 1, 1);
-      }
-      this.tempBuffer1(this.tempArray1);
-      this.tempBuffer2(this.tempArray2);
-      mat4.identity(model);
-      mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
-      mat4.rotateZ(model, model, state.player.rotation);
-      this.renderLines({
-        model,
-        view,
-        projection,
-        viewport,
-        width: 0.01,
-        points: this.tempBuffer1,
-        colors: this.tempBuffer2,
-        segments: this.tempArray1.length / 2,
-        framebuffer: null,
-      });
-    }
-
     // Render the enemies.
     for (const enemy of state.enemies) {
       mat4.identity(model);
@@ -476,6 +429,53 @@ export class Renderer {
           framebuffer: null,
         });
       }
+    }
+
+    // Render the player.
+    mat4.identity(model);
+    mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
+    mat4.rotateZ(model, model, state.player.rotation);
+    mat4.scale(model, model, [
+      (state.player.texture.scale * state.player.texture.original.width) / state.player.texture.original.height,
+      state.player.texture.scale,
+      1,
+    ]);
+    this.renderSprite({
+      albedo: this.getTexture(state.player.texture.powerOfTwo),
+      normal: this.getTexture(state.player.texture.powerOfTwoNormal),
+      rotation: state.player.rotation,
+      model,
+      view,
+      projection,
+      viewport,
+    });
+
+    // Render player outline.
+    if (DEBUG) {
+      this.tempArray1.length = 0;
+      this.tempArray2.length = 0;
+      for (let i = 0; i < state.player.texture.outline!.length; i++) {
+        const p0 = state.player.texture.outline![i + 0];
+        const p1 = state.player.texture.outline![modulo(i + 1, state.player.texture.outline!.length)];
+        this.tempArray1.push(p0, p1);
+        this.tempArray2.push(1, 1, 1, 1);
+      }
+      this.tempBuffer1(this.tempArray1);
+      this.tempBuffer2(this.tempArray2);
+      mat4.identity(model);
+      mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
+      mat4.rotateZ(model, model, state.player.rotation);
+      this.renderLines({
+        model,
+        view,
+        projection,
+        viewport,
+        width: 0.01,
+        points: this.tempBuffer1,
+        colors: this.tempBuffer2,
+        segments: this.tempArray1.length / 2,
+        framebuffer: null,
+      });
     }
 
     // Render the flames.

@@ -110,19 +110,25 @@ export async function game(resources: Resources) {
     vec2.scaleAndAdd(state.player.position, state.player.position, state.player.velocity, state.time.dt);
 
     // Update player rotation to point towards the nearest enemy.
-    let nearestDrone: Drone | null = null;
-    let minDist = Infinity;
+    const playerDirection = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
+    let targetedDrone: Drone | null = null;
+    let maxScore = -Infinity;
     for (const enemy of state.enemies) {
       const dist = vec2.distance(enemy.position, state.player.position);
-      if (dist < minDist) {
-        minDist = dist;
-        nearestDrone = enemy;
+      if (dist > 5) {
+        continue;
+      }
+      const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), enemy.position, state.player.position));
+      const score = (0.75 + 0.25 * vec2.dot(de, playerDirection)) / dist;
+      if (score > maxScore) {
+        maxScore = score;
+        targetedDrone = enemy;
       }
     }
     let playerIsTargetingEnemy = false;
-    if (nearestDrone !== null && minDist < 5) {
+    if (targetedDrone !== null && maxScore < 5) {
       playerIsTargetingEnemy = true;
-      const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), nearestDrone.position, state.player.position));
+      const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), targetedDrone.position, state.player.position));
       state.player.targetRotation = Math.atan2(de[1], de[0]);
     } else if (accelerated) {
       const q = vec2.normalize(vec2.create(), rawAcceleration);
