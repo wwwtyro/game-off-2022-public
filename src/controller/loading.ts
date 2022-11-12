@@ -101,7 +101,6 @@ function patchNormals(texture: Texture) {
 }
 
 async function loadTexture(url: string, urlNormal: string, scale: number, outline: boolean): Promise<Texture> {
-  console.profile("Load Texture");
   const [original, normal] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
 
   const powerOfTwo = pot(original);
@@ -121,7 +120,6 @@ async function loadTexture(url: string, urlNormal: string, scale: number, outlin
     }
     patchNormals(texture);
   }
-  console.profileEnd("Load Texture");
   return texture;
 }
 
@@ -139,7 +137,7 @@ function loadImage(url: string) {
 }
 
 export function generateOutline(texture: Texture) {
-  const operatingScale = 1.0;
+  const operatingScale = 0.25;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
   canvas.width = Math.round(operatingScale * texture.original.width);
@@ -209,6 +207,12 @@ export function generateOutline(texture: Texture) {
     }
   }
 
+  // Scale path to original, non-optimized size.
+  for (const p of path) {
+    p[0] /= operatingScale;
+    p[1] /= operatingScale;
+  }
+
   // Delete path points according to their associated angle and segment distances.
   while (true) {
     let maxIndex: number | null = null;
@@ -251,7 +255,42 @@ export function generateOutline(texture: Texture) {
   }
 
   // Make it a full loop.
-  path.push(path[0]);
+  path.push(path[0].slice());
+
+  if (false) {
+    ctx.strokeStyle = "white";
+    for (let i = 0; i < path.length; i++) {
+      const j = modulo(i + 1, path.length);
+      ctx.moveTo(
+        path[i][0] * texture.original.height + 0.5 * texture.original.width,
+        path[i][1] * -texture.original.height + 0.5 * texture.original.height
+      );
+      ctx.lineTo(
+        path[j][0] * texture.original.height + 0.5 * texture.original.width,
+        path[j][1] * -texture.original.height + 0.5 * texture.original.height
+      );
+    }
+    ctx.stroke();
+    let index = 0;
+    for (const point of path) {
+      index++;
+      ctx.fillStyle = "white";
+      if (index === 0 || index === path.length - 1) {
+        ctx.fillStyle = "red";
+      }
+      ctx.fillRect(
+        point[0] * texture.original.height + 0.5 * texture.original.width - 1,
+        point[1] * -texture.original.height + 0.5 * texture.original.height - 1,
+        3,
+        3
+      );
+    }
+    document.body.appendChild(canvas);
+    canvas.style.position = "fixed";
+    canvas.style.top = "0";
+    canvas.style.zIndex = "2";
+    throw new Error("debug stop");
+  }
 
   return path;
 }
