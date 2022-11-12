@@ -14,14 +14,11 @@ const weaponColor = "filter-weapon";
 export const upgrades: Upgrade[] = [
   {
     label: "Laser Firing Rate",
-    icon: "laser-turret.svg",
+    icon: "laser-warning.svg",
     color: weaponColor,
     frequency: 1,
     available: (state: State) => {
-      if (state.player.firingRate < 30) {
-        return true;
-      }
-      return false;
+      return state.player.firingRate < 30;
     },
     upgrade: (state: State) => {
       state.player.firingRate++;
@@ -29,14 +26,26 @@ export const upgrades: Upgrade[] = [
   },
   {
     label: "Laser Power",
-    icon: "laser-warning.svg",
+    icon: "laser-blast.svg",
     color: weaponColor,
     frequency: 1,
-    available: (state: State) => {
+    available: (_state: State) => {
       return true;
     },
     upgrade: (state: State) => {
       state.player.weaponPower++;
+    },
+  },
+  {
+    label: "Additional Laser",
+    icon: "laser-turret.svg",
+    color: weaponColor,
+    frequency: 0.1,
+    available: (state: State) => {
+      return state.player.lasers < 10;
+    },
+    upgrade: (state: State) => {
+      state.player.lasers++;
     },
   },
 ];

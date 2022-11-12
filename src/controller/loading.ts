@@ -20,6 +20,8 @@ export interface Texture {
   powerOfTwoNormal: HTMLCanvasElement;
   outline?: number[][];
   scale: number;
+  width?: number;
+  length?: number;
 }
 
 export async function loadResources(callback: (fraction: number) => void) {
@@ -118,6 +120,8 @@ async function loadTexture(url: string, urlNormal: string, scale: number, outlin
       point[0] *= scale;
       point[1] *= scale;
     }
+    texture.width = Math.max(...texture.outline.map((p) => p[0])) - Math.min(...texture.outline.map((p) => p[0]));
+    texture.length = Math.max(...texture.outline.map((p) => p[1])) - Math.min(...texture.outline.map((p) => p[1]));
     patchNormals(texture);
   }
   return texture;

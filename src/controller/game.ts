@@ -13,12 +13,13 @@ function initLevel(state: State, resources: Resources) {
   const enemyCore = createDrone(state.world, resources["core0"]);
   enemyCore.isCore = true;
   enemyCore.armor = 0.9 * state.level;
-  vec2.random(enemyCore.position, Math.random() * 1);
+  // vec2.random(enemyCore.position, Math.random() * 1);
+  vec2.set(enemyCore.position, 0, 2);
 
   state.enemies.length = 0;
   state.enemies.push(enemyCore);
 
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 3; i++) {
     const enemy = createDrone(state.world, resources["ship1"]);
     enemy.armor = 0.9 * state.level;
     vec2.random(enemy.position, Math.random() * 1);
@@ -188,8 +189,14 @@ export async function game(resources: Resources) {
     // Fire player weapons.
     if (!accelerated && playerIsTargetingEnemy && state.time.now - state.player.lastFired > 1 / state.player.firingRate) {
       const direction = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
-      for (let i = 0; i < 1; i++) {
-        const position = vec2.add(vec2.create(), state.player.position, vec2.random(vec2.create(), 0.01));
+      for (let i = 0; i < state.player.lasers; i++) {
+        const step = (0.25 * state.player.texture.width!) / (state.player.lasers + 1);
+        const start = vec2.fromValues(0, -1);
+        vec2.rotate(start, start, vec2Origin, state.player.rotation);
+        vec2.scaleAndAdd(start, state.player.position, start, 0.5 * 0.25 * state.player.texture.width!);
+        const offset = vec2.fromValues(0, 1);
+        vec2.rotate(offset, offset, vec2Origin, state.player.rotation);
+        const position = vec2.scaleAndAdd(vec2.create(), start, offset, (i + 1) * step);
         state.beams.push({
           position,
           lastPosition: vec2.clone(position),

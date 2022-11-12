@@ -50,6 +50,7 @@ export interface Drone {
   firingRate: number;
   lastFired: number;
   weaponPower: number;
+  lasers: number;
 }
 
 export function createDrone(world: RAPIER.World, texture: Texture): Drone {
@@ -71,6 +72,7 @@ export function createDrone(world: RAPIER.World, texture: Texture): Drone {
     firingRate: 1,
     weaponPower: 1,
     lastFired: 0,
+    lasers: 1,
   };
 }
 
