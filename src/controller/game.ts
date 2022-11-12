@@ -209,7 +209,7 @@ export async function game(resources: Resources) {
           position,
           lastPosition: vec2.clone(position),
           direction: vec2.clone(direction),
-          velocity: 2 + 2 * Math.random() + vec2.length(state.player.velocity),
+          velocity: 3 * (0.5 * state.player.beamSpeed + 0.5 * Math.random() * state.player.beamSpeed),
           timestamp: state.time.now,
           power: state.player.weaponPower,
           team: "player",
@@ -346,7 +346,7 @@ export async function game(resources: Resources) {
     }
 
     // If the level has ended, handle the necessary updates.
-    if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 1.0) {
+    if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 4.0) {
       if (state.level === 100) {
         await winGame(state);
         return;

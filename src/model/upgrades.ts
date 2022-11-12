@@ -48,4 +48,16 @@ export const upgrades: Upgrade[] = [
       state.player.lasers++;
     },
   },
+  {
+    label: "Particle Beam Speed",
+    icon: "laser-precision.svg",
+    color: weaponColor,
+    frequency: 1,
+    available: (state: State) => {
+      return state.player.beamSpeed < 10;
+    },
+    upgrade: (state: State) => {
+      state.player.beamSpeed++;
+    },
+  },
 ];

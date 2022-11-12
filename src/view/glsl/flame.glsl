@@ -27,7 +27,7 @@ void main() {
     float dSmokeout = smooth(flameout, smokeout, age);
     float alpha = 0.5 * (1.0 - smooth(flameout, smokeout, age));
     vColor = vec4(0, 0, 0, alpha);
-    radius += 0.5 * dSmokeout;
+    radius += 0.125 * dSmokeout;
   }
   gl_Position = projection * view * vec4(center + radius * position, 0.0, 1.0);
 }
@@ -43,6 +43,6 @@ void main() {
   if (dist > 1.0) {
     discard;
   }
-  float alpha = 1.0 - dist;
+  float alpha = 1.0 - smoothstep(0.0, 1.0, dist);
   gl_FragColor = vColor * vec4(1, 1, 1, alpha);
 }
