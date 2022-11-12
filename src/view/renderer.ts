@@ -10,6 +10,8 @@ import { Resources } from "../controller/loading";
 import { State } from "../model/model";
 import { modulo } from "../util";
 
+const DEBUG = false;
+
 export class Renderer {
   private regl: Regl;
   private textures = new Map<HTMLCanvasElement, REGL.Texture>();
@@ -347,7 +349,7 @@ export class Renderer {
     });
 
     // Render player outline.
-    if (true) {
+    if (DEBUG) {
       this.tempArray1.length = 0;
       this.tempArray2.length = 0;
       for (let i = 0; i < state.player.texture.outline!.length; i++) {
@@ -396,7 +398,7 @@ export class Renderer {
     }
 
     // Render enemy outlines.
-    if (true) {
+    if (DEBUG) {
       for (const enemy of state.enemies) {
         this.tempArray1.length = 0;
         this.tempArray2.length = 0;

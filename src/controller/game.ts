@@ -12,15 +12,16 @@ const vec2Origin = vec2.fromValues(0, 0);
 function initLevel(state: State, resources: Resources) {
   const enemyCore = createDrone(state.world, resources["core0"]);
   enemyCore.isCore = true;
-  enemyCore.armor = 200;
-  vec2.random(enemyCore.position, Math.random() * 10);
+  enemyCore.armor = 1; //state.level;
+  vec2.random(enemyCore.position, Math.random() * 1);
 
   state.enemies.length = 0;
   state.enemies.push(enemyCore);
 
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < 1; i++) {
     const enemy = createDrone(state.world, resources["ship1"]);
-    vec2.random(enemy.position, Math.random() * 12);
+    enemy.armor = 1; //state.level;
+    vec2.random(enemy.position, Math.random() * 1);
     vec2.add(enemy.position, enemy.position, enemyCore.position);
     enemy.rotation = Math.random() * 2 * Math.PI;
     state.enemies.push(enemy);
@@ -117,9 +118,9 @@ export async function game(resources: Resources) {
         nearestDrone = enemy;
       }
     }
-    let targetting = false;
+    let playerIsTargetingEnemy = false;
     if (nearestDrone !== null && minDist < 5) {
-      targetting = true;
+      playerIsTargetingEnemy = true;
       const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), nearestDrone.position, state.player.position));
       state.player.targetRotation = Math.atan2(de[1], de[0]);
     } else if (accelerated) {
@@ -185,7 +186,7 @@ export async function game(resources: Resources) {
     });
 
     // Fire player weapons.
-    if (!accelerated && targetting) {
+    if (!accelerated && playerIsTargetingEnemy && state.time.now - state.player.lastFired > 1 / state.player.firingRate) {
       const direction = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
       for (let i = 0; i < 1; i++) {
         const position = vec2.add(vec2.create(), state.player.position, vec2.random(vec2.create(), 0.01));
@@ -198,11 +199,15 @@ export async function game(resources: Resources) {
           team: "player",
         });
       }
+      state.player.lastFired = state.time.now;
     }
 
     // Fire enemy weapons.
     for (const enemy of state.enemies) {
       if (enemy.isCore) {
+        continue;
+      }
+      if (state.time.now - enemy.lastFired < 1 / enemy.firingRate) {
         continue;
       }
       const dist = vec2.distance(state.player.position, enemy.position);
@@ -221,6 +226,7 @@ export async function game(resources: Resources) {
           team: "enemy",
         });
       }
+      enemy.lastFired = state.time.now;
     }
 
     // Update all beams.

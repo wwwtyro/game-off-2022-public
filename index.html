@@ -26,7 +26,6 @@
       }
 
       #center-container {
-        display: none;
         display: flex;
         width: 100%;
         height: 100%;
@@ -42,19 +41,6 @@
         font-weight: bolder;
       }
 
-      #level-end {
-        display: none;
-        margin: auto;
-        z-index: inherit;
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        padding: 32px;
-        border: 1px solid white;
-        cursor: default;
-        font-family: sans-serif;
-        font-weight: bold;
-      }
-
       #center-content {
         display: none;
         margin: auto;
@@ -67,13 +53,17 @@
         font-family: sans-serif;
         font-weight: bold;
       }
+
+      .filter-weapon {
+        filter: brightness(0) saturate(100%) invert(71%) sepia(93%) saturate(508%) hue-rotate(356deg) brightness(98%)
+          contrast(108%);
+      }
     </style>
   </head>
   <body>
     <canvas id="render-canvas"></canvas>
     <div id="center-container">
       <div id="loading">Loading 0%</div>
-      <div id="level-end">Level complete. Click to continue.</div>
       <div id="center-content"></div>
     </div>
   </body>
