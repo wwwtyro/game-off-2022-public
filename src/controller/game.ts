@@ -1,6 +1,6 @@
 import RAPIER from "@dimforge/rapier2d-compat";
 import { vec2 } from "gl-matrix";
-import { buildState, createDrone, Drone, State } from "../model/model";
+import { buildState, createDrone, Drone, explodeDrone, State } from "../model/model";
 import { animationFrame, modulo } from "../util";
 import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
@@ -207,7 +207,7 @@ export async function game(resources: Resources) {
     state.flames = state.flames.filter((f) => f.age < 3.0);
 
     // Fire player weapons.
-    if (!accelerated && playerIsTargetingEnemy && state.time.now - state.player.lastFired > 1 / state.player.firingRate) {
+    if (playerIsTargetingEnemy && state.time.now - state.player.lastFired > 1 / state.player.firingRate) {
       const direction = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
       for (let i = 0; i < state.player.lasers; i++) {
         const step = (0.25 * state.player.texture.width!) / (state.player.lasers + 1);
@@ -325,27 +325,7 @@ export async function game(resources: Resources) {
       if (enemy.armor > 0) {
         return true;
       }
-      for (let i = 0; i < 32; i++) {
-        for (const point of enemy.texture.outline!) {
-          const p = vec2.clone(point as vec2);
-          vec2.rotate(p, p, vec2Origin, enemy.rotation);
-          vec2.add(p, p, enemy.position);
-          vec2.scaleAndAdd(p, enemy.position, vec2.sub(vec2.create(), p, enemy.position), Math.random());
-          state.sparks.push({
-            position: p,
-            lastPosition: vec2.clone(p),
-            direction: vec2.random(vec2.create(), 1),
-            velocity: Math.random(),
-            energy: 8 * -Math.log(1 - Math.random()),
-            decay: 0.9 * Math.random(),
-            smokey: true,
-          });
-          state.flames.push({
-            position: vec2.clone(p),
-            age: -0 * Math.random(),
-          });
-        }
-      }
+      explodeDrone(enemy, state);
       state.world.removeCollider(enemy.collider, false);
       return false;
     });

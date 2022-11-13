@@ -1,6 +1,7 @@
 import { vec2 } from "gl-matrix";
 import RAPIER, { ColliderDesc, Collider } from "@dimforge/rapier2d-compat";
 import { Resources, Texture } from "../controller/loading";
+import { randomChoice, vec2Origin } from "../util";
 
 export interface Beam {
   position: vec2;
@@ -84,6 +85,35 @@ export function createDrone(world: RAPIER.World, texture: Texture): Drone {
     beamSpeed: 1,
     turningSpeed: 1,
   };
+}
+
+export function randomInteriorPoint(drone: Drone) {
+  const p = vec2.clone(randomChoice(drone.texture.outline!) as vec2);
+  vec2.rotate(p, p, vec2Origin, drone.rotation);
+  vec2.add(p, p, drone.position);
+  vec2.scaleAndAdd(p, drone.position, vec2.sub(vec2.create(), p, drone.position), Math.random());
+  return p;
+}
+
+export function explodeDrone(drone: Drone, state: State) {
+  for (let j = 0; j < drone.texture.outline!.length; j++) {
+    const p = randomInteriorPoint(drone);
+    for (let i = 0; i < 4; i++) {
+      state.sparks.push({
+        position: vec2.clone(p),
+        lastPosition: vec2.clone(p),
+        direction: vec2.random(vec2.create(), 1),
+        velocity: Math.random(),
+        energy: 8 * -Math.log(1 - Math.random()),
+        decay: 0.9 * Math.random(),
+        smokey: true,
+      });
+      state.flames.push({
+        position: vec2.clone(p),
+        age: 0,
+      });
+    }
+  }
 }
 
 export interface State {
