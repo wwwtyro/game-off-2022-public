@@ -136,7 +136,7 @@ export async function game(resources: Resources) {
     let playerIsTargetingEnemy = false;
     if (targetedDrone !== null && maxScore < 5) {
       playerIsTargetingEnemy = true;
-      droneTargetDirection(state.player, targetedDrone.position);
+      droneTargetPoint(state.player, targetedDrone.position);
     } else if (accelerated) {
       droneTargetDirection(state.player, rawAcceleration);
     }

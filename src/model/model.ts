@@ -64,6 +64,7 @@ export interface Drone {
   lasers: number;
   beamSpeed: number;
   turningSpeed: number;
+  maxArmor: number;
 }
 
 export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
@@ -79,7 +80,7 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     force: vec2.fromValues(0, 0),
     acceleration: 1,
     drag: 2,
-    armor: 100,
+    armor: 1,
     shield: 0,
     isCore: false,
     firingRate: 1,
@@ -88,6 +89,7 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     lasers: 1,
     beamSpeed: 1,
     turningSpeed: 1,
+    maxArmor: 1,
   };
 }
 
