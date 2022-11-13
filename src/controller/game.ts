@@ -9,6 +9,7 @@ import {
   droneTargetDirection,
   droneTargetPoint,
   explodeDrone,
+  fireDroneWeapons,
   rotateDrone,
   State,
 } from "../model/model";
@@ -17,8 +18,6 @@ import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
 import { Resources, Sprite } from "./loading";
 import { winGame } from "./win-game";
-
-const vec2Origin = vec2.fromValues(0, 0);
 
 function initLevel(state: State, resources: Resources) {
   const enemyCore = createDrone(state.world, resources["core0"] as Sprite);
@@ -201,26 +200,7 @@ export async function game(resources: Resources) {
 
     // Fire player weapons.
     if (playerIsTargetingEnemy && state.time.now - state.player.lastFired > 1 / state.player.firingRate) {
-      const direction = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
-      for (let i = 0; i < state.player.lasers; i++) {
-        const step = (0.25 * state.player.sprite.width!) / (state.player.lasers + 1);
-        const start = vec2.fromValues(0, -1);
-        vec2.rotate(start, start, vec2Origin, state.player.rotation);
-        vec2.scaleAndAdd(start, state.player.position, start, 0.5 * 0.25 * state.player.sprite.width!);
-        const offset = vec2.fromValues(0, 1);
-        vec2.rotate(offset, offset, vec2Origin, state.player.rotation);
-        const position = vec2.scaleAndAdd(vec2.create(), start, offset, (i + 1) * step);
-        state.beams.push({
-          position,
-          lastPosition: vec2.clone(position),
-          direction: vec2.clone(direction),
-          velocity: 3 * (0.5 * state.player.beamSpeed + 0.5 * Math.random() * state.player.beamSpeed),
-          timestamp: state.time.now,
-          power: state.player.weaponPower,
-          team: "player",
-        });
-      }
-      state.player.lastFired = state.time.now;
+      fireDroneWeapons(state.player, state);
     }
 
     // Fire enemy weapons.
@@ -235,20 +215,7 @@ export async function game(resources: Resources) {
       if (dist > 5) {
         continue;
       }
-      const direction = vec2.fromValues(Math.cos(enemy.rotation), Math.sin(enemy.rotation));
-      for (let i = 0; i < 1; i++) {
-        const position = vec2.add(vec2.create(), enemy.position, vec2.random(vec2.create(), 0.01));
-        state.beams.push({
-          position,
-          lastPosition: vec2.clone(position),
-          direction: vec2.clone(direction),
-          velocity: 2 + 2 * Math.random() + vec2.length(state.player.velocity),
-          timestamp: state.time.now,
-          power: enemy.weaponPower,
-          team: "enemy",
-        });
-      }
-      enemy.lastFired = state.time.now;
+      fireDroneWeapons(enemy, state);
     }
 
     // Update all beams.

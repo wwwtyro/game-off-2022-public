@@ -23,7 +23,7 @@ export async function levelEnd(state: State) {
   div.style.display = "flex";
   div.style.flexDirection = "column";
   div.style.justifyContent = "center";
-  div.style.rowGap = "32px";
+  div.style.rowGap = "16px";
   const title = document.createElement("div");
   title.innerText = "Select an upgrade to continue.";
   div.appendChild(title);

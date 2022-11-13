@@ -3,6 +3,8 @@ import RAPIER, { ColliderDesc, Collider } from "@dimforge/rapier2d-compat";
 import { Resources, Sprite } from "../controller/loading";
 import { modulo, randomChoice, vec2Origin } from "../util";
 
+export type Team = "player" | "enemy";
+
 export interface Beam {
   position: vec2;
   lastPosition: vec2;
@@ -10,7 +12,7 @@ export interface Beam {
   velocity: number;
   timestamp: number;
   power: number;
-  team: "player" | "enemy";
+  team: Team;
 }
 
 export interface Spark {
@@ -68,6 +70,7 @@ export interface Drone {
   lasers: number;
   beamSpeed: number;
   turningSpeed: number;
+  team: Team;
 }
 
 export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
@@ -95,6 +98,7 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     lasers: 1,
     beamSpeed: 1,
     turningSpeed: 1,
+    team: "enemy",
   };
 }
 
@@ -132,6 +136,29 @@ export function explodeDrone(drone: Drone, state: State) {
       });
     }
   }
+}
+
+export function fireDroneWeapons(drone: Drone, state: State) {
+  const direction = vec2.fromValues(Math.cos(drone.rotation), Math.sin(drone.rotation));
+  for (let i = 0; i < drone.lasers; i++) {
+    const step = (0.25 * drone.sprite.width!) / (drone.lasers + 1);
+    const start = vec2.fromValues(0, -1);
+    vec2.rotate(start, start, vec2Origin, drone.rotation);
+    vec2.scaleAndAdd(start, drone.position, start, 0.5 * 0.25 * drone.sprite.width!);
+    const offset = vec2.fromValues(0, 1);
+    vec2.rotate(offset, offset, vec2Origin, drone.rotation);
+    const position = vec2.scaleAndAdd(vec2.create(), start, offset, (i + 1) * step);
+    state.beams.push({
+      position,
+      lastPosition: vec2.clone(position),
+      direction: vec2.clone(direction),
+      velocity: 3 * (0.5 * drone.beamSpeed + 0.5 * Math.random() * drone.beamSpeed),
+      timestamp: state.time.now,
+      power: state.player.weaponPower,
+      team: drone.team,
+    });
+  }
+  drone.lastFired = state.time.now;
 }
 
 export function rotateDrone(drone: Drone, dt: number) {
@@ -209,6 +236,8 @@ export function buildState(resources: Resources): State {
     level: 1,
     levelEndTimestamp: null,
   };
+
+  state.player.team = "player";
 
   return state;
 }
