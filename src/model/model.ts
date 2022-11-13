@@ -58,6 +58,7 @@ export interface Drone {
   weaponPower: number;
   lasers: number;
   beamSpeed: number;
+  turningSpeed: number;
 }
 
 export function createDrone(world: RAPIER.World, texture: Texture): Drone {
@@ -71,7 +72,7 @@ export function createDrone(world: RAPIER.World, texture: Texture): Drone {
     targetRotation: 0,
     velocity: vec2.fromValues(0, 0),
     force: vec2.fromValues(0, 0),
-    acceleration: 10,
+    acceleration: 1,
     drag: 2,
     armor: 100,
     shield: 0,
@@ -81,6 +82,7 @@ export function createDrone(world: RAPIER.World, texture: Texture): Drone {
     lastFired: 0,
     lasers: 1,
     beamSpeed: 1,
+    turningSpeed: 1,
   };
 }
 

@@ -89,23 +89,25 @@ export async function game(resources: Resources) {
     const rawAcceleration = vec2.fromValues(0, 0);
     let accelerated = false;
     if (state.keys.KeyA) {
-      rawAcceleration[0] -= state.player.acceleration;
+      rawAcceleration[0] -= 1;
       accelerated = true;
     }
     if (state.keys.KeyD) {
-      rawAcceleration[0] += state.player.acceleration;
+      rawAcceleration[0] += 1;
       accelerated = true;
     }
     if (state.keys.KeyS) {
-      rawAcceleration[1] -= state.player.acceleration;
+      rawAcceleration[1] -= 1;
       accelerated = true;
     }
     if (state.keys.KeyW) {
-      rawAcceleration[1] += state.player.acceleration;
+      rawAcceleration[1] += 1;
       accelerated = true;
     }
+    const acceleration = vec2.normalize(vec2.create(), rawAcceleration);
+    vec2.scale(acceleration, acceleration, 5.0 * state.player.acceleration);
     const drag = vec2.scale(vec2.create(), state.player.velocity, -state.player.drag);
-    const acceleration = vec2.add(vec2.create(), rawAcceleration, drag);
+    vec2.add(acceleration, acceleration, drag);
     vec2.scaleAndAdd(state.player.velocity, state.player.velocity, acceleration, state.time.dt);
     vec2.scaleAndAdd(state.player.position, state.player.position, state.player.velocity, state.time.dt);
 
@@ -140,7 +142,11 @@ export async function game(resources: Resources) {
     if (Math.abs(dr) > Math.PI) {
       dr = -Math.sign(dr) * (2 * Math.PI - Math.abs(dr));
     }
-    state.player.rotation += 0.1 * dr;
+    const maxTurn = 1.0 * state.player.turningSpeed * state.time.dt;
+    if (Math.abs(dr) > maxTurn) {
+      dr = Math.sign(dr) * maxTurn;
+    }
+    state.player.rotation += dr;
 
     // Update enemy rotations.
     for (const enemy of state.enemies) {

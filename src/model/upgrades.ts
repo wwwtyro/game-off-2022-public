@@ -10,6 +10,7 @@ export interface Upgrade {
 }
 
 const weaponColor = "filter-weapon";
+const shipColor = "filter-ship";
 
 export const upgrades: Upgrade[] = [
   {
@@ -58,6 +59,30 @@ export const upgrades: Upgrade[] = [
     },
     upgrade: (state: State) => {
       state.player.beamSpeed++;
+    },
+  },
+  {
+    label: "Rotation Speed",
+    icon: "clockwise-rotation.svg",
+    color: shipColor,
+    frequency: 1,
+    available: (state: State) => {
+      return state.player.turningSpeed < 30;
+    },
+    upgrade: (state: State) => {
+      state.player.turningSpeed++;
+    },
+  },
+  {
+    label: "Acceleration",
+    icon: "speedometer.svg",
+    color: shipColor,
+    frequency: 1,
+    available: (state: State) => {
+      return state.player.acceleration < 5;
+    },
+    upgrade: (state: State) => {
+      state.player.acceleration++;
     },
   },
 ];

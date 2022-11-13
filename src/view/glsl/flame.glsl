@@ -43,6 +43,6 @@ void main() {
   if (dist > 1.0) {
     discard;
   }
-  float alpha = 1.0 - smoothstep(0.0, 1.0, dist);
+  float alpha = clamp(1.0 - smoothstep(0.0, 1.0, dist), 0.0, 1.0);
   gl_FragColor = vColor * vec4(1, 1, 1, alpha);
 }
