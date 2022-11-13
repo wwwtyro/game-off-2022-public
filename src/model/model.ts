@@ -1,6 +1,6 @@
 import { vec2 } from "gl-matrix";
 import RAPIER, { ColliderDesc, Collider } from "@dimforge/rapier2d-compat";
-import { Resources, Sprite, Texture } from "../controller/loading";
+import { Resources, Sprite } from "../controller/loading";
 import { randomChoice, vec2Origin } from "../util";
 
 export interface Beam {

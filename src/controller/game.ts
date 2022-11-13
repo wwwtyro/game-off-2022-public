@@ -12,7 +12,7 @@ const vec2Origin = vec2.fromValues(0, 0);
 function initLevel(state: State, resources: Resources) {
   const enemyCore = createDrone(state.world, resources["core0"] as Sprite);
   enemyCore.isCore = true;
-  enemyCore.armor = Math.min(5, 1 + 0.25 * state.level);
+  enemyCore.armor = 5 * state.level;
   // vec2.random(enemyCore.position, Math.random() * 1);
   vec2.set(enemyCore.position, 0, 2);
 
@@ -22,7 +22,7 @@ function initLevel(state: State, resources: Resources) {
   for (let i = 0; i < 3; i++) {
     const enemy = createDrone(state.world, resources["ship1"] as Sprite);
     enemy.armor = 5 * state.level;
-    enemy.acceleration = 2;
+    enemy.acceleration = Math.min(5, 1 + 0.25 * state.level);
     vec2.random(enemy.position, Math.random() * 1);
     vec2.add(enemy.position, enemy.position, enemyCore.position);
     enemy.rotation = Math.random() * 2 * Math.PI;
