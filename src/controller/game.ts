@@ -4,13 +4,13 @@ import { buildState, createDrone, Drone, explodeDrone, State } from "../model/mo
 import { animationFrame, modulo } from "../util";
 import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
-import { Resources } from "./loading";
+import { Resources, Sprite } from "./loading";
 import { winGame } from "./win-game";
 
 const vec2Origin = vec2.fromValues(0, 0);
 
 function initLevel(state: State, resources: Resources) {
-  const enemyCore = createDrone(state.world, resources["core0"]);
+  const enemyCore = createDrone(state.world, resources["core0"] as Sprite);
   enemyCore.isCore = true;
   enemyCore.armor = 5 * state.level;
   // vec2.random(enemyCore.position, Math.random() * 1);
@@ -20,7 +20,7 @@ function initLevel(state: State, resources: Resources) {
   state.enemies.push(enemyCore);
 
   for (let i = 0; i < 3; i++) {
-    const enemy = createDrone(state.world, resources["ship1"]);
+    const enemy = createDrone(state.world, resources["ship1"] as Sprite);
     enemy.armor = 5 * state.level;
     vec2.random(enemy.position, Math.random() * 1);
     vec2.add(enemy.position, enemy.position, enemyCore.position);
@@ -210,10 +210,10 @@ export async function game(resources: Resources) {
     if (playerIsTargetingEnemy && state.time.now - state.player.lastFired > 1 / state.player.firingRate) {
       const direction = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
       for (let i = 0; i < state.player.lasers; i++) {
-        const step = (0.25 * state.player.texture.width!) / (state.player.lasers + 1);
+        const step = (0.25 * state.player.sprite.width!) / (state.player.lasers + 1);
         const start = vec2.fromValues(0, -1);
         vec2.rotate(start, start, vec2Origin, state.player.rotation);
-        vec2.scaleAndAdd(start, state.player.position, start, 0.5 * 0.25 * state.player.texture.width!);
+        vec2.scaleAndAdd(start, state.player.position, start, 0.5 * 0.25 * state.player.sprite.width!);
         const offset = vec2.fromValues(0, 1);
         vec2.rotate(offset, offset, vec2Origin, state.player.rotation);
         const position = vec2.scaleAndAdd(vec2.create(), start, offset, (i + 1) * step);

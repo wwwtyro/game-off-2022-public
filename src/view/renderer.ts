@@ -295,12 +295,12 @@ export class Renderer {
     mat4.translate(model, model, [state.player.position[0] - 0.25, state.player.position[1] - 0.25, 0]);
     mat4.rotateZ(model, model, state.player.rotation);
     mat4.scale(model, model, [
-      (state.player.texture.scale * state.player.texture.original.width) / state.player.texture.original.height,
-      state.player.texture.scale,
+      (state.player.sprite.scale * state.player.sprite.original.width) / state.player.sprite.original.height,
+      state.player.sprite.scale,
       1,
     ]);
     this.renderShadow({
-      albedo: this.getTexture(state.player.texture.powerOfTwo),
+      albedo: this.getTexture(state.player.sprite.powerOfTwo),
       model,
       view,
       projection,
@@ -312,12 +312,12 @@ export class Renderer {
       mat4.translate(model, model, [enemy.position[0] - 0.25, enemy.position[1] - 0.25, 0]);
       mat4.rotateZ(model, model, enemy.rotation);
       mat4.scale(model, model, [
-        (enemy.texture.scale * enemy.texture.original.width) / enemy.texture.original.height,
-        enemy.texture.scale,
+        (enemy.sprite.scale * enemy.sprite.original.width) / enemy.sprite.original.height,
+        enemy.sprite.scale,
         1,
       ]);
       this.renderShadow({
-        albedo: this.getTexture(enemy.texture.powerOfTwo),
+        albedo: this.getTexture(enemy.sprite.powerOfTwo),
         model,
         view,
         projection,
@@ -386,13 +386,13 @@ export class Renderer {
       mat4.translate(model, model, [enemy.position[0], enemy.position[1], 0]);
       mat4.rotateZ(model, model, enemy.rotation);
       mat4.scale(model, model, [
-        (enemy.texture.scale * enemy.texture.original.width) / enemy.texture.original.height,
-        enemy.texture.scale,
+        (enemy.sprite.scale * enemy.sprite.original.width) / enemy.sprite.original.height,
+        enemy.sprite.scale,
         1,
       ]);
       this.renderSprite({
-        albedo: this.getTexture(enemy.texture.powerOfTwo),
-        normal: this.getTexture(enemy.texture.powerOfTwoNormal),
+        albedo: this.getTexture(enemy.sprite.powerOfTwo),
+        normal: this.getTexture(enemy.sprite.powerOfTwoNormal),
         rotation: enemy.rotation,
         model,
         view,
@@ -406,9 +406,9 @@ export class Renderer {
       for (const enemy of state.enemies) {
         this.tempArray1.length = 0;
         this.tempArray2.length = 0;
-        for (let i = 0; i < enemy.texture.outline!.length; i++) {
-          const p0 = enemy.texture.outline![i + 0];
-          const p1 = enemy.texture.outline![modulo(i + 1, enemy.texture.outline!.length)];
+        for (let i = 0; i < enemy.sprite.outline!.length; i++) {
+          const p0 = enemy.sprite.outline![i + 0];
+          const p1 = enemy.sprite.outline![modulo(i + 1, enemy.sprite.outline!.length)];
           this.tempArray1.push(p0, p1);
           this.tempArray2.push(1, 1, 1, 1);
         }
@@ -436,13 +436,13 @@ export class Renderer {
     mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
     mat4.rotateZ(model, model, state.player.rotation);
     mat4.scale(model, model, [
-      (state.player.texture.scale * state.player.texture.original.width) / state.player.texture.original.height,
-      state.player.texture.scale,
+      (state.player.sprite.scale * state.player.sprite.original.width) / state.player.sprite.original.height,
+      state.player.sprite.scale,
       1,
     ]);
     this.renderSprite({
-      albedo: this.getTexture(state.player.texture.powerOfTwo),
-      normal: this.getTexture(state.player.texture.powerOfTwoNormal),
+      albedo: this.getTexture(state.player.sprite.powerOfTwo),
+      normal: this.getTexture(state.player.sprite.powerOfTwoNormal),
       rotation: state.player.rotation,
       model,
       view,
@@ -454,9 +454,9 @@ export class Renderer {
     if (DEBUG) {
       this.tempArray1.length = 0;
       this.tempArray2.length = 0;
-      for (let i = 0; i < state.player.texture.outline!.length; i++) {
-        const p0 = state.player.texture.outline![i + 0];
-        const p1 = state.player.texture.outline![modulo(i + 1, state.player.texture.outline!.length)];
+      for (let i = 0; i < state.player.sprite.outline!.length; i++) {
+        const p0 = state.player.sprite.outline![i + 0];
+        const p1 = state.player.sprite.outline![modulo(i + 1, state.player.sprite.outline!.length)];
         this.tempArray1.push(p0, p1);
         this.tempArray2.push(1, 1, 1, 1);
       }

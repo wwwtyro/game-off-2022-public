@@ -18,20 +18,26 @@ export interface Texture {
   original: HTMLImageElement;
   powerOfTwo: HTMLCanvasElement;
   powerOfTwoNormal: HTMLCanvasElement;
-  outline?: number[][];
+}
+
+export interface Sprite {
+  original: HTMLImageElement;
+  powerOfTwo: HTMLCanvasElement;
+  powerOfTwoNormal: HTMLCanvasElement;
+  outline: number[][];
   scale: number;
-  width?: number;
-  length?: number;
+  width: number;
+  length: number;
 }
 
 export async function loadResources(callback: (fraction: number) => void) {
-  const promises: Record<string, Promise<Texture>> = {
-    ship0: loadTexture("destroyer.png", "nn5.png", 0.5, true),
-    ship1: loadTexture("blueshuttlenoweps.png", "cnormal.png", 0.35, true),
-    core0: loadTexture("tribase-u1-d0.png", "st1normal.png", 3.0, true),
-    sand0: loadTexture("Sand_001_COLOR.png", "Sand_001_NRM.png", 1.0, false),
-    noise0: loadTexture("noise.jpg", "noise.jpg", 1.0, false),
-    metal0: loadTexture("Metal_Plate_047_basecolor.jpg", "Metal_Plate_047_normal.jpg", 1.0, false),
+  const promises: Record<string, Promise<Texture | Sprite>> = {
+    ship0: loadSprite("destroyer.png", "nn5.png", 0.5),
+    ship1: loadSprite("blueshuttlenoweps.png", "cnormal.png", 0.35),
+    core0: loadSprite("tribase-u1-d0.png", "st1normal.png", 3.0),
+    sand0: loadTexture("Sand_001_COLOR.png", "Sand_001_NRM.png"),
+    noise0: loadTexture("noise.jpg", "noise.jpg"),
+    metal0: loadTexture("Metal_Plate_047_basecolor.jpg", "Metal_Plate_047_normal.jpg"),
   };
 
   const total = Object.keys(promises).length;
@@ -47,7 +53,7 @@ export async function loadResources(callback: (fraction: number) => void) {
 
   await Promise.all(Object.values(promises));
 
-  const results: Record<string, Texture> = {};
+  const results: Record<string, Texture | Sprite> = {};
 
   for (const key of Object.keys(promises)) {
     results[key] = await promises[key];
@@ -69,8 +75,7 @@ function pot(original: HTMLImageElement) {
   return powerOfTwo;
 }
 
-function patchNormals(texture: Texture) {
-  const canvas = texture.powerOfTwoNormal;
+function patchNormals(canvas: HTMLCanvasElement) {
   const ctx = canvas.getContext("2d")!;
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   let totalX = 0.0;
@@ -102,7 +107,7 @@ function patchNormals(texture: Texture) {
   ctx.putImageData(imageData, 0, 0);
 }
 
-async function loadTexture(url: string, urlNormal: string, scale: number, outline: boolean): Promise<Texture> {
+async function loadTexture(url: string, urlNormal: string): Promise<Texture> {
   const [original, normal] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
 
   const powerOfTwo = pot(original);
@@ -112,19 +117,35 @@ async function loadTexture(url: string, urlNormal: string, scale: number, outlin
     original,
     powerOfTwo,
     powerOfTwoNormal,
-    scale,
   };
-  if (outline) {
-    texture.outline = generateOutline(texture);
-    for (const point of texture.outline) {
-      point[0] *= scale;
-      point[1] *= scale;
-    }
-    texture.width = Math.max(...texture.outline.map((p) => p[0])) - Math.min(...texture.outline.map((p) => p[0]));
-    texture.length = Math.max(...texture.outline.map((p) => p[1])) - Math.min(...texture.outline.map((p) => p[1]));
-    patchNormals(texture);
-  }
   return texture;
+}
+
+async function loadSprite(url: string, urlNormal: string, scale: number): Promise<Sprite> {
+  const [original, normal] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
+
+  const powerOfTwo = pot(original);
+  const powerOfTwoNormal = pot(normal);
+  patchNormals(powerOfTwoNormal);
+
+  const outline = generateOutline(original);
+  for (const point of outline) {
+    point[0] *= scale;
+    point[1] *= scale;
+  }
+  const width = Math.max(...outline.map((p) => p[0])) - Math.min(...outline.map((p) => p[0]));
+  const length = Math.max(...outline.map((p) => p[1])) - Math.min(...outline.map((p) => p[1]));
+
+  const sprite: Sprite = {
+    original,
+    powerOfTwo,
+    powerOfTwoNormal,
+    outline,
+    scale,
+    width,
+    length,
+  };
+  return sprite;
 }
 
 function loadImage(url: string) {
@@ -140,13 +161,13 @@ function loadImage(url: string) {
   });
 }
 
-export function generateOutline(texture: Texture) {
+export function generateOutline(original: HTMLImageElement) {
   const operatingScale = 0.25;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;
-  canvas.width = Math.round(operatingScale * texture.original.width);
-  canvas.height = Math.round(operatingScale * texture.original.height);
-  ctx.drawImage(texture.original, 0, 0, canvas.width, canvas.height);
+  canvas.width = Math.round(operatingScale * original.width);
+  canvas.height = Math.round(operatingScale * original.height);
+  ctx.drawImage(original, 0, 0, canvas.width, canvas.height);
 
   const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
@@ -251,10 +272,10 @@ export function generateOutline(texture: Texture) {
 
   // Normalize the path. This is specific to this game arch, so might remove if/when making it a library.
   for (let i = 0; i < path.length; i++) {
-    path[i][0] -= 0.5 * texture.original.width;
-    path[i][1] -= 0.5 * texture.original.height;
-    path[i][0] /= texture.original.height;
-    path[i][1] /= texture.original.height;
+    path[i][0] -= 0.5 * original.width;
+    path[i][1] -= 0.5 * original.height;
+    path[i][0] /= original.height;
+    path[i][1] /= original.height;
     path[i][1] *= -1;
   }
 
@@ -265,14 +286,8 @@ export function generateOutline(texture: Texture) {
     ctx.strokeStyle = "white";
     for (let i = 0; i < path.length; i++) {
       const j = modulo(i + 1, path.length);
-      ctx.moveTo(
-        path[i][0] * texture.original.height + 0.5 * texture.original.width,
-        path[i][1] * -texture.original.height + 0.5 * texture.original.height
-      );
-      ctx.lineTo(
-        path[j][0] * texture.original.height + 0.5 * texture.original.width,
-        path[j][1] * -texture.original.height + 0.5 * texture.original.height
-      );
+      ctx.moveTo(path[i][0] * original.height + 0.5 * original.width, path[i][1] * -original.height + 0.5 * original.height);
+      ctx.lineTo(path[j][0] * original.height + 0.5 * original.width, path[j][1] * -original.height + 0.5 * original.height);
     }
     ctx.stroke();
     let index = 0;
@@ -283,8 +298,8 @@ export function generateOutline(texture: Texture) {
         ctx.fillStyle = "red";
       }
       ctx.fillRect(
-        point[0] * texture.original.height + 0.5 * texture.original.width - 1,
-        point[1] * -texture.original.height + 0.5 * texture.original.height - 1,
+        point[0] * original.height + 0.5 * original.width - 1,
+        point[1] * -original.height + 0.5 * original.height - 1,
         3,
         3
       );

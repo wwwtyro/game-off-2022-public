@@ -1,6 +1,6 @@
 import { vec2 } from "gl-matrix";
 import RAPIER, { ColliderDesc, Collider } from "@dimforge/rapier2d-compat";
-import { Resources, Texture } from "../controller/loading";
+import { Resources, Sprite, Texture } from "../controller/loading";
 import { randomChoice, vec2Origin } from "../util";
 
 export interface Beam {
@@ -28,21 +28,21 @@ export interface Flame {
   age: number;
 }
 
-const colliderDescs = new Map<Texture, ColliderDesc>();
+const colliderDescs = new Map<Sprite, ColliderDesc>();
 
-function getColliderDesc(texture: Texture): RAPIER.ColliderDesc {
-  if (texture.outline === undefined) {
+function getColliderDesc(sprite: Sprite): RAPIER.ColliderDesc {
+  if (sprite.outline === undefined) {
     throw new Error("No outline available for collider.");
   }
-  if (!colliderDescs.has(texture)) {
-    const desc = RAPIER.ColliderDesc.polyline(new Float32Array(texture.outline.flat()));
-    colliderDescs.set(texture, desc);
+  if (!colliderDescs.has(sprite)) {
+    const desc = RAPIER.ColliderDesc.polyline(new Float32Array(sprite.outline.flat()));
+    colliderDescs.set(sprite, desc);
   }
-  return colliderDescs.get(texture)!;
+  return colliderDescs.get(sprite)!;
 }
 
 export interface Drone {
-  texture: Texture;
+  sprite: Sprite;
   collider: Collider;
   position: vec2;
   velocity: vec2;
@@ -62,11 +62,11 @@ export interface Drone {
   turningSpeed: number;
 }
 
-export function createDrone(world: RAPIER.World, texture: Texture): Drone {
-  const collider = world.createCollider(getColliderDesc(texture));
+export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
+  const collider = world.createCollider(getColliderDesc(sprite));
   collider.setMass(0);
   return {
-    texture,
+    sprite: sprite,
     collider,
     position: vec2.fromValues(0, 0),
     rotation: 0,
@@ -88,7 +88,7 @@ export function createDrone(world: RAPIER.World, texture: Texture): Drone {
 }
 
 export function randomInteriorPoint(drone: Drone) {
-  const p = vec2.clone(randomChoice(drone.texture.outline!) as vec2);
+  const p = vec2.clone(randomChoice(drone.sprite.outline!) as vec2);
   vec2.rotate(p, p, vec2Origin, drone.rotation);
   vec2.add(p, p, drone.position);
   vec2.scaleAndAdd(p, drone.position, vec2.sub(vec2.create(), p, drone.position), Math.random());
@@ -96,7 +96,7 @@ export function randomInteriorPoint(drone: Drone) {
 }
 
 export function explodeDrone(drone: Drone, state: State) {
-  for (let j = 0; j < drone.texture.outline!.length; j++) {
+  for (let j = 0; j < drone.sprite.outline!.length; j++) {
     const p = randomInteriorPoint(drone);
     for (let i = 0; i < 4; i++) {
       state.sparks.push({
@@ -149,7 +149,7 @@ export function buildState(resources: Resources): State {
       position: vec2.fromValues(0, 0),
       fov: 2,
     },
-    player: createDrone(world, resources["ship0"]),
+    player: createDrone(world, resources["ship0"] as Sprite),
     enemies: [],
     beams: [],
     sparks: [],
