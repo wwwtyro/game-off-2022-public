@@ -12,6 +12,7 @@ export interface Upgrade {
 const weaponColor = "filter-weapon";
 const shipColor = "filter-ship";
 const armorColor = "filter-armor";
+const shieldColor = "filter-shields";
 
 export const upgrades: Upgrade[] = [
   {
@@ -90,7 +91,7 @@ export const upgrades: Upgrade[] = [
     label: "Increase Armor",
     icon: "armor-upgrade.svg",
     color: armorColor,
-    frequency: 100,
+    frequency: 1,
     available: () => true,
     upgrade: (state: State) => {
       state.player.maxArmor += 1;
@@ -101,10 +102,30 @@ export const upgrades: Upgrade[] = [
     label: "Repair Armor",
     icon: "mighty-spanner.svg",
     color: armorColor,
-    frequency: 100,
+    frequency: 1,
     available: (state: State) => state.player.armor < state.player.maxArmor,
     upgrade: (state: State) => {
       state.player.armor = state.player.maxArmor;
+    },
+  },
+  {
+    label: "Increase Shields",
+    icon: "shieldcomb.svg",
+    color: shieldColor,
+    frequency: 1,
+    available: () => true,
+    upgrade: (state: State) => {
+      state.player.maxShields++;
+    },
+  },
+  {
+    label: "Increase Shield Recharge Rate",
+    icon: "electrical-crescent.svg",
+    color: shieldColor,
+    frequency: 1,
+    available: (state: State) => state.player.maxShields > 0,
+    upgrade: (state: State) => {
+      state.player.maxShields++;
     },
   },
 ];

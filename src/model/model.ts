@@ -21,6 +21,7 @@ export interface Spark {
   energy: number;
   decay: number;
   smokey: boolean;
+  source: "armor" | "shields";
 }
 
 export interface Flame {
@@ -56,7 +57,10 @@ export interface Drone {
   acceleration: number;
   drag: number;
   armor: number;
-  shield: number;
+  maxArmor: number;
+  shields: number;
+  maxShields: number;
+  shieldRecharge: number;
   isCore: boolean;
   firingRate: number;
   lastFired: number;
@@ -64,7 +68,6 @@ export interface Drone {
   lasers: number;
   beamSpeed: number;
   turningSpeed: number;
-  maxArmor: number;
 }
 
 export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
@@ -81,7 +84,10 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     acceleration: 1,
     drag: 2,
     armor: 1,
-    shield: 0,
+    maxArmor: 1,
+    shields: 0,
+    maxShields: 0,
+    shieldRecharge: 1,
     isCore: false,
     firingRate: 1,
     weaponPower: 1,
@@ -89,7 +95,6 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     lasers: 1,
     beamSpeed: 1,
     turningSpeed: 1,
-    maxArmor: 1,
   };
 }
 
@@ -99,6 +104,12 @@ export function randomInteriorPoint(drone: Drone) {
   vec2.add(p, p, drone.position);
   vec2.scaleAndAdd(p, drone.position, vec2.sub(vec2.create(), p, drone.position), Math.random());
   return p;
+}
+
+export function chargeDroneShields(drone: Drone, dt: number) {
+  drone.shields += dt * drone.shieldRecharge;
+  drone.shields = Math.min(drone.shields, drone.maxShields);
+  drone.shields = Math.max(drone.shields, 0.0);
 }
 
 export function explodeDrone(drone: Drone, state: State) {
@@ -113,6 +124,7 @@ export function explodeDrone(drone: Drone, state: State) {
         energy: 8 * -Math.log(1 - Math.random()),
         decay: 0.9 * Math.random(),
         smokey: true,
+        source: "armor",
       });
       state.flames.push({
         position: vec2.clone(p),

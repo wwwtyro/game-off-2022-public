@@ -3,6 +3,7 @@ import { vec2 } from "gl-matrix";
 import {
   accelerateDrone,
   buildState,
+  chargeDroneShields,
   createDrone,
   Drone,
   droneTargetDirection,
@@ -63,6 +64,12 @@ export async function game(resources: Resources) {
 
     // Needs to be called after adding colliders and before casting rays against them.
     state.world.step();
+
+    // Charge all shields.
+    chargeDroneShields(state.player, state.time.dt);
+    for (const enemy of state.enemies) {
+      chargeDroneShields(enemy, state.time.dt);
+    }
 
     // Update enemy positions.
     for (const enemy of state.enemies) {
@@ -256,7 +263,7 @@ export async function game(resources: Resources) {
       vec2.scaleAndAdd(spark.position, spark.position, spark.direction, state.time.dt * spark.velocity * spark.energy);
       if (spark.smokey && Math.random() < 0.1) {
         state.flames.push({
-          position: vec2.clone(spark.position), //vec2.add(vec2.create(), spark.position, vec2.random(vec2.create(), Math.random() * 0.05)),
+          position: vec2.clone(spark.position),
           age: 0,
         });
       }
@@ -278,29 +285,41 @@ export async function game(resources: Resources) {
         if (beam.team === "player" && hit.collider === state.player.collider) {
           return true;
         }
-        // We hit something, create some sparks!
-        while (Math.random() < 0.99) {
-          state.sparks.push({
-            position: vec2.clone(beam.position),
-            lastPosition: vec2.clone(beam.position),
-            direction: vec2.normalize(
-              vec2.create(),
-              vec2.add(vec2.create(), vec2.fromValues(hit.normal.x, hit.normal.y), vec2.random(vec2.create(), 1.25))
-            ),
-            velocity: Math.random(),
-            energy: 2 * -Math.log(1 - Math.random()),
-            decay: 0.2 * Math.random() + 0.7,
-            smokey: false,
-          });
+        // Get the target we hit.
+        let target: Drone | undefined = state.player;
+        if (hit.collider !== state.player.collider) {
+          target = state.enemies.find((e) => e.collider === hit.collider);
         }
-        if (hit.collider === state.player.collider) {
-          state.player.armor -= beam.power;
-        } else {
-          const enemy = state.enemies.find((e) => e.collider === hit.collider);
-          if (enemy) {
-            enemy.armor -= beam.power;
+        if (target) {
+          // We hit something, create some sparks!
+          while (Math.random() < 0.99) {
+            state.sparks.push({
+              position: vec2.clone(beam.position),
+              lastPosition: vec2.clone(beam.position),
+              direction: vec2.normalize(
+                vec2.create(),
+                vec2.add(vec2.create(), vec2.fromValues(hit.normal.x, hit.normal.y), vec2.random(vec2.create(), 1.25))
+              ),
+              velocity: Math.random(),
+              energy: 2 * -Math.log(1 - Math.random()),
+              decay: 0.2 * Math.random() + 0.7,
+              smokey: false,
+              source: target.shields > beam.power ? "shields" : "armor",
+            });
           }
+          let totalDamage = beam.power;
+          if (target.shields > 0) {
+            target.shields -= totalDamage;
+            if (target.shields < 0) {
+              totalDamage = -target.shields;
+              target.shields = 0;
+            } else {
+              totalDamage = 0;
+            }
+          }
+          target.armor -= totalDamage;
         }
+
         return false;
       }
       return true;

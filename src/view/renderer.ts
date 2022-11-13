@@ -500,7 +500,11 @@ export class Renderer {
     this.tempArray1.length = 0;
     this.tempArray2.length = 0;
     for (const spark of state.sparks) {
-      this.tempArray1.push(2 * spark.energy, 1 * spark.energy, 0.5 * spark.energy, spark.energy);
+      if (spark.source === "armor") {
+        this.tempArray1.push(2 * spark.energy, 1 * spark.energy, 0.5 * spark.energy, spark.energy);
+      } else {
+        this.tempArray1.push(0.5 * spark.energy, 1 * spark.energy, 2.0 * spark.energy, spark.energy);
+      }
       this.tempArray2.push(spark.lastPosition, spark.position);
     }
     this.tempBuffer1(this.tempArray1);
