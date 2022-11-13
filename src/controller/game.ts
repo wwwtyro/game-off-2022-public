@@ -12,7 +12,7 @@ const vec2Origin = vec2.fromValues(0, 0);
 function initLevel(state: State, resources: Resources) {
   const enemyCore = createDrone(state.world, resources["core0"] as Sprite);
   enemyCore.isCore = true;
-  enemyCore.armor = 5 * state.level;
+  enemyCore.armor = Math.min(5, 1 + 0.25 * state.level);
   // vec2.random(enemyCore.position, Math.random() * 1);
   vec2.set(enemyCore.position, 0, 2);
 
@@ -22,6 +22,7 @@ function initLevel(state: State, resources: Resources) {
   for (let i = 0; i < 3; i++) {
     const enemy = createDrone(state.world, resources["ship1"] as Sprite);
     enemy.armor = 5 * state.level;
+    enemy.acceleration = 2;
     vec2.random(enemy.position, Math.random() * 1);
     vec2.add(enemy.position, enemy.position, enemyCore.position);
     enemy.rotation = Math.random() * 2 * Math.PI;
@@ -58,7 +59,7 @@ export async function game(resources: Resources) {
       if (enemy.isCore) {
         continue;
       }
-      vec2.set(enemy.force, 0, 0);
+      const acceleration = vec2.fromValues(0, 0);
       for (const enemy2 of state.enemies) {
         if (enemy2 === enemy) {
           continue;
@@ -66,21 +67,26 @@ export async function game(resources: Resources) {
         const toEnemy2 = vec2.subtract(vec2.create(), enemy2.position, enemy.position);
         const distToEnemy2 = vec2.length(toEnemy2);
         if (enemy2.isCore && distToEnemy2 > 5) {
-          vec2.scaleAndAdd(enemy.force, enemy.force, vec2.normalize(vec2.create(), toEnemy2), enemy.acceleration * 0.125);
-        } else if (distToEnemy2 < 2) {
-          vec2.scaleAndAdd(enemy.force, enemy.force, vec2.normalize(vec2.create(), toEnemy2), -enemy.acceleration * 0.25);
+          vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toEnemy2), 0.5);
+        } else if (distToEnemy2 < enemy.sprite.radius + enemy2.sprite.radius) {
+          vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toEnemy2), -0.5);
         }
       }
       const toPlayer = vec2.subtract(vec2.create(), state.player.position, enemy.position);
       const distToPlayer = vec2.length(toPlayer);
-      if (distToPlayer < 2 && distToPlayer > 1) {
-        vec2.scaleAndAdd(enemy.force, enemy.force, vec2.normalize(vec2.create(), toPlayer), enemy.acceleration * 1);
+      if (distToPlayer < 1 + state.player.sprite.radius + enemy.sprite.radius) {
+        vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toPlayer), -1.0);
+      }
+      if (distToPlayer < 10 && distToPlayer > 3) {
+        vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toPlayer), 1.0);
       }
       if (Math.random() < 1 / 60) {
-        vec2.add(enemy.force, enemy.force, vec2.random(vec2.create(), Math.random() * 100));
+        vec2.add(enemy.force, enemy.force, vec2.random(vec2.create(), enemy.acceleration));
       }
+      vec2.normalize(acceleration, acceleration);
+      vec2.scale(acceleration, acceleration, 5.0 * enemy.acceleration);
       const drag = vec2.scale(vec2.create(), enemy.velocity, -enemy.drag);
-      const acceleration = vec2.add(vec2.create(), enemy.force, drag);
+      vec2.add(acceleration, acceleration, drag);
       vec2.scaleAndAdd(enemy.velocity, enemy.velocity, acceleration, state.time.dt);
       vec2.scaleAndAdd(enemy.position, enemy.position, enemy.velocity, state.time.dt);
     }
