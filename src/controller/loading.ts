@@ -24,7 +24,8 @@ export interface Sprite {
   original: HTMLImageElement;
   powerOfTwo: HTMLCanvasElement;
   powerOfTwoNormal: HTMLCanvasElement;
-  outline: number[][];
+  outline: vec2[];
+  radius: number;
   scale: number;
   width: number;
   length: number;
@@ -129,9 +130,11 @@ async function loadSprite(url: string, urlNormal: string, scale: number): Promis
   patchNormals(powerOfTwoNormal);
 
   const outline = generateOutline(original);
+  let radius = -Infinity;
   for (const point of outline) {
     point[0] *= scale;
     point[1] *= scale;
+    radius = Math.max(radius, vec2.length(point));
   }
   const width = Math.max(...outline.map((p) => p[0])) - Math.min(...outline.map((p) => p[0]));
   const length = Math.max(...outline.map((p) => p[1])) - Math.min(...outline.map((p) => p[1]));
@@ -141,6 +144,7 @@ async function loadSprite(url: string, urlNormal: string, scale: number): Promis
     powerOfTwo,
     powerOfTwoNormal,
     outline,
+    radius,
     scale,
     width,
     length,
@@ -311,7 +315,7 @@ export function generateOutline(original: HTMLImageElement) {
     throw new Error("debug stop");
   }
 
-  return path;
+  return path as vec2[];
 }
 
 function hasNeighbor(data: ImageData, x: number, y: number) {

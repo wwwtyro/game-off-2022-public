@@ -35,7 +35,7 @@ function getColliderDesc(sprite: Sprite): RAPIER.ColliderDesc {
     throw new Error("No outline available for collider.");
   }
   if (!colliderDescs.has(sprite)) {
-    const desc = RAPIER.ColliderDesc.polyline(new Float32Array(sprite.outline.flat()));
+    const desc = RAPIER.ColliderDesc.polyline(new Float32Array((sprite.outline as number[][]).flat()));
     colliderDescs.set(sprite, desc);
   }
   return colliderDescs.get(sprite)!;
