@@ -1,7 +1,7 @@
 import RAPIER from "@dimforge/rapier2d-compat";
 import { vec2 } from "gl-matrix";
-import { buildState, createDrone, Drone, explodeDrone, State } from "../model/model";
-import { animationFrame, modulo } from "../util";
+import { accelerateDrone, buildState, createDrone, Drone, explodeDrone, rotateDrone, State } from "../model/model";
+import { animationFrame } from "../util";
 import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
 import { Resources, Sprite } from "./loading";
@@ -83,12 +83,7 @@ export async function game(resources: Resources) {
       if (Math.random() < 1 / 60) {
         vec2.add(enemy.force, enemy.force, vec2.random(vec2.create(), enemy.acceleration));
       }
-      vec2.normalize(acceleration, acceleration);
-      vec2.scale(acceleration, acceleration, 5.0 * enemy.acceleration);
-      const drag = vec2.scale(vec2.create(), enemy.velocity, -enemy.drag);
-      vec2.add(acceleration, acceleration, drag);
-      vec2.scaleAndAdd(enemy.velocity, enemy.velocity, acceleration, state.time.dt);
-      vec2.scaleAndAdd(enemy.position, enemy.position, enemy.velocity, state.time.dt);
+      accelerateDrone(enemy, acceleration, state.time.dt);
     }
 
     // Update player position.
@@ -110,12 +105,7 @@ export async function game(resources: Resources) {
       rawAcceleration[1] += 1;
       accelerated = true;
     }
-    const acceleration = vec2.normalize(vec2.create(), rawAcceleration);
-    vec2.scale(acceleration, acceleration, 5.0 * state.player.acceleration);
-    const drag = vec2.scale(vec2.create(), state.player.velocity, -state.player.drag);
-    vec2.add(acceleration, acceleration, drag);
-    vec2.scaleAndAdd(state.player.velocity, state.player.velocity, acceleration, state.time.dt);
-    vec2.scaleAndAdd(state.player.position, state.player.position, state.player.velocity, state.time.dt);
+    accelerateDrone(state.player, rawAcceleration, state.time.dt);
 
     // Update player rotation to point towards the nearest enemy.
     const playerDirection = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
@@ -142,17 +132,7 @@ export async function game(resources: Resources) {
       const q = vec2.normalize(vec2.create(), rawAcceleration);
       state.player.targetRotation = Math.atan2(q[1], q[0]);
     }
-    state.player.targetRotation = modulo(state.player.targetRotation, 2 * Math.PI);
-    state.player.rotation = modulo(state.player.rotation, 2 * Math.PI);
-    let dr = state.player.targetRotation - state.player.rotation;
-    if (Math.abs(dr) > Math.PI) {
-      dr = -Math.sign(dr) * (2 * Math.PI - Math.abs(dr));
-    }
-    const maxTurn = 1.0 * state.player.turningSpeed * state.time.dt;
-    if (Math.abs(dr) > maxTurn) {
-      dr = Math.sign(dr) * maxTurn;
-    }
-    state.player.rotation += dr;
+    rotateDrone(state.player, state.time.dt);
 
     // Update enemy rotations.
     for (const enemy of state.enemies) {
@@ -166,13 +146,7 @@ export async function game(resources: Resources) {
         vec2.normalize(de, de);
         enemy.targetRotation = Math.atan2(de[1], de[0]);
       }
-      enemy.targetRotation = modulo(enemy.targetRotation, 2 * Math.PI);
-      enemy.rotation = modulo(enemy.rotation, 2 * Math.PI);
-      let dr = enemy.targetRotation - enemy.rotation;
-      if (Math.abs(dr) > Math.PI) {
-        dr = -Math.sign(dr) * (2 * Math.PI - Math.abs(dr));
-      }
-      enemy.rotation += 0.1 * dr;
+      rotateDrone(enemy, state.time.dt);
     }
 
     // Update camera.

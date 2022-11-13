@@ -1,7 +1,7 @@
 import { vec2 } from "gl-matrix";
 import RAPIER, { ColliderDesc, Collider } from "@dimforge/rapier2d-compat";
 import { Resources, Sprite } from "../controller/loading";
-import { randomChoice, vec2Origin } from "../util";
+import { modulo, randomChoice, vec2Origin } from "../util";
 
 export interface Beam {
   position: vec2;
@@ -26,6 +26,10 @@ export interface Spark {
 export interface Flame {
   position: vec2;
   age: number;
+}
+
+export interface Positioned {
+  position: vec2;
 }
 
 const colliderDescs = new Map<Sprite, ColliderDesc>();
@@ -114,6 +118,29 @@ export function explodeDrone(drone: Drone, state: State) {
       });
     }
   }
+}
+
+export function rotateDrone(drone: Drone, dt: number) {
+  drone.targetRotation = modulo(drone.targetRotation, 2 * Math.PI);
+  drone.rotation = modulo(drone.rotation, 2 * Math.PI);
+  let dr = drone.targetRotation - drone.rotation;
+  if (Math.abs(dr) > Math.PI) {
+    dr = -Math.sign(dr) * (2 * Math.PI - Math.abs(dr));
+  }
+  const maxTurn = 1.0 * drone.turningSpeed * dt;
+  if (Math.abs(dr) > maxTurn) {
+    dr = Math.sign(dr) * maxTurn;
+  }
+  drone.rotation += dr;
+}
+
+export function accelerateDrone(drone: Drone, rawAcceleration: vec2, dt: number) {
+  const accel = vec2.normalize(vec2.create(), rawAcceleration);
+  vec2.scale(accel, accel, 5.0 * drone.acceleration);
+  const drag = vec2.scale(vec2.create(), drone.velocity, -drone.drag);
+  vec2.add(accel, accel, drag);
+  vec2.scaleAndAdd(drone.velocity, drone.velocity, accel, dt);
+  vec2.scaleAndAdd(drone.position, drone.position, drone.velocity, dt);
 }
 
 export interface State {
