@@ -143,6 +143,16 @@ export function accelerateDrone(drone: Drone, rawAcceleration: vec2, dt: number)
   vec2.scaleAndAdd(drone.position, drone.position, drone.velocity, dt);
 }
 
+export function droneTargetDirection(drone: Drone, direction: vec2) {
+  const q = vec2.normalize(vec2.create(), direction);
+  drone.targetRotation = Math.atan2(q[1], q[0]);
+}
+
+export function droneTargetPoint(drone: Drone, point: vec2) {
+  const de = vec2.sub(vec2.create(), point, drone.position);
+  droneTargetDirection(drone, de);
+}
+
 export interface State {
   time: {
     now: number;

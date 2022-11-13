@@ -1,6 +1,16 @@
 import RAPIER from "@dimforge/rapier2d-compat";
 import { vec2 } from "gl-matrix";
-import { accelerateDrone, buildState, createDrone, Drone, explodeDrone, rotateDrone, State } from "../model/model";
+import {
+  accelerateDrone,
+  buildState,
+  createDrone,
+  Drone,
+  droneTargetDirection,
+  droneTargetPoint,
+  explodeDrone,
+  rotateDrone,
+  State,
+} from "../model/model";
 import { animationFrame } from "../util";
 import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
@@ -126,11 +136,9 @@ export async function game(resources: Resources) {
     let playerIsTargetingEnemy = false;
     if (targetedDrone !== null && maxScore < 5) {
       playerIsTargetingEnemy = true;
-      const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), targetedDrone.position, state.player.position));
-      state.player.targetRotation = Math.atan2(de[1], de[0]);
+      droneTargetDirection(state.player, targetedDrone.position);
     } else if (accelerated) {
-      const q = vec2.normalize(vec2.create(), rawAcceleration);
-      state.player.targetRotation = Math.atan2(q[1], q[0]);
+      droneTargetDirection(state.player, rawAcceleration);
     }
     rotateDrone(state.player, state.time.dt);
 
@@ -142,9 +150,7 @@ export async function game(resources: Resources) {
       }
       const dist = vec2.distance(enemy.position, state.player.position);
       if (dist < 5) {
-        const de = vec2.sub(vec2.create(), state.player.position, enemy.position);
-        vec2.normalize(de, de);
-        enemy.targetRotation = Math.atan2(de[1], de[0]);
+        droneTargetPoint(enemy, state.player.position);
       }
       rotateDrone(enemy, state.time.dt);
     }
