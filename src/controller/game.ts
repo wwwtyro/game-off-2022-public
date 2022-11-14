@@ -23,9 +23,8 @@ function initLevel(state: State, resources: Resources) {
   const enemyCore = createDrone(state.world, resources["core0"] as Sprite);
   enemyCore.isCore = true;
   enemyCore.armor = 5 * state.level;
-  // vec2.random(enemyCore.position, Math.random() * 1);
-  while (vec2.distance(enemyCore.position, state.player.position) < 10) {
-    vec2.random(enemyCore.position, Math.random() * 32);
+  while (vec2.distance(enemyCore.position, state.player.position) < 32) {
+    vec2.random(enemyCore.position, Math.random() * 64);
   }
 
   state.enemies.length = 0;
