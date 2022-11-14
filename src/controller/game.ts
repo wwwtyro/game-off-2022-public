@@ -77,24 +77,24 @@ export async function game(resources: Resources) {
         continue;
       }
       const acceleration = vec2.fromValues(0, 0);
+      const toPlayer = vec2.subtract(vec2.create(), state.player.position, enemy.position);
+      const distToPlayer = vec2.length(toPlayer);
       for (const enemy2 of state.enemies) {
         if (enemy2 === enemy) {
           continue;
         }
         const toEnemy2 = vec2.subtract(vec2.create(), enemy2.position, enemy.position);
         const distToEnemy2 = vec2.length(toEnemy2);
-        if (enemy2.isCore && distToEnemy2 > 5) {
+        if (enemy2.isCore && distToEnemy2 > 5 && distToPlayer > 10) {
           vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toEnemy2), 0.5);
         } else if (distToEnemy2 < enemy.sprite.radius + enemy2.sprite.radius) {
           vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toEnemy2), -0.5);
         }
       }
-      const toPlayer = vec2.subtract(vec2.create(), state.player.position, enemy.position);
-      const distToPlayer = vec2.length(toPlayer);
       if (distToPlayer < 1 + state.player.sprite.radius + enemy.sprite.radius) {
         vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toPlayer), -1.0);
       }
-      if (distToPlayer < 10 && distToPlayer > 3) {
+      if (distToPlayer < 10 && distToPlayer > 3 + state.player.sprite.radius + enemy.sprite.radius) {
         vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toPlayer), 1.0);
       }
       if (Math.random() < 1 / 60) {
