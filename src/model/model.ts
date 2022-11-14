@@ -125,7 +125,7 @@ export function explodeDrone(drone: Drone, state: State) {
         lastPosition: vec2.clone(p),
         direction: vec2.random(vec2.create(), 1),
         velocity: Math.random(),
-        energy: 8 * -Math.log(1 - Math.random()),
+        energy: drone.sprite.radius * 8 * -Math.log(1 - Math.random()),
         decay: 0.9 * Math.random(),
         smokey: true,
         source: "armor",
