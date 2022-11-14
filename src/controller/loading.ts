@@ -39,6 +39,7 @@ export async function loadResources(callback: (fraction: number) => void) {
     sand0: loadTexture("Sand_001_COLOR.png", "Sand_001_NRM.png"),
     noise0: loadTexture("noise.jpg", "noise.jpg"),
     metal0: loadTexture("Metal_Plate_047_basecolor.jpg", "Metal_Plate_047_normal.jpg"),
+    arrow0: loadTexture("orb-direction.png", "orb-direction.png"),
   };
 
   const total = Object.keys(promises).length;

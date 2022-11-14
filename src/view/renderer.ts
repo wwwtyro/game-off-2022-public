@@ -7,6 +7,7 @@ import flameShader from "./glsl/flame.glsl?raw";
 import shadowShader from "./glsl/shadow.glsl?raw";
 import surfaceShader from "./glsl/surface.glsl?raw";
 import lineShader from "./glsl/lines.glsl?raw";
+import directionShader from "./glsl/direction.glsl?raw";
 import { Resources } from "../controller/loading";
 import { State } from "../model/model";
 import { modulo } from "../util";
@@ -22,6 +23,7 @@ export class Renderer {
   private renderLines: REGL.DrawCommand;
   private renderSurface: REGL.DrawCommand;
   private renderShadow: REGL.DrawCommand;
+  private renderDirection: REGL.DrawCommand;
   private tempBuffer1: REGL.Buffer;
   private tempBuffer2: REGL.Buffer;
   private tempArray1: Array<number | number[] | vec2> = [];
@@ -59,6 +61,44 @@ export class Renderer {
       depth: {
         enable: false,
         mask: false,
+      },
+
+      count: 6,
+      viewport: this.regl.prop<any, any>("viewport"),
+    });
+
+    this.renderDirection = this.regl({
+      vert: directionShader.split("glsl-split")[0],
+      frag: directionShader.split("glsl-split")[1],
+
+      attributes: {
+        position: [-0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5],
+      },
+
+      uniforms: {
+        texture: this.getTexture(resources["arrow0"].powerOfTwo),
+        scale: this.regl.prop<any, any>("scale"),
+        rotation: this.regl.prop<any, any>("rotation"),
+        color: this.regl.prop<any, any>("color"),
+        resolution: this.regl.prop<any, any>("resolution"),
+      },
+
+      depth: {
+        enable: false,
+        mask: false,
+      },
+
+      cull: {
+        enable: true,
+        face: "back",
+      },
+
+      blend: {
+        enable: true,
+        func: {
+          src: "src alpha",
+          dst: "one minus src alpha",
+        },
       },
 
       count: 6,
@@ -520,6 +560,24 @@ export class Renderer {
       segments: state.sparks.length,
       framebuffer: null,
     });
+
+    // Render UI elements.
+
+    // Render the direction indicator if needed.
+    for (const enemy of state.enemies) {
+      const dir = vec2.sub(vec2.create(), enemy.position, state.player.position);
+      if (vec2.length(dir) < 5) {
+        continue;
+      }
+      const rotation = Math.atan2(dir[1], dir[0]);
+      this.renderDirection({
+        resolution: [this.canvas.width, this.canvas.height],
+        color: enemy.isCore ? [1, 1, 1] : [1, 0.5, 0.25],
+        scale: enemy.isCore ? 1 : 0.75,
+        rotation,
+        viewport,
+      });
+    }
   }
 }
 

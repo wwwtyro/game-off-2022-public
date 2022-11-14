@@ -24,7 +24,9 @@ function initLevel(state: State, resources: Resources) {
   enemyCore.isCore = true;
   enemyCore.armor = 5 * state.level;
   // vec2.random(enemyCore.position, Math.random() * 1);
-  vec2.set(enemyCore.position, 0, 2);
+  while (vec2.distance(enemyCore.position, state.player.position) < 10) {
+    vec2.random(enemyCore.position, Math.random() * 32);
+  }
 
   state.enemies.length = 0;
   state.enemies.push(enemyCore);
