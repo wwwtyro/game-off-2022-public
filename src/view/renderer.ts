@@ -366,7 +366,7 @@ export class Renderer {
     }
 
     // Blur the shadows.
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 2; i++) {
       this.renderBlur({
         resolution: [shadowWidth, shadowHeight],
         direction: [1, 0],

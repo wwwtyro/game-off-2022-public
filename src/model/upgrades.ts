@@ -127,3 +127,39 @@ export const upgrades: Upgrade[] = [
     },
   },
 ];
+
+function randomUpgrade(availableUpgrades: Upgrade[]) {
+  availableUpgrades = availableUpgrades.slice();
+  availableUpgrades.sort((a, b) => a.frequency - b.frequency);
+  const totalFrequency = availableUpgrades.reduce((previous: number, current: Upgrade) => previous + current.frequency, 0);
+  const randomIndex = totalFrequency * Math.random();
+  let sum = 0;
+  for (const upgrade of availableUpgrades) {
+    if (randomIndex < sum + upgrade.frequency) {
+      return upgrade;
+    }
+    sum += upgrade.frequency;
+  }
+  return null;
+}
+
+export function getRandomUpgrades(drone: Drone, count: number) {
+  let availableUpgrades = upgrades.filter((u) => u.available(drone));
+  const selectedUpgrades: Upgrade[] = [];
+  for (let i = 0; i < count; i++) {
+    const selectedUpgrade = randomUpgrade(availableUpgrades);
+    if (selectedUpgrade !== null) {
+      availableUpgrades = availableUpgrades.filter((u) => u !== selectedUpgrade);
+      selectedUpgrades.push(selectedUpgrade);
+    }
+  }
+  return selectedUpgrades;
+}
+
+export function applyRandomUpgrade(drone: Drone) {
+  const upgrades = getRandomUpgrades(drone, 1);
+  for (const upgrade of upgrades) {
+    upgrade.upgrade(drone);
+    console.log("Applied upgrade", upgrade.label);
+  }
+}

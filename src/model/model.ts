@@ -49,11 +49,11 @@ function getColliderDesc(sprite: Sprite): RAPIER.ColliderDesc {
 }
 
 export interface Drone {
+  parent?: Drone;
   sprite: Sprite;
   collider: Collider;
   position: vec2;
   velocity: vec2;
-  force: vec2;
   rotation: number;
   targetRotation: number;
   acceleration: number;
@@ -83,7 +83,6 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     rotation: 0,
     targetRotation: 0,
     velocity: vec2.fromValues(0, 0),
-    force: vec2.fromValues(0, 0),
     acceleration: 1,
     drag: 2,
     armor: 1,

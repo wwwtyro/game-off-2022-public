@@ -13,7 +13,8 @@ import {
   rotateDrone,
   State,
 } from "../model/model";
-import { animationFrame } from "../util";
+import { applyRandomUpgrade } from "../model/upgrades";
+import { animationFrame, randomChoice } from "../util";
 import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
 import { Resources, Sprite } from "./loading";
@@ -22,7 +23,7 @@ import { winGame } from "./win-game";
 function initLevel(state: State, resources: Resources) {
   const enemyCore = createDrone(state.world, resources["core0"] as Sprite);
   enemyCore.isCore = true;
-  enemyCore.armor = 5 * state.level;
+  enemyCore.armor = 10 * state.level;
   while (vec2.distance(enemyCore.position, state.player.position) < 32) {
     vec2.random(enemyCore.position, Math.random() * 64);
   }
@@ -30,15 +31,23 @@ function initLevel(state: State, resources: Resources) {
   state.enemies.length = 0;
   state.enemies.push(enemyCore);
 
-  for (let i = 0; i < 3; i++) {
-    const enemy = createDrone(state.world, resources["ship1"] as Sprite);
-    enemy.armor = 5 * state.level;
-    enemy.acceleration = Math.min(5, 1 + 0.25 * state.level);
-    vec2.random(enemy.position, Math.random() * 1);
-    vec2.add(enemy.position, enemy.position, enemyCore.position);
-    enemy.rotation = Math.random() * 2 * Math.PI;
-    state.enemies.push(enemy);
+  const nEnemies = Math.min(state.level, Math.ceil(Math.random() * 10));
+
+  const children: Drone[] = [];
+
+  for (let i = 0; i < nEnemies; i++) {
+    const child = createDrone(state.world, resources["ship1"] as Sprite);
+    child.parent = enemyCore;
+    vec2.random(child.position, Math.random() * 1);
+    vec2.add(child.position, child.position, enemyCore.position);
+    child.rotation = Math.random() * 2 * Math.PI;
+    child.armor = 5 * state.level;
+    for (let i = 0; i < state.level; i++) {
+      applyRandomUpgrade(child);
+    }
+    children.push(child);
   }
+  state.enemies.push(...children);
 }
 
 export async function game(resources: Resources) {
@@ -98,7 +107,7 @@ export async function game(resources: Resources) {
         vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toPlayer), 1.0);
       }
       if (Math.random() < 1 / 60) {
-        vec2.add(enemy.force, enemy.force, vec2.random(vec2.create(), enemy.acceleration));
+        vec2.add(acceleration, acceleration, vec2.random(vec2.create(), enemy.acceleration));
       }
       accelerateDrone(enemy, acceleration, state.time.dt);
     }
@@ -291,6 +300,17 @@ export async function game(resources: Resources) {
         return false;
       }
       return true;
+    });
+
+    // If a core dies, kill its children.
+    state.enemies.forEach((e) => {
+      if (e.isCore && e.armor <= 0) {
+        state.enemies.forEach((e2) => {
+          if (e2.parent === e) {
+            e2.armor = -1;
+          }
+        });
+      }
     });
 
     // Remove any dead enemies.
