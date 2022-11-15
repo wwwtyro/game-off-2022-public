@@ -27,7 +27,7 @@ export async function levelEnd(state: State) {
   const title = document.createElement("div");
   title.innerText = "Select an upgrade to continue.";
   div.appendChild(title);
-  let availableUpgrades = upgrades.filter((u) => u.available(state));
+  let availableUpgrades = upgrades.filter((u) => u.available(state.player));
   const selectedUpgrades: Upgrade[] = [];
   for (let i = 0; i < 3; i++) {
     const selectedUpgrade = randomUpgrade(availableUpgrades);
@@ -47,7 +47,7 @@ export async function levelEnd(state: State) {
       ${upgrade.label}
     `;
     upgradeDiv.onclick = () => {
-      upgrade.upgrade(state);
+      upgrade.upgrade(state.player);
       done = true;
     };
     div.appendChild(upgradeDiv);

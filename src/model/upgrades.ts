@@ -1,12 +1,12 @@
-import { State } from "./model";
+import { Drone } from "./model";
 
 export interface Upgrade {
   readonly label: string;
   readonly icon: string;
   readonly color: string;
   readonly frequency: number;
-  readonly available: (state: State) => boolean;
-  readonly upgrade: (state: State) => void;
+  readonly available: (drone: Drone) => boolean;
+  readonly upgrade: (drone: Drone) => void;
 }
 
 const weaponColor = "filter-weapon";
@@ -20,11 +20,11 @@ export const upgrades: Upgrade[] = [
     icon: "laser-warning.svg",
     color: weaponColor,
     frequency: 1,
-    available: (state: State) => {
-      return state.player.firingRate < 30;
+    available: (drone: Drone) => {
+      return drone.firingRate < 30;
     },
-    upgrade: (state: State) => {
-      state.player.firingRate++;
+    upgrade: (drone: Drone) => {
+      drone.firingRate++;
     },
   },
   {
@@ -32,11 +32,9 @@ export const upgrades: Upgrade[] = [
     icon: "laser-blast.svg",
     color: weaponColor,
     frequency: 1,
-    available: (_state: State) => {
-      return true;
-    },
-    upgrade: (state: State) => {
-      state.player.weaponPower++;
+    available: () => true,
+    upgrade: (drone: Drone) => {
+      drone.weaponPower++;
     },
   },
   {
@@ -44,11 +42,11 @@ export const upgrades: Upgrade[] = [
     icon: "laser-turret.svg",
     color: weaponColor,
     frequency: 0.1,
-    available: (state: State) => {
-      return state.player.lasers < 10;
+    available: (drone: Drone) => {
+      return drone.lasers < 10;
     },
-    upgrade: (state: State) => {
-      state.player.lasers++;
+    upgrade: (drone: Drone) => {
+      drone.lasers++;
     },
   },
   {
@@ -56,11 +54,11 @@ export const upgrades: Upgrade[] = [
     icon: "laser-precision.svg",
     color: weaponColor,
     frequency: 1,
-    available: (state: State) => {
-      return state.player.beamSpeed < 10;
+    available: (drone: Drone) => {
+      return drone.beamSpeed < 10;
     },
-    upgrade: (state: State) => {
-      state.player.beamSpeed++;
+    upgrade: (drone: Drone) => {
+      drone.beamSpeed++;
     },
   },
   {
@@ -68,11 +66,11 @@ export const upgrades: Upgrade[] = [
     icon: "clockwise-rotation.svg",
     color: shipColor,
     frequency: 1,
-    available: (state: State) => {
-      return state.player.turningSpeed < 30;
+    available: (drone: Drone) => {
+      return drone.turningSpeed < 30;
     },
-    upgrade: (state: State) => {
-      state.player.turningSpeed++;
+    upgrade: (drone: Drone) => {
+      drone.turningSpeed++;
     },
   },
   {
@@ -80,11 +78,11 @@ export const upgrades: Upgrade[] = [
     icon: "speedometer.svg",
     color: shipColor,
     frequency: 1,
-    available: (state: State) => {
-      return state.player.acceleration < 5;
+    available: (drone: Drone) => {
+      return drone.acceleration < 5;
     },
-    upgrade: (state: State) => {
-      state.player.acceleration++;
+    upgrade: (drone: Drone) => {
+      drone.acceleration++;
     },
   },
   {
@@ -93,9 +91,9 @@ export const upgrades: Upgrade[] = [
     color: armorColor,
     frequency: 1,
     available: () => true,
-    upgrade: (state: State) => {
-      state.player.maxArmor += 1;
-      state.player.armor += 1;
+    upgrade: (drone: Drone) => {
+      drone.maxArmor += 1;
+      drone.armor += 1;
     },
   },
   {
@@ -103,9 +101,9 @@ export const upgrades: Upgrade[] = [
     icon: "mighty-spanner.svg",
     color: armorColor,
     frequency: 1,
-    available: (state: State) => state.player.armor < state.player.maxArmor,
-    upgrade: (state: State) => {
-      state.player.armor = state.player.maxArmor;
+    available: (drone: Drone) => drone.armor < drone.maxArmor,
+    upgrade: (drone: Drone) => {
+      drone.armor = drone.maxArmor;
     },
   },
   {
@@ -114,8 +112,8 @@ export const upgrades: Upgrade[] = [
     color: shieldColor,
     frequency: 1,
     available: () => true,
-    upgrade: (state: State) => {
-      state.player.maxShields++;
+    upgrade: (drone: Drone) => {
+      drone.maxShields++;
     },
   },
   {
@@ -123,9 +121,9 @@ export const upgrades: Upgrade[] = [
     icon: "electrical-crescent.svg",
     color: shieldColor,
     frequency: 1,
-    available: (state: State) => state.player.maxShields > 0,
-    upgrade: (state: State) => {
-      state.player.maxShields++;
+    available: (drone: Drone) => drone.maxShields > 0,
+    upgrade: (drone: Drone) => {
+      drone.maxShields++;
     },
   },
 ];
