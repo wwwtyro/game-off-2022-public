@@ -41,17 +41,19 @@
         font-weight: bolder;
       }
 
-      #center-content {
+      .center-content {
         display: none;
+        flex-direction: column;
+        justify-content: center;
+        row-gap: 16px;
         margin: auto;
         z-index: inherit;
-        background: rgba(0, 0, 0, 0.5);
         color: white;
         padding: 32px;
-        border: 1px solid white;
         cursor: default;
         font-family: sans-serif;
         font-weight: bold;
+        font-size: 32px;
       }
 
       .upgrade {
@@ -89,7 +91,6 @@
     <canvas id="render-canvas"></canvas>
     <div id="center-container">
       <div id="loading">Loading 0%</div>
-      <div id="center-content"></div>
     </div>
   </body>
 </html>

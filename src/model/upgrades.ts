@@ -7,6 +7,7 @@ export interface Upgrade {
   readonly frequency: number;
   readonly available: (drone: Drone) => boolean;
   readonly upgrade: (drone: Drone) => void;
+  readonly permable: boolean;
 }
 
 const weaponColor = "filter-weapon";
@@ -20,6 +21,7 @@ export const upgrades: Upgrade[] = [
     icon: "laser-warning.svg",
     color: weaponColor,
     frequency: 1,
+    permable: true,
     available: (drone: Drone) => {
       return drone.firingRate < 30;
     },
@@ -32,6 +34,7 @@ export const upgrades: Upgrade[] = [
     icon: "laser-blast.svg",
     color: weaponColor,
     frequency: 1,
+    permable: true,
     available: () => true,
     upgrade: (drone: Drone) => {
       drone.weaponPower++;
@@ -42,6 +45,7 @@ export const upgrades: Upgrade[] = [
     icon: "laser-turret.svg",
     color: weaponColor,
     frequency: 0.1,
+    permable: true,
     available: (drone: Drone) => {
       return drone.lasers < 10;
     },
@@ -54,6 +58,7 @@ export const upgrades: Upgrade[] = [
     icon: "laser-precision.svg",
     color: weaponColor,
     frequency: 1,
+    permable: true,
     available: (drone: Drone) => {
       return drone.beamSpeed < 10;
     },
@@ -66,6 +71,7 @@ export const upgrades: Upgrade[] = [
     icon: "clockwise-rotation.svg",
     color: shipColor,
     frequency: 1,
+    permable: true,
     available: (drone: Drone) => {
       return drone.turningSpeed < 30;
     },
@@ -78,6 +84,7 @@ export const upgrades: Upgrade[] = [
     icon: "speedometer.svg",
     color: shipColor,
     frequency: 1,
+    permable: true,
     available: (drone: Drone) => {
       return drone.acceleration < 5;
     },
@@ -90,6 +97,7 @@ export const upgrades: Upgrade[] = [
     icon: "armor-upgrade.svg",
     color: armorColor,
     frequency: 1,
+    permable: true,
     available: () => true,
     upgrade: (drone: Drone) => {
       drone.maxArmor += 1;
@@ -101,6 +109,7 @@ export const upgrades: Upgrade[] = [
     icon: "mighty-spanner.svg",
     color: armorColor,
     frequency: 1,
+    permable: true,
     available: (drone: Drone) => drone.armor < drone.maxArmor,
     upgrade: (drone: Drone) => {
       drone.armor = drone.maxArmor;
@@ -111,6 +120,7 @@ export const upgrades: Upgrade[] = [
     icon: "shieldcomb.svg",
     color: shieldColor,
     frequency: 1,
+    permable: true,
     available: () => true,
     upgrade: (drone: Drone) => {
       drone.maxShields++;
@@ -121,6 +131,7 @@ export const upgrades: Upgrade[] = [
     icon: "electrical-crescent.svg",
     color: shieldColor,
     frequency: 1,
+    permable: true,
     available: (drone: Drone) => drone.maxShields > 0,
     upgrade: (drone: Drone) => {
       drone.maxShields++;
@@ -143,8 +154,16 @@ function randomUpgrade(availableUpgrades: Upgrade[]) {
   return null;
 }
 
-export function getRandomUpgrades(drone: Drone, count: number) {
-  let availableUpgrades = upgrades.filter((u) => u.available(drone));
+export function getRandomUpgrades(drone: Drone, count: number, permableOnly: boolean) {
+  let availableUpgrades = upgrades.filter((u) => {
+    if (!u.available(drone)) {
+      return false;
+    }
+    if (permableOnly && !u.permable) {
+      return false;
+    }
+    return true;
+  });
   const selectedUpgrades: Upgrade[] = [];
   for (let i = 0; i < count; i++) {
     const selectedUpgrade = randomUpgrade(availableUpgrades);
@@ -156,8 +175,8 @@ export function getRandomUpgrades(drone: Drone, count: number) {
   return selectedUpgrades;
 }
 
-export function applyRandomUpgrade(drone: Drone) {
-  const upgrades = getRandomUpgrades(drone, 1);
+export function applyRandomUpgrade(drone: Drone, permableOnly: false) {
+  const upgrades = getRandomUpgrades(drone, 1, permableOnly);
   for (const upgrade of upgrades) {
     upgrade.upgrade(drone);
     console.log("Applied upgrade", upgrade.label);

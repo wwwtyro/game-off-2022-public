@@ -13,11 +13,12 @@ import {
   rotateDrone,
   State,
 } from "../model/model";
-import { applyRandomUpgrade } from "../model/upgrades";
-import { animationFrame, randomChoice } from "../util";
+import { applyRandomUpgrade, upgrades } from "../model/upgrades";
+import { animationFrame } from "../util";
 import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
 import { Resources, Sprite } from "./loading";
+import { permanentUpgrade } from "./permanent-upgrade";
 import { winGame } from "./win-game";
 
 function initLevel(state: State, resources: Resources) {
@@ -43,16 +44,26 @@ function initLevel(state: State, resources: Resources) {
     child.rotation = Math.random() * 2 * Math.PI;
     child.armor = 5 * state.level;
     for (let i = 0; i < state.level; i++) {
-      applyRandomUpgrade(child);
+      applyRandomUpgrade(child, false);
     }
     children.push(child);
   }
   state.enemies.push(...children);
 }
 
-export async function game(resources: Resources) {
+export async function game(resources: Resources, permanentUpgrades: string[]) {
   const state = buildState(resources);
   initLevel(state, resources);
+
+  for (const upgradeLabel of permanentUpgrades) {
+    const upgrade = upgrades.find((u) => u.label === upgradeLabel);
+    if (upgrade && upgrade.available(state.player)) {
+      upgrade.upgrade(state.player);
+      console.log(`Upgraded ${upgrade.label}`);
+    } else {
+      console.log(`Couldn't find upgrade label ${upgradeLabel}`);
+    }
+  }
 
   (window as any).state = state; // Degub.
 
@@ -337,6 +348,9 @@ export async function game(resources: Resources) {
         return;
       }
       await levelEnd(state);
+      if (Math.random() < 0.1) {
+        await permanentUpgrade(state, permanentUpgrades);
+      }
       state.levelEndTimestamp = null;
       state.level++;
       initLevel(state, resources);
