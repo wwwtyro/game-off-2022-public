@@ -22,33 +22,40 @@ import { permanentUpgrade } from "./permanent-upgrade";
 import { winGame } from "./win-game";
 
 function initLevel(state: State, resources: Resources) {
-  const enemyCore = createDrone(state.world, resources["core0"] as Sprite);
-  enemyCore.isCore = true;
-  enemyCore.armor = 10 * state.level;
-  while (vec2.distance(enemyCore.position, state.player.position) < 32) {
-    vec2.random(enemyCore.position, Math.random() * 64);
+  const bossLevels = 1;
+  const coreCount = state.level % bossLevels === 0 ? Math.floor(state.level / bossLevels) + 1 : 1;
+  const coreSprite = resources["core0"] as Sprite;
+  const coreRadius = 0.5 * coreCount * coreSprite.radius;
+  const coreCenter = vec2.random(vec2.create(), Math.random() * 64);
+  while (vec2.distance(coreCenter, state.player.position) < 32) {
+    vec2.random(coreCenter, Math.random() * 64);
   }
-
+  console.log(`level ${state.level}, coreCount ${coreCount}, coreRadius ${coreRadius}, coreCenter ${coreCenter}`);
   state.enemies.length = 0;
-  state.enemies.push(enemyCore);
-
-  const nEnemies = Math.min(state.level, Math.ceil(Math.random() * 10));
-
-  const children: Drone[] = [];
-
-  for (let i = 0; i < nEnemies; i++) {
-    const child = createDrone(state.world, resources["ship1"] as Sprite);
-    child.parent = enemyCore;
-    vec2.random(child.position, Math.random() * 1);
-    vec2.add(child.position, child.position, enemyCore.position);
-    child.rotation = Math.random() * 2 * Math.PI;
-    child.armor = 5 * state.level;
-    for (let i = 0; i < state.level; i++) {
-      applyRandomUpgrade(child, false);
+  for (let i = 0; i < coreCount; i++) {
+    const enemyCore = createDrone(state.world, resources["core0"] as Sprite);
+    enemyCore.isCore = true;
+    enemyCore.armor = 10 * state.level;
+    const angle = (2 * Math.PI * i) / coreCount;
+    vec2.set(enemyCore.position, coreRadius * Math.cos(angle), coreRadius * Math.sin(angle));
+    vec2.add(enemyCore.position, enemyCore.position, coreCenter);
+    state.enemies.push(enemyCore);
+    const nEnemies = Math.min(state.level, Math.ceil(Math.random() * 10));
+    const children: Drone[] = [];
+    for (let i = 0; i < nEnemies; i++) {
+      const child = createDrone(state.world, resources["ship1"] as Sprite);
+      child.parent = enemyCore;
+      vec2.random(child.position, Math.random() * 1);
+      vec2.add(child.position, child.position, enemyCore.position);
+      child.rotation = Math.random() * 2 * Math.PI;
+      child.armor = 5 * state.level;
+      for (let i = 0; i < state.level; i++) {
+        applyRandomUpgrade(child, false);
+      }
+      children.push(child);
     }
-    children.push(child);
+    state.enemies.push(...children);
   }
-  state.enemies.push(...children);
 }
 
 export async function game(resources: Resources, permanentUpgrades: string[]) {
@@ -105,7 +112,7 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
         }
         const toEnemy2 = vec2.subtract(vec2.create(), enemy2.position, enemy.position);
         const distToEnemy2 = vec2.length(toEnemy2);
-        if (enemy2.isCore && distToEnemy2 > 5 && distToPlayer > 10) {
+        if (enemy.parent === enemy2 && distToEnemy2 > 5 && distToPlayer > 10) {
           vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toEnemy2), 0.5);
         } else if (distToEnemy2 < enemy.sprite.radius + enemy2.sprite.radius) {
           vec2.scaleAndAdd(acceleration, acceleration, vec2.normalize(vec2.create(), toEnemy2), -0.5);

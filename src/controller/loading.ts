@@ -1,6 +1,5 @@
 import { vec2 } from "gl-matrix";
 import { modulo } from "../util";
-import { game } from "./game";
 
 export async function loadingScreen() {
   const loadingDiv = document.getElementById("loading")!;
