@@ -23,7 +23,7 @@ export const upgrades: Upgrade[] = [
     frequency: 1,
     permable: true,
     available: (drone: Drone) => {
-      return drone.firingRate < 30;
+      return drone.firingRate < 15;
     },
     upgrade: (drone: Drone) => {
       drone.firingRate++;
@@ -179,6 +179,5 @@ export function applyRandomUpgrade(drone: Drone, permableOnly: false) {
   const upgrades = getRandomUpgrades(drone, 1, permableOnly);
   for (const upgrade of upgrades) {
     upgrade.upgrade(drone);
-    console.log("Applied upgrade", upgrade.label);
   }
 }

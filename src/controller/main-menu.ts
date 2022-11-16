@@ -9,7 +9,9 @@ export async function mainMenu(resources: Resources) {
     new MenuButton("New Game", async () => {
       menu.hide();
       const permanentUpgrades: string[] = JSON.parse(localStorage.getItem("permanentUpgrades") ?? JSON.stringify([]));
+      resources.sounds.music.play();
       await game(resources, permanentUpgrades);
+      resources.sounds.music.stop();
       menu.show();
     })
   );

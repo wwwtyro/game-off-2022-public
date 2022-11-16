@@ -226,7 +226,7 @@ export function buildState(resources: Resources): State {
       position: vec2.fromValues(0, 0),
       fov: 2,
     },
-    player: createDrone(world, resources["ship0"] as Sprite),
+    player: createDrone(world, resources.sprites.ship0),
     enemies: [],
     beams: [],
     sparks: [],

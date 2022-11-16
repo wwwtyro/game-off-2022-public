@@ -76,7 +76,7 @@ export class Renderer {
       },
 
       uniforms: {
-        texture: this.getTexture(resources["arrow0"].powerOfTwo),
+        texture: this.getTexture(resources.textures.arrow0.powerOfTwo),
         scale: this.regl.prop<any, any>("scale"),
         rotation: this.regl.prop<any, any>("rotation"),
         color: this.regl.prop<any, any>("color"),
@@ -213,11 +213,11 @@ export class Renderer {
       },
 
       uniforms: {
-        tSand: this.getTexture(resources["sand0"].powerOfTwo),
-        tSandNormal: this.getTexture(resources["sand0"].powerOfTwoNormal),
-        tMetal: this.getTexture(resources["metal0"].powerOfTwo),
-        tMetalNormal: this.getTexture(resources["metal0"].powerOfTwoNormal),
-        tNoise: this.getTexture(resources["noise0"].powerOfTwo),
+        tSand: this.getTexture(resources.textures.sand0.powerOfTwo),
+        tSandNormal: this.getTexture(resources.textures.sand0.powerOfTwoNormal),
+        tMetal: this.getTexture(resources.textures.metal0.powerOfTwo),
+        tMetalNormal: this.getTexture(resources.textures.metal0.powerOfTwoNormal),
+        tNoise: this.getTexture(resources.textures.noise0.powerOfTwo),
         tShadow: this.fbShadow[0],
         offset: this.regl.prop<any, any>("offset"),
         range: this.regl.prop<any, any>("range"),

@@ -1,3 +1,4 @@
+import { Howl } from "howler";
 import { vec2 } from "gl-matrix";
 import { modulo } from "../util";
 
@@ -31,7 +32,7 @@ export interface Sprite {
 }
 
 export async function loadResources(callback: (fraction: number) => void) {
-  const promises: Record<string, Promise<Texture | Sprite>> = {
+  const promises: Record<string, any> = {
     ship0: loadSprite("destroyer.png", "nn5.png", 0.5),
     ship1: loadSprite("blueshuttlenoweps.png", "cnormal.png", 0.35),
     core0: loadSprite("tribase-u1-d0.png", "st1normal.png", 3.0),
@@ -45,7 +46,7 @@ export async function loadResources(callback: (fraction: number) => void) {
   let sum = 0;
 
   for (const key of Object.keys(promises)) {
-    promises[key] = promises[key].then((value) => {
+    promises[key] = promises[key].then((value: any) => {
       sum++;
       callback(sum / total);
       return value;
@@ -54,11 +55,30 @@ export async function loadResources(callback: (fraction: number) => void) {
 
   await Promise.all(Object.values(promises));
 
-  const results: Record<string, Texture | Sprite> = {};
-
-  for (const key of Object.keys(promises)) {
-    results[key] = await promises[key];
-  }
+  const results = {
+    sprites: {
+      ship0: (await promises["ship0"]) as Sprite,
+      ship1: (await promises["ship1"]) as Sprite,
+      core0: (await promises["core0"]) as Sprite,
+    },
+    textures: {
+      sand0: (await promises["sand0"]) as Texture,
+      noise0: (await promises["noise0"]) as Texture,
+      metal0: (await promises["metal0"]) as Texture,
+      arrow0: (await promises["arrow0"]) as Texture,
+    },
+    sounds: {
+      music: new Howl({
+        src: ["/static/2020-03-22_-_A_Simple_Chill_-_FesliyanStudios.com_-_David_Renda.mp3"],
+        loop: true,
+        volume: 0.25,
+      }),
+      shoot0: new Howl({ src: ["/static/shoot0.ogg"] }),
+      hit0: new Howl({ src: ["/static/hit0.ogg"] }),
+      explode0: new Howl({ src: ["/static/explode0.ogg"] }),
+      engine0: new Howl({ src: ["/static/engine0.ogg"], loop: true }),
+    },
+  };
 
   return results;
 }

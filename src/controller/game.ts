@@ -17,23 +17,22 @@ import { applyRandomUpgrade, upgrades } from "../model/upgrades";
 import { animationFrame } from "../util";
 import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
-import { Resources, Sprite } from "./loading";
+import { Resources } from "./loading";
 import { permanentUpgrade } from "./permanent-upgrade";
 import { winGame } from "./win-game";
 
 function initLevel(state: State, resources: Resources) {
-  const bossLevels = 1;
+  const bossLevels = 10;
   const coreCount = state.level % bossLevels === 0 ? Math.floor(state.level / bossLevels) + 1 : 1;
-  const coreSprite = resources["core0"] as Sprite;
+  const coreSprite = resources.sprites.core0;
   const coreRadius = 0.5 * coreCount * coreSprite.radius;
   const coreCenter = vec2.random(vec2.create(), Math.random() * 64);
   while (vec2.distance(coreCenter, state.player.position) < 32) {
     vec2.random(coreCenter, Math.random() * 64);
   }
-  console.log(`level ${state.level}, coreCount ${coreCount}, coreRadius ${coreRadius}, coreCenter ${coreCenter}`);
   state.enemies.length = 0;
   for (let i = 0; i < coreCount; i++) {
-    const enemyCore = createDrone(state.world, resources["core0"] as Sprite);
+    const enemyCore = createDrone(state.world, resources.sprites.core0);
     enemyCore.isCore = true;
     enemyCore.armor = 10 * state.level;
     const angle = (2 * Math.PI * i) / coreCount;
@@ -43,7 +42,7 @@ function initLevel(state: State, resources: Resources) {
     const nEnemies = Math.min(state.level, Math.ceil(Math.random() * 10));
     const children: Drone[] = [];
     for (let i = 0; i < nEnemies; i++) {
-      const child = createDrone(state.world, resources["ship1"] as Sprite);
+      const child = createDrone(state.world, resources.sprites.ship1);
       child.parent = enemyCore;
       vec2.random(child.position, Math.random() * 1);
       vec2.add(child.position, child.position, enemyCore.position);
@@ -59,6 +58,8 @@ function initLevel(state: State, resources: Resources) {
 }
 
 export async function game(resources: Resources, permanentUpgrades: string[]) {
+  resources.sounds.engine0.play();
+  resources.sounds.engine0.volume(0);
   const state = buildState(resources);
   initLevel(state, resources);
 
@@ -150,6 +151,8 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
       accelerated = true;
     }
     accelerateDrone(state.player, rawAcceleration, state.time.dt);
+    resources.sounds.engine0.volume(vec2.length(state.player.velocity) * 0.25);
+    resources.sounds.engine0.rate(1 + vec2.length(state.player.velocity) * 0.2);
 
     // Update player rotation to point towards the nearest enemy.
     const playerDirection = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
@@ -196,7 +199,7 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
       vec2.sub(vec2.create(), state.player.position, state.camera.position),
       0.05
     );
-    const targetFov = 3 + 0.1 * vec2.length(state.player.velocity);
+    const targetFov = 3 + 0.2 * vec2.length(state.player.velocity);
     const df = targetFov > state.camera.fov ? 0.1 : 0.001;
     state.camera.fov += df * (targetFov - state.camera.fov);
 
@@ -229,6 +232,9 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
     // Fire player weapons.
     if (playerIsTargetingEnemy && state.time.now - state.player.lastFired > 1 / state.player.firingRate) {
       fireDroneWeapons(state.player, state);
+      const id = resources.sounds.shoot0.play();
+      resources.sounds.shoot0.rate(Math.random() * 0.5 + 0.75, id);
+      resources.sounds.shoot0.volume(0.125, id);
     }
 
     // Fire enemy weapons.
@@ -244,6 +250,9 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
         continue;
       }
       fireDroneWeapons(enemy, state);
+      const id = resources.sounds.shoot0.play();
+      resources.sounds.shoot0.rate(Math.random() * 0.5 + 0.75, id);
+      resources.sounds.shoot0.volume(0.125 / vec2.distance(state.player.position, enemy.position), id);
     }
 
     // Update all beams.
@@ -286,6 +295,18 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
           target = state.enemies.find((e) => e.collider === hit.collider);
         }
         if (target) {
+          // We hit something!
+          // Make a sound.
+          if (target === state.player) {
+            const id = resources.sounds.hit0.play();
+            resources.sounds.hit0.rate(Math.random() * 0.5 + 0.75, id);
+            resources.sounds.hit0.volume(0.25, id);
+          } else {
+            const id = resources.sounds.hit0.play();
+            resources.sounds.hit0.rate(Math.random() * 0.5 + 0.75, id);
+            resources.sounds.hit0.volume(0.25 / vec2.distance(state.player.position, target.position), id);
+          }
+
           // We hit something, create some sparks!
           while (Math.random() < 0.99) {
             state.sparks.push({
@@ -337,6 +358,8 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
         return true;
       }
       explodeDrone(enemy, state);
+      const id = resources.sounds.explode0.play();
+      resources.sounds.explode0.volume(enemy.sprite.radius / vec2.distance(state.player.position, enemy.position), id);
       state.world.removeCollider(enemy.collider, false);
       return false;
     });
