@@ -5,10 +5,10 @@ import { MenuButton, Menu, MenuHTML } from "./menu";
 export async function permanentUpgrade(state: State, permanentUpgrades: string[]) {
   const selectedUpgrades = getRandomUpgrades(state.player, 3, true);
   const menu = new Menu();
-  menu.style.background = "rgba(0, 0, 0, 0.75)";
-  menu.style.border = "1px solid white";
+  menu.style.background = "rgba(0, 0, 0, 0.5)";
   menu.style.borderRadius = "7px";
-  menu.addItem(new MenuHTML("Select a permanent upgrade to continue:"));
+  menu.style.fontSize = "24px";
+  menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="/static/permanent-upgrade.png" height=96></div>`));
   for (const upgrade of selectedUpgrades) {
     menu.addItem(
       new MenuButton(

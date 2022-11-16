@@ -109,7 +109,7 @@ export const upgrades: Upgrade[] = [
     icon: "mighty-spanner.svg",
     color: armorColor,
     frequency: 1,
-    permable: true,
+    permable: false,
     available: (drone: Drone) => drone.armor < drone.maxArmor,
     upgrade: (drone: Drone) => {
       drone.armor = drone.maxArmor;
