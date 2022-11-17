@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "clean": "rm -rf docs",
-    "build": "npm run clean && tsc && vite build --outDir docs && cp -r static docs",
+    "build": "npm run clean && tsc && vite build --base '/game-off-2022/' --outDir docs && cp -r static docs",
     "preview": "vite preview"
   },
   "devDependencies": {
