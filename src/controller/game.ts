@@ -343,12 +343,8 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
 
     // If a core dies, kill its children.
     state.enemies.forEach((e) => {
-      if (e.isCore && e.armor <= 0) {
-        state.enemies.forEach((e2) => {
-          if (e2.parent === e) {
-            e2.armor = -1;
-          }
-        });
+      if (e.parent && e.parent.armor <= 0 && Math.random() < 1 / 120) {
+        e.armor = -1;
       }
     });
 
@@ -377,9 +373,9 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
         await winGame(state);
         return;
       }
-      await levelEnd(state);
+      await levelEnd(state, resources);
       if (Math.random() < 0.1) {
-        await permanentUpgrade(state, permanentUpgrades);
+        await permanentUpgrade(state, permanentUpgrades, resources);
       }
       state.levelEndTimestamp = null;
       state.level++;

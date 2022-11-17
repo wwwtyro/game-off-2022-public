@@ -1,8 +1,9 @@
 import { State } from "../model/model";
 import { getRandomUpgrades } from "../model/upgrades";
+import { Resources } from "./loading";
 import { MenuButton, Menu, MenuHTML } from "./menu";
 
-export async function permanentUpgrade(state: State, permanentUpgrades: string[]) {
+export async function permanentUpgrade(state: State, permanentUpgrades: string[], resources: Resources) {
   const selectedUpgrades = getRandomUpgrades(state.player, 3, true);
   const menu = new Menu();
   menu.style.background = "rgba(0, 0, 0, 0.5)";
@@ -14,6 +15,8 @@ export async function permanentUpgrade(state: State, permanentUpgrades: string[]
       new MenuButton(
         upgrade.label,
         () => {
+          resources.sounds.click0.play();
+          resources.sounds.powerup1.play();
           upgrade.upgrade(state.player);
           permanentUpgrades.push(upgrade.label);
           localStorage.setItem("permanentUpgrades", JSON.stringify(permanentUpgrades));

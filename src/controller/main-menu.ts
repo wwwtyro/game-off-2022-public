@@ -7,6 +7,7 @@ export async function mainMenu(resources: Resources) {
   menu.addItem(new MenuHTML(`<img src="/static/title.png">`));
   menu.addItem(
     new MenuButton("New Game", async () => {
+      resources.sounds.click0.play();
       menu.hide();
       const permanentUpgrades: string[] = JSON.parse(localStorage.getItem("permanentUpgrades") ?? JSON.stringify([]));
       resources.sounds.music.play();

@@ -1,8 +1,9 @@
 import { State } from "../model/model";
 import { getRandomUpgrades } from "../model/upgrades";
+import { Resources } from "./loading";
 import { MenuButton, Menu, MenuHTML } from "./menu";
 
-export async function levelEnd(state: State) {
+export async function levelEnd(state: State, resources: Resources) {
   const selectedUpgrades = getRandomUpgrades(state.player, 3, false);
   const menu = new Menu();
   menu.style.background = "rgba(0, 0, 0, 0.5)";
@@ -14,6 +15,8 @@ export async function levelEnd(state: State) {
       new MenuButton(
         upgrade.label,
         () => {
+          resources.sounds.click0.play();
+          resources.sounds.powerup1.play();
           upgrade.upgrade(state.player);
           menu.exit();
         },
