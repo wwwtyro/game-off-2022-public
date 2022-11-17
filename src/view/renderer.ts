@@ -331,21 +331,23 @@ export class Renderer {
     // Render shadows.
     this.regl.clear({ color: [1, 1, 1, 1], framebuffer: this.fbShadow[0] });
 
-    mat4.identity(model);
-    mat4.translate(model, model, [state.player.position[0] - 0.25, state.player.position[1] - 0.25, 0]);
-    mat4.rotateZ(model, model, state.player.rotation);
-    mat4.scale(model, model, [
-      (state.player.sprite.scale * state.player.sprite.original.width) / state.player.sprite.original.height,
-      state.player.sprite.scale,
-      1,
-    ]);
-    this.renderShadow({
-      albedo: this.getTexture(state.player.sprite.powerOfTwo),
-      model,
-      view,
-      projection,
-      viewport: shadowViewport,
-    });
+    if (state.player.armor > 0) {
+      mat4.identity(model);
+      mat4.translate(model, model, [state.player.position[0] - 0.25, state.player.position[1] - 0.25, 0]);
+      mat4.rotateZ(model, model, state.player.rotation);
+      mat4.scale(model, model, [
+        (state.player.sprite.scale * state.player.sprite.original.width) / state.player.sprite.original.height,
+        state.player.sprite.scale,
+        1,
+      ]);
+      this.renderShadow({
+        albedo: this.getTexture(state.player.sprite.powerOfTwo),
+        model,
+        view,
+        projection,
+        viewport: shadowViewport,
+      });
+    }
 
     for (const enemy of state.enemies) {
       mat4.identity(model);
@@ -472,23 +474,25 @@ export class Renderer {
     }
 
     // Render the player.
-    mat4.identity(model);
-    mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
-    mat4.rotateZ(model, model, state.player.rotation);
-    mat4.scale(model, model, [
-      (state.player.sprite.scale * state.player.sprite.original.width) / state.player.sprite.original.height,
-      state.player.sprite.scale,
-      1,
-    ]);
-    this.renderSprite({
-      albedo: this.getTexture(state.player.sprite.powerOfTwo),
-      normal: this.getTexture(state.player.sprite.powerOfTwoNormal),
-      rotation: state.player.rotation,
-      model,
-      view,
-      projection,
-      viewport,
-    });
+    if (state.player.armor > 0) {
+      mat4.identity(model);
+      mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
+      mat4.rotateZ(model, model, state.player.rotation);
+      mat4.scale(model, model, [
+        (state.player.sprite.scale * state.player.sprite.original.width) / state.player.sprite.original.height,
+        state.player.sprite.scale,
+        1,
+      ]);
+      this.renderSprite({
+        albedo: this.getTexture(state.player.sprite.powerOfTwo),
+        normal: this.getTexture(state.player.sprite.powerOfTwoNormal),
+        rotation: state.player.rotation,
+        model,
+        view,
+        projection,
+        viewport,
+      });
+    }
 
     // Render player outline.
     if (DEBUG) {

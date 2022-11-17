@@ -18,6 +18,7 @@ import { animationFrame } from "../util";
 import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
 import { Resources } from "./loading";
+import { loseGame } from "./lose-game";
 import { permanentUpgrade } from "./permanent-upgrade";
 import { winGame } from "./win-game";
 
@@ -34,7 +35,8 @@ function initLevel(state: State, resources: Resources) {
   for (let i = 0; i < coreCount; i++) {
     const enemyCore = createDrone(state.world, resources.sprites.core0);
     enemyCore.isCore = true;
-    enemyCore.armor = 10 * state.level;
+    enemyCore.maxArmor = 10 * state.level;
+    enemyCore.armor = enemyCore.maxArmor;
     const angle = (2 * Math.PI * i) / coreCount;
     vec2.set(enemyCore.position, coreRadius * Math.cos(angle), coreRadius * Math.sin(angle));
     vec2.add(enemyCore.position, enemyCore.position, coreCenter);
@@ -47,7 +49,8 @@ function initLevel(state: State, resources: Resources) {
       vec2.random(child.position, Math.random() * 1);
       vec2.add(child.position, child.position, enemyCore.position);
       child.rotation = Math.random() * 2 * Math.PI;
-      child.armor = 5 * state.level;
+      child.maxArmor = 5 * state.level;
+      child.armor = child.maxArmor;
       for (let i = 0; i < state.level; i++) {
         applyRandomUpgrade(child, false);
       }
@@ -204,11 +207,11 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
     state.camera.fov += df * (targetFov - state.camera.fov);
 
     // Update collider positions.
-    state.player.collider.setRotation(state.player.rotation);
-    state.player.collider.setTranslation({ x: state.player.position[0], y: state.player.position[1] });
+    state.player.collider?.setRotation(state.player.rotation);
+    state.player.collider?.setTranslation({ x: state.player.position[0], y: state.player.position[1] });
     for (const enemy of state.enemies) {
-      enemy.collider.setRotation(enemy.rotation);
-      enemy.collider.setTranslation({ x: enemy.position[0], y: enemy.position[1] });
+      enemy.collider?.setRotation(enemy.rotation);
+      enemy.collider?.setTranslation({ x: enemy.position[0], y: enemy.position[1] });
     }
 
     // Remove all aged beams.
@@ -230,7 +233,11 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
     state.flames = state.flames.filter((f) => f.age < 3.0);
 
     // Fire player weapons.
-    if (playerIsTargetingEnemy && state.time.now - state.player.lastFired > 1 / state.player.firingRate) {
+    if (
+      state.player.armor > 0 &&
+      playerIsTargetingEnemy &&
+      state.time.now - state.player.lastFired > 1 / state.player.firingRate
+    ) {
       fireDroneWeapons(state.player, state);
       const id = resources.sounds.shoot0.play();
       resources.sounds.shoot0.rate(Math.random() * 0.5 + 0.75, id);
@@ -238,21 +245,23 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
     }
 
     // Fire enemy weapons.
-    for (const enemy of state.enemies) {
-      if (enemy.isCore) {
-        continue;
+    if (state.player.armor > 0) {
+      for (const enemy of state.enemies) {
+        if (enemy.isCore) {
+          continue;
+        }
+        if (state.time.now - enemy.lastFired < 1 / enemy.firingRate) {
+          continue;
+        }
+        const dist = vec2.distance(state.player.position, enemy.position);
+        if (dist > 5) {
+          continue;
+        }
+        fireDroneWeapons(enemy, state);
+        const id = resources.sounds.shoot0.play();
+        resources.sounds.shoot0.rate(Math.random() * 0.5 + 0.75, id);
+        resources.sounds.shoot0.volume(0.125 / vec2.distance(state.player.position, enemy.position), id);
       }
-      if (state.time.now - enemy.lastFired < 1 / enemy.firingRate) {
-        continue;
-      }
-      const dist = vec2.distance(state.player.position, enemy.position);
-      if (dist > 5) {
-        continue;
-      }
-      fireDroneWeapons(enemy, state);
-      const id = resources.sounds.shoot0.play();
-      resources.sounds.shoot0.rate(Math.random() * 0.5 + 0.75, id);
-      resources.sounds.shoot0.volume(0.125 / vec2.distance(state.player.position, enemy.position), id);
     }
 
     // Update all beams.
@@ -356,12 +365,15 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
       explodeDrone(enemy, state);
       const id = resources.sounds.explode0.play();
       resources.sounds.explode0.volume(enemy.sprite.radius / vec2.distance(state.player.position, enemy.position), id);
-      state.world.removeCollider(enemy.collider, false);
       return false;
     });
 
     // Check to see if we've completed the level.
     if (state.levelEndTimestamp === null) {
+      if (state.player.armor <= 0) {
+        state.levelEndTimestamp = state.time.now;
+        explodeDrone(state.player, state);
+      }
       if (state.enemies.length === 0) {
         state.levelEndTimestamp = state.time.now;
       }
@@ -369,6 +381,10 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
 
     // If the level has ended, handle the necessary updates.
     if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 4.0) {
+      if (state.player.armor <= 0) {
+        await loseGame(resources);
+        return;
+      }
       if (state.level === 100) {
         await winGame(state);
         return;

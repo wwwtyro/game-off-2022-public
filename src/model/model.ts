@@ -51,7 +51,7 @@ function getColliderDesc(sprite: Sprite): RAPIER.ColliderDesc {
 export interface Drone {
   parent?: Drone;
   sprite: Sprite;
-  collider: Collider;
+  collider: Collider | null;
   position: vec2;
   velocity: vec2;
   rotation: number;
@@ -116,6 +116,10 @@ export function chargeDroneShields(drone: Drone, dt: number) {
 }
 
 export function explodeDrone(drone: Drone, state: State) {
+  if (drone.collider) {
+    state.world.removeCollider(drone.collider, false);
+    drone.collider = null;
+  }
   for (let j = 0; j < drone.sprite.outline!.length; j++) {
     const p = randomInteriorPoint(drone);
     for (let i = 0; i < 4; i++) {

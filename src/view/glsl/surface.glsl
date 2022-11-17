@@ -17,7 +17,7 @@ varying vec2 vUV, stationaryUV;
 
 void main() {
   float shadow = texture2D(tShadow, stationaryUV).r;
-  float noise = texture2D(tNoise, vUV * 0.001).r;
+  float noise = texture2D(tNoise, vUV * 0.01).r;
   vec3 metal = 0.5 * texture2D(tMetal, vUV * 0.25).rgb;
   vec3 metalNormal = normalize(texture2D(tMetalNormal, vUV * 0.25).rgb * 2.0 - 1.0);
   vec3 sand = 0.333 * texture2D(tSand, vUV * 0.5).rgb;
