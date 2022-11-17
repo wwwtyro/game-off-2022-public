@@ -567,6 +567,69 @@ export class Renderer {
 
     // Render UI elements.
 
+    // Armor and shield indicators.
+    this.tempArray1.length = 0;
+    this.tempArray2.length = 0;
+    if (state.player.armor > 0) {
+      arc(
+        state.player.rotation,
+        (0.5 * Math.PI * state.player.shields) / state.player.maxShields,
+        state.player.sprite.radius * 1.1,
+        state.player.position,
+        [0, 0.5, 1.0, 1],
+        this.tempArray1 as number[],
+        this.tempArray2 as number[]
+      );
+      arc(
+        state.player.rotation,
+        (0.5 * Math.PI * state.player.armor) / state.player.maxArmor,
+        state.player.sprite.radius * 1.0,
+        state.player.position,
+        [1, 1, 1, 1],
+        this.tempArray1 as number[],
+        this.tempArray2 as number[]
+      );
+    }
+
+    for (const enemy of state.enemies) {
+      const toPlayer = vec2.sub(vec2.create(), state.player.position, enemy.position);
+      const angle = Math.atan2(toPlayer[1], toPlayer[0]);
+      arc(
+        angle,
+        (0.5 * Math.PI * enemy.shields) / enemy.maxShields,
+        enemy.sprite.radius * 1.1,
+        enemy.position,
+        [0, 0.5, 1.0, 1],
+        this.tempArray1 as number[],
+        this.tempArray2 as number[]
+      );
+      arc(
+        angle,
+        (0.5 * Math.PI * enemy.armor) / enemy.maxArmor,
+        enemy.sprite.radius * 1.0,
+        enemy.position,
+        [1, 1, 1, 1],
+        this.tempArray1 as number[],
+        this.tempArray2 as number[]
+      );
+    }
+
+    if (this.tempArray1.length > 0) {
+      this.tempBuffer1(this.tempArray1);
+      this.tempBuffer2(this.tempArray2);
+      this.renderLines({
+        model: mat4.create(),
+        view,
+        projection,
+        viewport,
+        width: 0.02,
+        points: this.tempBuffer1,
+        colors: this.tempBuffer2,
+        segments: this.tempArray1.length / 4,
+        framebuffer: null,
+      });
+    }
+
     // Render the direction indicator if needed.
     for (const enemy of state.enemies) {
       const dir = vec2.sub(vec2.create(), enemy.position, state.player.position);
@@ -582,6 +645,28 @@ export class Renderer {
         viewport,
       });
     }
+  }
+}
+
+function arc(
+  centerAngle: number,
+  arcLength: number,
+  radius: number,
+  offset: vec2,
+  color: number[],
+  positionArray: number[],
+  colorArray: number[]
+) {
+  const count = 9;
+  for (let i = 0; i < count; i++) {
+    const theta0 = centerAngle - 0.5 * arcLength + (arcLength * (i + 0)) / count;
+    const theta1 = centerAngle - 0.5 * arcLength + (arcLength * (i + 1)) / count;
+    const x0 = radius * Math.cos(theta0) + offset[0];
+    const y0 = radius * Math.sin(theta0) + offset[1];
+    const x1 = radius * Math.cos(theta1) + offset[0];
+    const y1 = radius * Math.sin(theta1) + offset[1];
+    positionArray.push(x0, y0, x1, y1);
+    colorArray.push(...color);
   }
 }
 
