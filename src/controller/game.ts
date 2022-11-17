@@ -19,6 +19,7 @@ import { Renderer } from "../view/renderer";
 import { levelEnd } from "./level-end";
 import { Resources } from "./loading";
 import { loseGame } from "./lose-game";
+import { optionsMenu } from "./options-menu";
 import { permanentUpgrade } from "./permanent-upgrade";
 import { winGame } from "./win-game";
 
@@ -90,6 +91,12 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
   const renderer = new Renderer(canvas, resources);
 
   while (true) {
+    if (state.keys["Escape"]) {
+      resources.sounds.engine0.mute(true);
+      await optionsMenu(resources);
+      resources.sounds.engine0.mute(false);
+    }
+
     state.time.dt = 1 / 60;
     state.time.now += state.time.dt;
 
@@ -135,52 +142,54 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
     }
 
     // Update player position.
-    const rawAcceleration = vec2.fromValues(0, 0);
-    let accelerated = false;
-    if (state.keys.KeyA) {
-      rawAcceleration[0] -= 1;
-      accelerated = true;
-    }
-    if (state.keys.KeyD) {
-      rawAcceleration[0] += 1;
-      accelerated = true;
-    }
-    if (state.keys.KeyS) {
-      rawAcceleration[1] -= 1;
-      accelerated = true;
-    }
-    if (state.keys.KeyW) {
-      rawAcceleration[1] += 1;
-      accelerated = true;
-    }
-    accelerateDrone(state.player, rawAcceleration, state.time.dt);
-    resources.sounds.engine0.volume(vec2.length(state.player.velocity) * 0.25);
-    resources.sounds.engine0.rate(1 + vec2.length(state.player.velocity) * 0.2);
-
-    // Update player rotation to point towards the nearest enemy.
-    const playerDirection = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
-    let targetedDrone: Drone | null = null;
-    let maxScore = -Infinity;
-    for (const enemy of state.enemies) {
-      const dist = vec2.distance(enemy.position, state.player.position);
-      if (dist > 5) {
-        continue;
-      }
-      const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), enemy.position, state.player.position));
-      const score = (0.75 + 0.25 * vec2.dot(de, playerDirection)) / dist;
-      if (score > maxScore) {
-        maxScore = score;
-        targetedDrone = enemy;
-      }
-    }
     let playerIsTargetingEnemy = false;
-    if (targetedDrone !== null && maxScore < 5) {
-      playerIsTargetingEnemy = true;
-      droneTargetPoint(state.player, targetedDrone.position);
-    } else if (accelerated) {
-      droneTargetDirection(state.player, rawAcceleration);
+    if (state.player.armor > 0) {
+      const rawAcceleration = vec2.fromValues(0, 0);
+      let accelerated = false;
+      if (state.keys.KeyA) {
+        rawAcceleration[0] -= 1;
+        accelerated = true;
+      }
+      if (state.keys.KeyD) {
+        rawAcceleration[0] += 1;
+        accelerated = true;
+      }
+      if (state.keys.KeyS) {
+        rawAcceleration[1] -= 1;
+        accelerated = true;
+      }
+      if (state.keys.KeyW) {
+        rawAcceleration[1] += 1;
+        accelerated = true;
+      }
+      accelerateDrone(state.player, rawAcceleration, state.time.dt);
+      resources.sounds.engine0.volume(vec2.length(state.player.velocity) * 0.25);
+      resources.sounds.engine0.rate(1 + vec2.length(state.player.velocity) * 0.2);
+
+      // Update player rotation to point towards the nearest enemy.
+      const playerDirection = vec2.fromValues(Math.cos(state.player.rotation), Math.sin(state.player.rotation));
+      let targetedDrone: Drone | null = null;
+      let maxScore = -Infinity;
+      for (const enemy of state.enemies) {
+        const dist = vec2.distance(enemy.position, state.player.position);
+        if (dist > 5) {
+          continue;
+        }
+        const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), enemy.position, state.player.position));
+        const score = (0.75 + 0.25 * vec2.dot(de, playerDirection)) / dist;
+        if (score > maxScore) {
+          maxScore = score;
+          targetedDrone = enemy;
+        }
+      }
+      if (targetedDrone !== null && maxScore < 5) {
+        playerIsTargetingEnemy = true;
+        droneTargetPoint(state.player, targetedDrone.position);
+      } else if (accelerated) {
+        droneTargetDirection(state.player, rawAcceleration);
+      }
+      rotateDrone(state.player, state.time.dt);
     }
-    rotateDrone(state.player, state.time.dt);
 
     // Update enemy rotations.
     for (const enemy of state.enemies) {
@@ -373,6 +382,7 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
       if (state.player.armor <= 0) {
         state.levelEndTimestamp = state.time.now;
         explodeDrone(state.player, state);
+        resources.sounds.engine0.volume(0);
       }
       if (state.enemies.length === 0) {
         state.levelEndTimestamp = state.time.now;
@@ -382,16 +392,24 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
     // If the level has ended, handle the necessary updates.
     if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 4.0) {
       if (state.player.armor <= 0) {
+        resources.sounds.engine0.mute(true);
         await loseGame(resources);
+        resources.sounds.engine0.mute(false);
         return;
       }
       if (state.level === 100) {
+        resources.sounds.engine0.mute(true);
         await winGame(state);
+        resources.sounds.engine0.mute(false);
         return;
       }
+      resources.sounds.engine0.mute(true);
       await levelEnd(state, resources);
+      resources.sounds.engine0.mute(false);
       if (Math.random() < 0.1) {
+        resources.sounds.engine0.mute(true);
         await permanentUpgrade(state, permanentUpgrades, resources);
+        resources.sounds.engine0.mute(false);
       }
       state.levelEndTimestamp = null;
       state.level++;

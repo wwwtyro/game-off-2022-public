@@ -77,8 +77,8 @@ export async function loadResources(callback: (fraction: number) => void) {
       hit0: new Howl({ src: ["/static/hit0.ogg"] }),
       explode0: new Howl({ src: ["/static/explode0.ogg"] }),
       click0: new Howl({ src: ["/static/click0.ogg"] }),
-      powerup0: new Howl({ src: ["/static/powerup0.ogg"] }),
-      powerup1: new Howl({ src: ["/static/powerup1.ogg"] }),
+      powerup0: new Howl({ src: ["/static/powerup0.ogg"], volume: 0.25 }),
+      powerup1: new Howl({ src: ["/static/powerup1.ogg"], volume: 0.25 }),
       engine0: new Howl({ src: ["/static/engine0.ogg"], loop: true }),
     },
   };

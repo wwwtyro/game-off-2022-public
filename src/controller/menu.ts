@@ -1,6 +1,6 @@
 import { animationFrame } from "../util";
 
-type Callback = () => void | Promise<void>;
+type Callback = (event?: any) => void | Promise<void>;
 
 class MenuItem {
   protected div: HTMLElement = document.createElement("div");
@@ -42,6 +42,27 @@ export class MenuButton extends MenuItem {
   }
 }
 
+export class MenuSlider extends MenuItem {
+  constructor(text: string, min: number, max: number, step: number, value: number, callback: Callback) {
+    super();
+    const textSpan = document.createElement("span");
+    textSpan.innerText = text;
+    this.div.appendChild(textSpan);
+    const slider = document.createElement("input");
+    slider.style.marginLeft = "16px";
+    slider.type = "range";
+    slider.min = min.toString();
+    slider.max = max.toString();
+    slider.step = step.toString();
+    slider.value = value.toString();
+    slider.addEventListener("input", callback);
+    this.disposer = () => {
+      slider.removeEventListener("input", callback);
+    };
+    this.div.appendChild(slider);
+  }
+}
+
 export class Menu {
   private items: MenuItem[] = [];
   private div: HTMLDivElement;
@@ -51,6 +72,9 @@ export class Menu {
     this.div = document.createElement("div");
     this.div.classList.add("center-content");
     document.getElementById("center-container")?.appendChild(this.div);
+    this.style.background = "rgba(0, 0, 0, 0.5)";
+    this.style.borderRadius = "7px";
+    this.style.fontSize = "24px";
     this.hide();
   }
 
