@@ -240,6 +240,8 @@ export function buildState(resources: Resources): State {
     levelEndTimestamp: null,
   };
 
+  state.player.armor = 5;
+  state.player.maxArmor = 5;
   state.player.team = "player";
 
   return state;
