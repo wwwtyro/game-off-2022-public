@@ -1,7 +1,6 @@
-import { Resources } from "./loading";
-import { MenuButton, Menu, MenuHTML, MenuSlider } from "./menu";
+import { MenuButton, Menu, MenuHTML } from "./menu";
 
-export async function resetGame(resources: Resources) {
+export async function resetGame() {
   const menu = new Menu();
   menu.addItem(
     new MenuHTML(

@@ -399,7 +399,7 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
       }
       if (state.level === 100) {
         resources.sounds.engine0.mute(true);
-        await winGame(state);
+        await winGame();
         resources.sounds.engine0.mute(false);
         return;
       }

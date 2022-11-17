@@ -21,7 +21,7 @@ export async function optionsMenu(resources: Resources) {
   menu.addItem(
     new MenuButton("Reset Game", async () => {
       menu.hide();
-      await resetGame(resources);
+      await resetGame();
       menu.show();
     })
   );

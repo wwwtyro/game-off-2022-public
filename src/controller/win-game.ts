@@ -1,7 +1,6 @@
-import { State } from "../model/model";
 import { animationFrame } from "../util";
 
-export async function winGame(state: State) {
+export async function winGame() {
   const div = document.getElementById("center-content")!;
   div.style.display = "block";
   div.innerText = "You win! Click to continue.";
