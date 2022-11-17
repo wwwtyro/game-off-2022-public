@@ -69,17 +69,17 @@ export async function loadResources(callback: (fraction: number) => void) {
     },
     sounds: {
       music: new Howl({
-        src: ["/static/2020-03-22_-_A_Simple_Chill_-_FesliyanStudios.com_-_David_Renda.mp3"],
+        src: ["static/2020-03-22_-_A_Simple_Chill_-_FesliyanStudios.com_-_David_Renda.mp3"],
         loop: true,
         volume: 0.25,
       }),
-      shoot0: new Howl({ src: ["/static/shoot0.ogg"] }),
-      hit0: new Howl({ src: ["/static/hit0.ogg"] }),
-      explode0: new Howl({ src: ["/static/explode0.ogg"] }),
-      click0: new Howl({ src: ["/static/click0.ogg"] }),
-      powerup0: new Howl({ src: ["/static/powerup0.ogg"], volume: 0.25 }),
-      powerup1: new Howl({ src: ["/static/powerup1.ogg"], volume: 0.25 }),
-      engine0: new Howl({ src: ["/static/engine0.ogg"], loop: true }),
+      shoot0: new Howl({ src: ["static/shoot0.ogg"] }),
+      hit0: new Howl({ src: ["static/hit0.ogg"] }),
+      explode0: new Howl({ src: ["static/explode0.ogg"] }),
+      click0: new Howl({ src: ["static/click0.ogg"] }),
+      powerup0: new Howl({ src: ["static/powerup0.ogg"], volume: 0.25 }),
+      powerup1: new Howl({ src: ["static/powerup1.ogg"], volume: 0.25 }),
+      engine0: new Howl({ src: ["static/engine0.ogg"], loop: true }),
     },
   };
 
@@ -178,7 +178,7 @@ async function loadSprite(url: string, urlNormal: string, scale: number): Promis
 function loadImage(url: string) {
   return new Promise<HTMLImageElement>((accept, reject) => {
     const img = new Image();
-    img.src = `/static/${url}`;
+    img.src = `static/${url}`;
     img.onload = () => {
       accept(img);
     };

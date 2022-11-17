@@ -9,7 +9,7 @@ export async function permanentUpgrade(state: State, permanentUpgrades: string[]
   menu.style.background = "rgba(0, 0, 0, 0.5)";
   menu.style.borderRadius = "7px";
   menu.style.fontSize = "24px";
-  menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="/static/permanent-upgrade.png" height=96></div>`));
+  menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="static/permanent-upgrade.png" height=96></div>`));
   for (const upgrade of selectedUpgrades) {
     menu.addItem(
       new MenuButton(
