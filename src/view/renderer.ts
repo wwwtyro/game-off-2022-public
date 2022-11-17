@@ -415,7 +415,7 @@ export class Renderer {
       view,
       projection,
       viewport,
-      width: 0.01,
+      width: 0.02,
       colors: this.tempBuffer1,
       points: this.tempBuffer2,
       segments: state.beams.length,
@@ -585,7 +585,7 @@ export class Renderer {
         (0.5 * Math.PI * state.player.armor) / state.player.maxArmor,
         state.player.sprite.radius * 1.0,
         state.player.position,
-        [1, 1, 1, 1],
+        [0, 0.75, 0, 1],
         this.tempArray1 as number[],
         this.tempArray2 as number[]
       );
@@ -608,7 +608,7 @@ export class Renderer {
         (0.5 * Math.PI * enemy.armor) / enemy.maxArmor,
         enemy.sprite.radius * 1.0,
         enemy.position,
-        [1, 1, 1, 1],
+        [0, 0.75, 0, 1],
         this.tempArray1 as number[],
         this.tempArray2 as number[]
       );
