@@ -28,9 +28,9 @@ function initLevel(state: State, resources: Resources) {
   const coreCount = state.level % bossLevels === 0 ? Math.floor(state.level / bossLevels) + 1 : 1;
   const coreSprite = resources.sprites.core0;
   const coreRadius = 0.5 * coreCount * coreSprite.radius;
-  const coreCenter = vec2.random(vec2.create(), Math.random() * 64);
-  while (vec2.distance(coreCenter, state.player.position) < 32) {
-    vec2.random(coreCenter, Math.random() * 64);
+  const coreCenter = vec2.random(vec2.create(), Math.random() * 32);
+  while (vec2.distance(coreCenter, state.player.position) < 16) {
+    vec2.random(coreCenter, Math.random() * 32);
   }
   state.enemies.length = 0;
   for (let i = 0; i < coreCount; i++) {
@@ -245,7 +245,7 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
     if (
       state.player.armor > 0 &&
       playerIsTargetingEnemy &&
-      state.time.now - state.player.lastFired > 1 / state.player.firingRate
+      state.time.now - state.player.ionCannonLastFired > 1 / state.player.ionCannonFiringRate
     ) {
       fireDroneWeapons(state.player, state);
       const id = resources.sounds.shoot0.play();
@@ -259,7 +259,7 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
         if (enemy.isCore) {
           continue;
         }
-        if (state.time.now - enemy.lastFired < 1 / enemy.firingRate) {
+        if (state.time.now - enemy.ionCannonLastFired < 1 / enemy.ionCannonFiringRate) {
           continue;
         }
         const dist = vec2.distance(state.player.position, enemy.position);

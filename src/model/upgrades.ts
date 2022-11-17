@@ -17,53 +17,53 @@ const shieldColor = "filter-shields";
 
 export const upgrades: Upgrade[] = [
   {
-    label: "Laser Firing Rate",
+    label: "Ion Cannon Firing Rate",
     icon: "laser-warning.svg",
     color: weaponColor,
     frequency: 1,
     permable: true,
     available: (drone: Drone) => {
-      return drone.firingRate < 15;
+      return drone.ionCannonFiringRate < 15;
     },
     upgrade: (drone: Drone) => {
-      drone.firingRate++;
+      drone.ionCannonFiringRate++;
     },
   },
   {
-    label: "Laser Power",
+    label: "Ion Cannon Power",
     icon: "laser-blast.svg",
     color: weaponColor,
     frequency: 1,
     permable: true,
     available: () => true,
     upgrade: (drone: Drone) => {
-      drone.weaponPower++;
+      drone.ionCannonPower++;
     },
   },
   {
-    label: "Additional Laser",
+    label: "Additional Ion Cannon",
     icon: "laser-turret.svg",
     color: weaponColor,
     frequency: 0.1,
     permable: true,
     available: (drone: Drone) => {
-      return drone.lasers < 10;
+      return drone.ionCannons < 10;
     },
     upgrade: (drone: Drone) => {
-      drone.lasers++;
+      drone.ionCannons++;
     },
   },
   {
-    label: "Particle Beam Speed",
+    label: "Ion Cannon Beam Speed",
     icon: "laser-precision.svg",
     color: weaponColor,
     frequency: 1,
     permable: true,
     available: (drone: Drone) => {
-      return drone.beamSpeed < 10;
+      return drone.ionCannonBeamSpeed < 10;
     },
     upgrade: (drone: Drone) => {
-      drone.beamSpeed++;
+      drone.ionCannonBeamSpeed++;
     },
   },
   {

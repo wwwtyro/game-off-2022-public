@@ -28,10 +28,13 @@ export class MenuButton extends MenuItem {
   constructor(private text: string, private callback: Callback, private icon?: string, private iconClass?: string) {
     super();
     if (this.icon && this.iconClass) {
-      this.div.innerHTML = `<img src="/static/${this.icon}" style="vertical-align: middle; margin-right: 32px" class="menuicon ${this.iconClass}" width=64>${text}`;
+      this.div.innerHTML = `
+        <img src="/static/${this.icon}" style="vertical-align: middle; margin-right: 32px" class="${this.iconClass}" width=64>
+        <span class='menubutton'>${this.text}</span>
+      `;
       this.div.style.textAlign = "left";
     } else {
-      this.div.innerText = `${this.text}`;
+      this.div.innerHTML = `<span class='menubutton'>${this.text}</span>`;
       this.div.style.textAlign = "center";
     }
     this.div.style.cursor = "pointer";

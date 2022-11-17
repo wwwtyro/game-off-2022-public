@@ -1,5 +1,6 @@
 import { Resources } from "./loading";
 import { MenuButton, Menu, MenuHTML, MenuSlider } from "./menu";
+import { resetGame } from "./reset-game";
 
 export async function optionsMenu(resources: Resources) {
   const menu = new Menu();
@@ -15,6 +16,13 @@ export async function optionsMenu(resources: Resources) {
   menu.addItem(
     new MenuSlider("Music Volume", 0, 1, 0.01, resources.sounds.music.volume(), (e) => {
       resources.sounds.music.volume(parseFloat(e.target.value));
+    })
+  );
+  menu.addItem(
+    new MenuButton("Reset Game", async () => {
+      menu.hide();
+      await resetGame(resources);
+      menu.show();
     })
   );
   menu.addItem(

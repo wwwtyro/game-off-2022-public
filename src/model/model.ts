@@ -64,11 +64,11 @@ export interface Drone {
   maxShields: number;
   shieldRecharge: number;
   isCore: boolean;
-  firingRate: number;
-  lastFired: number;
-  weaponPower: number;
-  lasers: number;
-  beamSpeed: number;
+  ionCannonFiringRate: number;
+  ionCannonLastFired: number;
+  ionCannonPower: number;
+  ionCannons: number;
+  ionCannonBeamSpeed: number;
   turningSpeed: number;
   team: Team;
 }
@@ -91,11 +91,11 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     maxShields: 0,
     shieldRecharge: 1,
     isCore: false,
-    firingRate: 1,
-    weaponPower: 1,
-    lastFired: 0,
-    lasers: 1,
-    beamSpeed: 1,
+    ionCannonFiringRate: 1,
+    ionCannonPower: 1,
+    ionCannonLastFired: 0,
+    ionCannons: 1,
+    ionCannonBeamSpeed: 1,
     turningSpeed: 1,
     team: "enemy",
   };
@@ -143,8 +143,8 @@ export function explodeDrone(drone: Drone, state: State) {
 
 export function fireDroneWeapons(drone: Drone, state: State) {
   const direction = vec2.fromValues(Math.cos(drone.rotation), Math.sin(drone.rotation));
-  for (let i = 0; i < drone.lasers; i++) {
-    const step = (0.25 * drone.sprite.width!) / (drone.lasers + 1);
+  for (let i = 0; i < drone.ionCannons; i++) {
+    const step = (0.25 * drone.sprite.width!) / (drone.ionCannons + 1);
     const start = vec2.fromValues(0, -1);
     vec2.rotate(start, start, vec2Origin, drone.rotation);
     vec2.scaleAndAdd(start, drone.position, start, 0.5 * 0.25 * drone.sprite.width!);
@@ -155,13 +155,13 @@ export function fireDroneWeapons(drone: Drone, state: State) {
       position,
       lastPosition: vec2.clone(position),
       direction: vec2.clone(direction),
-      velocity: 3 * (0.5 * drone.beamSpeed + 0.5 * Math.random() * drone.beamSpeed),
+      velocity: 3 * (0.5 * drone.ionCannonBeamSpeed + 0.5 * Math.random() * drone.ionCannonBeamSpeed),
       timestamp: state.time.now,
-      power: state.player.weaponPower,
+      power: state.player.ionCannonPower,
       team: drone.team,
     });
   }
-  drone.lastFired = state.time.now;
+  drone.ionCannonLastFired = state.time.now;
 }
 
 export function rotateDrone(drone: Drone, dt: number) {
