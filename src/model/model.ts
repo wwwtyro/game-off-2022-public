@@ -215,6 +215,7 @@ export interface State {
   camera: {
     position: vec2;
     fov: number;
+    shake: number;
   };
   player: Drone;
   enemies: Drone[];
@@ -238,6 +239,7 @@ export function buildState(resources: Resources): State {
     camera: {
       position: vec2.fromValues(0, 0),
       fov: 2,
+      shake: 0,
     },
     player: createDrone(world, resources.sprites.ship0),
     enemies: [],

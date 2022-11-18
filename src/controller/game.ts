@@ -202,6 +202,7 @@ export async function game(resources: Resources) {
     }
 
     // Update camera.
+    state.camera.shake *= 0.9;
     vec2.scaleAndAdd(
       state.camera.position,
       state.camera.position,
@@ -316,6 +317,7 @@ export async function game(resources: Resources) {
             const id = resources.sounds.hit0.play();
             resources.sounds.hit0.rate(Math.random() * 0.5 + 0.75, id);
             resources.sounds.hit0.volume(0.25, id);
+            state.camera.shake = 1;
           } else {
             const id = resources.sounds.hit0.play();
             resources.sounds.hit0.rate(Math.random() * 0.5 + 0.75, id);
@@ -369,6 +371,7 @@ export async function game(resources: Resources) {
         return true;
       }
       explodeDrone(enemy, state);
+      state.camera.shake = 1;
       const id = resources.sounds.explode0.play();
       resources.sounds.explode0.volume(enemy.sprite.radius / vec2.distance(state.player.position, enemy.position), id);
       return false;
@@ -379,6 +382,7 @@ export async function game(resources: Resources) {
       if (state.player.armor <= 0) {
         state.levelEndTimestamp = state.time.now;
         explodeDrone(state.player, state);
+        state.camera.shake = 1;
         resources.sounds.explode0.play();
         resources.sounds.engine0.volume(0);
       }

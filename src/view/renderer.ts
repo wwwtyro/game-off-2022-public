@@ -324,15 +324,10 @@ export class Renderer {
     const viewport = { x: 0, y: 0, width: this.canvas.width, height: this.canvas.height };
     const model = mat4.create();
     const view = mat4.lookAt(mat4.create(), [0, 0, 1], [0, 0, 0], [0, 1, 0]);
-    const projection = mat4.ortho(
-      mat4.create(),
-      state.camera.position[0] - fovh,
-      state.camera.position[0] + fovh,
-      state.camera.position[1] - fovv,
-      state.camera.position[1] + fovv,
-      0,
-      1000
-    );
+    const shakex = 0.1 * state.camera.shake * Math.cos(state.time.now * 100) * Math.cos(state.time.now);
+    const shakey = 0.1 * state.camera.shake * Math.cos(state.time.now * 100) * Math.sin(state.time.now);
+    const camPos = vec2.add(vec2.create(), state.camera.position, [shakex, shakey]);
+    const projection = mat4.ortho(mat4.create(), camPos[0] - fovh, camPos[0] + fovh, camPos[1] - fovv, camPos[1] + fovv, 0, 1000);
 
     // Render shadows.
     this.regl.clear({ color: [1, 1, 1, 1], framebuffer: this.fbShadow[0] });
@@ -396,7 +391,7 @@ export class Renderer {
     // Render the surface.
     this.regl.clear({ color: [0, 0, 0, 1], depth: 1 });
     this.renderSurface({
-      offset: state.camera.position,
+      offset: camPos,
       range: [fovh, fovv],
       viewport,
     });
