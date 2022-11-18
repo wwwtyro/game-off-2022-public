@@ -59,12 +59,14 @@ export class MenuButton extends MenuItem {
 export class MenuSlider extends MenuItem {
   constructor(text: string, min: number, max: number, step: number, value: number, callback: Callback) {
     super();
+    this.div.style.display = "flex";
+    this.div.style.alignItems = "center";
+    this.div.style.justifyContent = "space-between";
     const textSpan = document.createElement("span");
     textSpan.innerText = text;
     this.div.appendChild(textSpan);
     const slider = document.createElement("input");
     slider.style.marginLeft = "16px";
-    slider.style.float = "right";
     slider.type = "range";
     slider.min = min.toString();
     slider.max = max.toString();
@@ -131,7 +133,6 @@ export class Menu {
     document.getElementById("center-container")?.appendChild(this.div);
     this.style.background = "rgba(0, 0, 0, 0.5)";
     this.style.borderRadius = "7px";
-    this.style.fontSize = "24px";
     this.style.maxWidth = "75%";
     this.hide();
   }

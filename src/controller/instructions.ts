@@ -5,7 +5,7 @@ export async function instructions() {
   menu.addItem(
     new MenuHTML(`
     <div style="text-align: center; color: #FF0">Instructions</div>
-    <div style="">
+    <div style="font-family: 'Electrolize', sans-serif; font-size: 18px; font-weight: normal">
       <p>Use WASD to steer your drone.</p>
 
       <p>Follow the indicators on the edge of your screen to the enemy drones.</p>

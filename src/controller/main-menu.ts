@@ -7,6 +7,7 @@ import { optionsMenu } from "./options-menu";
 
 export async function mainMenu(resources: Resources) {
   const menu = new Menu();
+  menu.style.fontSize = "32px";
   menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="static/title.png" style="width: 100%"></div>`));
   menu.addItem(
     new MenuButton("Play", async () => {

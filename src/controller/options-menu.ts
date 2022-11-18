@@ -6,7 +6,6 @@ export async function optionsMenu(resources: Resources) {
   const menu = new Menu();
   menu.style.background = "rgba(0, 0, 0, 0.5)";
   menu.style.borderRadius = "7px";
-  menu.style.fontSize = "24px";
   menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="static/options.png" height=96></div>`));
   menu.addItem(
     new MenuSlider("Master Volume", 0, 1, 0.01, Howler.volume(), (e) => {
