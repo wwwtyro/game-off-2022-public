@@ -1,4 +1,5 @@
 import { game } from "./game";
+import { instructions } from "./instructions";
 import { Resources } from "./loading";
 import { MenuButton, Menu, MenuHTML } from "./menu";
 import { optionsMenu } from "./options-menu";
@@ -8,7 +9,6 @@ export async function mainMenu(resources: Resources) {
   menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="static/title.png"></div>`));
   menu.addItem(
     new MenuButton("Play", async () => {
-      resources.sounds.click0.play();
       menu.hide();
       const permanentUpgrades: string[] = JSON.parse(localStorage.getItem("permanentUpgrades") ?? JSON.stringify([]));
       resources.sounds.music.play();
@@ -19,9 +19,15 @@ export async function mainMenu(resources: Resources) {
   );
   menu.addItem(
     new MenuButton("Options", async () => {
-      resources.sounds.click0.play();
       menu.hide();
       await optionsMenu(resources);
+      menu.show();
+    })
+  );
+  menu.addItem(
+    new MenuButton("Instructions", async () => {
+      menu.hide();
+      await instructions();
       menu.show();
     })
   );

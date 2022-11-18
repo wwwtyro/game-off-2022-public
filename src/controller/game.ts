@@ -16,10 +16,10 @@ import {
 import { applyRandomUpgrade, upgrades } from "../model/upgrades";
 import { animationFrame } from "../util";
 import { Renderer } from "../view/renderer";
+import { inGameOptionsMenu } from "./in-game-options-menu";
 import { levelEnd } from "./level-end";
 import { Resources } from "./loading";
 import { loseGame } from "./lose-game";
-import { optionsMenu } from "./options-menu";
 import { permanentUpgrade } from "./permanent-upgrade";
 import { winGame } from "./win-game";
 
@@ -93,7 +93,7 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
   while (true) {
     if (state.keys["Escape"]) {
       resources.sounds.engine0.mute(true);
-      await optionsMenu(resources);
+      await inGameOptionsMenu(state, resources);
       resources.sounds.engine0.mute(false);
     }
 
@@ -382,6 +382,7 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
       if (state.player.armor <= 0) {
         state.levelEndTimestamp = state.time.now;
         explodeDrone(state.player, state);
+        resources.sounds.explode0.play();
         resources.sounds.engine0.volume(0);
       }
       if (state.enemies.length === 0) {
@@ -393,7 +394,7 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
     if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 4.0) {
       if (state.player.armor <= 0) {
         resources.sounds.engine0.mute(true);
-        await loseGame(resources);
+        await loseGame();
         resources.sounds.engine0.mute(false);
         return;
       }

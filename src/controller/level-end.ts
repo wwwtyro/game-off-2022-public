@@ -15,7 +15,6 @@ export async function levelEnd(state: State, resources: Resources) {
       new MenuButton(
         upgrade.label,
         () => {
-          resources.sounds.click0.play();
           resources.sounds.powerup1.play();
           upgrade.upgrade(state.player);
           menu.exit();

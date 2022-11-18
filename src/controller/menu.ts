@@ -1,4 +1,11 @@
 import { animationFrame } from "../util";
+import { Resources } from "./loading";
+
+let resources: Resources;
+
+export function setMenuResources(res: Resources) {
+  resources = res;
+}
 
 type Callback = (event?: any) => void | Promise<void>;
 
@@ -38,7 +45,10 @@ export class MenuButton extends MenuItem {
       this.div.style.textAlign = "center";
     }
     this.div.style.cursor = "pointer";
-    this.div.addEventListener("click", this.callback);
+    this.div.addEventListener("click", () => {
+      resources.sounds.click0.play();
+      this.callback();
+    });
     this.disposer = () => {
       this.div.removeEventListener("click", this.callback);
     };
@@ -53,6 +63,7 @@ export class MenuSlider extends MenuItem {
     this.div.appendChild(textSpan);
     const slider = document.createElement("input");
     slider.style.marginLeft = "16px";
+    slider.style.float = "right";
     slider.type = "range";
     slider.min = min.toString();
     slider.max = max.toString();
@@ -78,6 +89,7 @@ export class Menu {
     this.style.background = "rgba(0, 0, 0, 0.5)";
     this.style.borderRadius = "7px";
     this.style.fontSize = "24px";
+    this.style.maxWidth = "75%";
     this.hide();
   }
 
