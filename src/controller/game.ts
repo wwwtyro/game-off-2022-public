@@ -43,7 +43,7 @@ function initLevel(state: State, resources: Resources) {
     vec2.set(enemyCore.position, coreRadius * Math.cos(angle), coreRadius * Math.sin(angle));
     vec2.add(enemyCore.position, enemyCore.position, coreCenter);
     state.enemies.push(enemyCore);
-    const nEnemies = Math.min(state.level, Math.ceil(Math.random() * 10));
+    const nEnemies = Math.min(state.level, Math.ceil(Math.random() * 5));
     const children: Drone[] = [];
     for (let i = 0; i < nEnemies; i++) {
       const child = createDrone(state.world, resources.sprites.ship1);

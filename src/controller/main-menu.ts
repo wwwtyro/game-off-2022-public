@@ -1,6 +1,7 @@
 import { getPermanentUpgrades } from "../model/model";
 import { game } from "./game";
 import { instructions } from "./instructions";
+import { intro } from "./intro";
 import { Resources } from "./loading";
 import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
 import { optionsMenu } from "./options-menu";
@@ -13,6 +14,7 @@ export async function mainMenu(resources: Resources) {
     new MenuButton("Play", async () => {
       menu.hide();
       resources.sounds.music.play();
+      await intro();
       await game(resources);
       document.getElementById("render-canvas")!.style.display = "none";
       resources.sounds.music.stop();
