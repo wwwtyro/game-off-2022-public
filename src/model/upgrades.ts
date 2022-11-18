@@ -6,7 +6,7 @@ export interface Upgrade {
   readonly color: string;
   readonly frequency: number;
   readonly available: (drone: Drone) => boolean;
-  readonly upgrade: (drone: Drone) => void;
+  readonly _upgrade: (drone: Drone) => void;
   readonly permable: boolean;
 }
 
@@ -25,7 +25,7 @@ export const upgrades: Upgrade[] = [
     available: (drone: Drone) => {
       return drone.ionCannonFiringRate < 15;
     },
-    upgrade: (drone: Drone) => {
+    _upgrade: (drone: Drone) => {
       drone.ionCannonFiringRate++;
     },
   },
@@ -36,7 +36,7 @@ export const upgrades: Upgrade[] = [
     frequency: 1,
     permable: true,
     available: () => true,
-    upgrade: (drone: Drone) => {
+    _upgrade: (drone: Drone) => {
       drone.ionCannonPower++;
     },
   },
@@ -49,7 +49,7 @@ export const upgrades: Upgrade[] = [
     available: (drone: Drone) => {
       return drone.ionCannons < 10;
     },
-    upgrade: (drone: Drone) => {
+    _upgrade: (drone: Drone) => {
       drone.ionCannons++;
     },
   },
@@ -62,7 +62,7 @@ export const upgrades: Upgrade[] = [
     available: (drone: Drone) => {
       return drone.ionCannonBeamSpeed < 10;
     },
-    upgrade: (drone: Drone) => {
+    _upgrade: (drone: Drone) => {
       drone.ionCannonBeamSpeed++;
     },
   },
@@ -75,7 +75,7 @@ export const upgrades: Upgrade[] = [
     available: (drone: Drone) => {
       return drone.turningSpeed < 30;
     },
-    upgrade: (drone: Drone) => {
+    _upgrade: (drone: Drone) => {
       drone.turningSpeed++;
     },
   },
@@ -88,7 +88,7 @@ export const upgrades: Upgrade[] = [
     available: (drone: Drone) => {
       return drone.acceleration < 5;
     },
-    upgrade: (drone: Drone) => {
+    _upgrade: (drone: Drone) => {
       drone.acceleration++;
     },
   },
@@ -99,7 +99,7 @@ export const upgrades: Upgrade[] = [
     frequency: 1,
     permable: true,
     available: () => true,
-    upgrade: (drone: Drone) => {
+    _upgrade: (drone: Drone) => {
       drone.maxArmor += 1;
       drone.armor += 1;
     },
@@ -111,7 +111,7 @@ export const upgrades: Upgrade[] = [
     frequency: 1,
     permable: false,
     available: (drone: Drone) => drone.armor < drone.maxArmor,
-    upgrade: (drone: Drone) => {
+    _upgrade: (drone: Drone) => {
       drone.armor = drone.maxArmor;
     },
   },
@@ -122,7 +122,7 @@ export const upgrades: Upgrade[] = [
     frequency: 1,
     permable: true,
     available: () => true,
-    upgrade: (drone: Drone) => {
+    _upgrade: (drone: Drone) => {
       drone.maxShields++;
     },
   },
@@ -133,11 +133,16 @@ export const upgrades: Upgrade[] = [
     frequency: 1,
     permable: true,
     available: (drone: Drone) => drone.maxShields > 0,
-    upgrade: (drone: Drone) => {
+    _upgrade: (drone: Drone) => {
       drone.maxShields++;
     },
   },
 ];
+
+export function upgradeDrone(upgrade: Upgrade, drone: Drone) {
+  drone.tempUpgrades.push(upgrade);
+  upgrade._upgrade(drone);
+}
 
 function randomUpgrade(availableUpgrades: Upgrade[]) {
   availableUpgrades = availableUpgrades.slice();
@@ -178,6 +183,6 @@ export function getRandomUpgrades(drone: Drone, count: number, permableOnly: boo
 export function applyRandomUpgrade(drone: Drone, permableOnly: false) {
   const upgrades = getRandomUpgrades(drone, 1, permableOnly);
   for (const upgrade of upgrades) {
-    upgrade.upgrade(drone);
+    upgradeDrone(upgrade, drone);
   }
 }

@@ -1,18 +1,19 @@
+import { getPermanentUpgrades } from "../model/model";
 import { game } from "./game";
 import { instructions } from "./instructions";
 import { Resources } from "./loading";
-import { MenuButton, Menu, MenuHTML } from "./menu";
+import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
 import { optionsMenu } from "./options-menu";
 
 export async function mainMenu(resources: Resources) {
   const menu = new Menu();
-  menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="static/title.png"></div>`));
+  menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="static/title.png" style="width: 100%"></div>`));
   menu.addItem(
     new MenuButton("Play", async () => {
       menu.hide();
-      const permanentUpgrades: string[] = JSON.parse(localStorage.getItem("permanentUpgrades") ?? JSON.stringify([]));
       resources.sounds.music.play();
-      await game(resources, permanentUpgrades);
+      await game(resources);
+      document.getElementById("render-canvas")!.style.display = "none";
       resources.sounds.music.stop();
       menu.show();
     })
@@ -31,5 +32,6 @@ export async function mainMenu(resources: Resources) {
       menu.show();
     })
   );
+  menu.addItem(new MenuUpgrades(getPermanentUpgrades()));
   await menu.enter();
 }

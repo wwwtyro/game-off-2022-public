@@ -22,11 +22,10 @@ void main() {
   float dFlameout = clamp(age / flameout, 0.0, 1.0);
   radius = 0.125 * dFlameout;
   if (age < flameout) {
-    vColor = mix(vec4(3, 2, 1, 1), vec4(0, 0, 0, 1), dFlameout);
+    vColor = mix(vec4(3, 2, 1, 1), vec4(0, 0, 0, 0.5), dFlameout);
   } else {
     float dSmokeout = smooth(flameout, smokeout, age);
-    float alpha = 0.5 * (1.0 - smooth(flameout, smokeout, age));
-    vColor = vec4(0, 0, 0, alpha);
+    vColor = mix(vec4(0, 0, 0, 0.5), vec4(0, 0, 0, 0), dSmokeout);
     radius += 0.125 * dSmokeout;
   }
   gl_Position = projection * view * vec4(center + radius * position, 0.0, 1.0);

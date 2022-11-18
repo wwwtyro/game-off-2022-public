@@ -1,3 +1,4 @@
+import { Upgrade } from "../model/upgrades";
 import { animationFrame } from "../util";
 import { Resources } from "./loading";
 
@@ -74,6 +75,48 @@ export class MenuSlider extends MenuItem {
       slider.removeEventListener("input", callback);
     };
     this.div.appendChild(slider);
+  }
+}
+
+export class MenuUpgrades extends MenuItem {
+  constructor(upgrades: Upgrade[]) {
+    super();
+    upgrades.sort((a, b) => (a.color > b.color ? -1 : 1));
+    const upgradeCount = new Map<Upgrade, number>();
+    for (const upgrade of upgrades) {
+      if (!upgradeCount.has(upgrade)) {
+        upgradeCount.set(upgrade, 0);
+      }
+      upgradeCount.set(upgrade, upgradeCount.get(upgrade)! + 1);
+    }
+    this.div.style.textAlign = "center";
+    for (const [upgrade, count] of upgradeCount.entries()) {
+      const div = document.createElement("div");
+      div.style.display = "inline-block";
+      div.style.position = "relative";
+      div.style.margin = "8px";
+      this.div.appendChild(div);
+      const img = document.createElement("img");
+      img.src = `static/${upgrade.icon}`;
+      img.classList.add(upgrade.color);
+      img.width = 48;
+      img.title = upgrade.label;
+      div.appendChild(img);
+      const countDiv = document.createElement("div");
+      countDiv.innerText = `${count}`;
+      countDiv.style.background = "#FFF";
+      countDiv.style.color = "#000";
+      countDiv.style.fontFamily = "sans-serif";
+      countDiv.style.fontSize = "10px";
+      countDiv.style.borderRadius = "100px";
+      countDiv.style.padding = "4px 7px";
+      countDiv.style.display = "inline-block";
+      countDiv.style.position = "absolute";
+      countDiv.style.bottom = "0";
+      countDiv.style.right = "0";
+      countDiv.style.opacity = "0.75";
+      div.appendChild(countDiv);
+    }
   }
 }
 

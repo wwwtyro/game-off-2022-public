@@ -10,10 +10,11 @@ import {
   droneTargetPoint,
   explodeDrone,
   fireDroneWeapons,
+  getPermanentUpgrades,
   rotateDrone,
   State,
 } from "../model/model";
-import { applyRandomUpgrade, upgrades } from "../model/upgrades";
+import { applyRandomUpgrade, upgradeDrone } from "../model/upgrades";
 import { animationFrame } from "../util";
 import { Renderer } from "../view/renderer";
 import { inGameOptionsMenu } from "./in-game-options-menu";
@@ -61,19 +62,15 @@ function initLevel(state: State, resources: Resources) {
   }
 }
 
-export async function game(resources: Resources, permanentUpgrades: string[]) {
+export async function game(resources: Resources) {
   resources.sounds.engine0.play();
   resources.sounds.engine0.volume(0);
   const state = buildState(resources);
   initLevel(state, resources);
 
-  for (const upgradeLabel of permanentUpgrades) {
-    const upgrade = upgrades.find((u) => u.label === upgradeLabel);
-    if (upgrade && upgrade.available(state.player)) {
-      upgrade.upgrade(state.player);
-      console.log(`Upgraded ${upgrade.label}`);
-    } else {
-      console.log(`Couldn't find upgrade label ${upgradeLabel}`);
+  for (const upgrade of getPermanentUpgrades()) {
+    if (upgrade.available(state.player)) {
+      upgradeDrone(upgrade, state.player);
     }
   }
 
@@ -409,7 +406,7 @@ export async function game(resources: Resources, permanentUpgrades: string[]) {
       resources.sounds.engine0.mute(false);
       if (Math.random() < 0.1) {
         resources.sounds.engine0.mute(true);
-        await permanentUpgrade(state, permanentUpgrades, resources);
+        await permanentUpgrade(state, resources);
         resources.sounds.engine0.mute(false);
       }
       state.levelEndTimestamp = null;

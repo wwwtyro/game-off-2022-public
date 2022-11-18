@@ -31,7 +31,13 @@ export class Renderer {
   private fbShadow: REGL.Framebuffer2D[];
 
   constructor(private canvas: HTMLCanvasElement, resources: Resources) {
-    this.regl = REGL({ canvas, extensions: ["angle_instanced_arrays", "OES_texture_float", "OES_texture_float_linear"] });
+    this.regl = REGL({
+      canvas,
+      extensions: ["angle_instanced_arrays", "OES_texture_float", "OES_texture_float_linear"],
+      attributes: {
+        alpha: false,
+      },
+    });
 
     this.tempBuffer1 = this.regl.buffer(1);
     this.tempBuffer2 = this.regl.buffer(1);

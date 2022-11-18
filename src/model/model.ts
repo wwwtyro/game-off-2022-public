@@ -2,6 +2,7 @@ import { vec2 } from "gl-matrix";
 import RAPIER, { ColliderDesc, Collider } from "@dimforge/rapier2d-compat";
 import { Resources, Sprite } from "../controller/loading";
 import { modulo, randomChoice, vec2Origin } from "../util";
+import { Upgrade, upgrades } from "./upgrades";
 
 export type Team = "player" | "enemy";
 
@@ -49,6 +50,7 @@ function getColliderDesc(sprite: Sprite): RAPIER.ColliderDesc {
 }
 
 export interface Drone {
+  tempUpgrades: Upgrade[];
   parent?: Drone;
   sprite: Sprite;
   collider: Collider | null;
@@ -77,6 +79,7 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
   const collider = world.createCollider(getColliderDesc(sprite));
   collider.setMass(0);
   return {
+    tempUpgrades: [],
     sprite: sprite,
     collider,
     position: vec2.fromValues(0, 0),
@@ -195,6 +198,12 @@ export function droneTargetDirection(drone: Drone, direction: vec2) {
 export function droneTargetPoint(drone: Drone, point: vec2) {
   const de = vec2.sub(vec2.create(), point, drone.position);
   droneTargetDirection(drone, de);
+}
+
+export function getPermanentUpgrades() {
+  return (JSON.parse(localStorage.getItem("permanentUpgrades") ?? JSON.stringify([])) as string[])
+    .map((label) => upgrades.find((upgrade) => upgrade.label === label))
+    .filter((upgrade) => upgrade !== undefined) as Upgrade[];
 }
 
 export interface State {

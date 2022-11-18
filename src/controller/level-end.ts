@@ -1,7 +1,7 @@
 import { State } from "../model/model";
-import { getRandomUpgrades } from "../model/upgrades";
+import { getRandomUpgrades, upgradeDrone } from "../model/upgrades";
 import { Resources } from "./loading";
-import { MenuButton, Menu, MenuHTML } from "./menu";
+import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
 
 export async function levelEnd(state: State, resources: Resources) {
   const selectedUpgrades = getRandomUpgrades(state.player, 3, false);
@@ -16,7 +16,7 @@ export async function levelEnd(state: State, resources: Resources) {
         upgrade.label,
         () => {
           resources.sounds.powerup1.play();
-          upgrade.upgrade(state.player);
+          upgradeDrone(upgrade, state.player);
           menu.exit();
         },
         upgrade.icon,
@@ -24,5 +24,6 @@ export async function levelEnd(state: State, resources: Resources) {
       )
     );
   }
+  menu.addItem(new MenuUpgrades(state.player.tempUpgrades));
   await menu.enter();
 }

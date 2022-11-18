@@ -1,9 +1,10 @@
-import { State } from "../model/model";
-import { getRandomUpgrades } from "../model/upgrades";
+import { getPermanentUpgrades, State } from "../model/model";
+import { getRandomUpgrades, upgradeDrone } from "../model/upgrades";
 import { Resources } from "./loading";
-import { MenuButton, Menu, MenuHTML } from "./menu";
+import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
 
-export async function permanentUpgrade(state: State, permanentUpgrades: string[], resources: Resources) {
+export async function permanentUpgrade(state: State, resources: Resources) {
+  const permanentUpgrades = getPermanentUpgrades();
   const selectedUpgrades = getRandomUpgrades(state.player, 3, true);
   const menu = new Menu();
   menu.style.background = "rgba(0, 0, 0, 0.5)";
@@ -17,9 +18,9 @@ export async function permanentUpgrade(state: State, permanentUpgrades: string[]
         () => {
           resources.sounds.click0.play();
           resources.sounds.powerup1.play();
-          upgrade.upgrade(state.player);
-          permanentUpgrades.push(upgrade.label);
-          localStorage.setItem("permanentUpgrades", JSON.stringify(permanentUpgrades));
+          upgradeDrone(upgrade, state.player);
+          permanentUpgrades.push(upgrade);
+          localStorage.setItem("permanentUpgrades", JSON.stringify(permanentUpgrades.map((u) => u.label)));
           menu.exit();
         },
         upgrade.icon,
@@ -27,5 +28,6 @@ export async function permanentUpgrade(state: State, permanentUpgrades: string[]
       )
     );
   }
+  menu.addItem(new MenuUpgrades(permanentUpgrades));
   await menu.enter();
 }
