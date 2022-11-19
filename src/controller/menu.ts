@@ -101,32 +101,33 @@ export class MenuUpgrades extends MenuItem {
       }
       upgradeCount.set(upgrade, upgradeCount.get(upgrade)! + 1);
     }
-    this.div.style.textAlign = "center";
+    this.div.style.margin = "auto";
+    this.div.style.display = "flex";
+    this.div.style.justifyContent = "center";
+    this.div.style.flexWrap = "wrap";
+    this.div.style.width = `${48 * 5}px`;
     for (const [upgrade, count] of upgradeCount.entries()) {
       const div = document.createElement("div");
-      div.style.display = "inline-block";
+      div.style.display = "block";
       div.style.position = "relative";
       div.style.margin = "8px";
       this.div.appendChild(div);
       const img = document.createElement("img");
       img.src = `static/${upgrade.icon}`;
       img.classList.add(upgrade.color);
-      img.width = 48;
+      img.width = 32;
       img.title = upgrade.label;
       div.appendChild(img);
       const countDiv = document.createElement("div");
       countDiv.innerText = `${count}`;
-      countDiv.style.background = "#FFF";
-      countDiv.style.color = "#000";
-      countDiv.style.fontFamily = "sans-serif";
-      countDiv.style.fontSize = "10px";
-      countDiv.style.borderRadius = "100px";
-      countDiv.style.padding = "4px 7px";
+      countDiv.style.color = "#FFF";
+      countDiv.style.fontSize = "12px";
+      countDiv.style.fontWeight = "bolder";
+      countDiv.style.textShadow = "1px 1px 0px #000";
       countDiv.style.display = "inline-block";
       countDiv.style.position = "absolute";
       countDiv.style.bottom = "0";
       countDiv.style.right = "0";
-      countDiv.style.opacity = "0.75";
       div.appendChild(countDiv);
     }
   }
