@@ -14,12 +14,13 @@ import {
   rotateDrone,
   State,
 } from "../model/model";
+import { PlayerDrone } from "../model/player-drones";
 import { applyRandomUpgrade, upgradeDrone } from "../model/upgrades";
 import { animationFrame } from "../util";
 import { Renderer } from "../view/renderer";
 import { inGameOptionsMenu } from "./in-game-options-menu";
 import { levelEnd } from "./level-end";
-import { Resources } from "./loading";
+import { Resources, Sprite } from "./loading";
 import { loseGame } from "./lose-game";
 import { permanentUpgrade } from "./permanent-upgrade";
 import { winGame } from "./win-game";
@@ -27,7 +28,7 @@ import { winGame } from "./win-game";
 function initLevel(state: State, resources: Resources) {
   const bossLevels = 10;
   const coreCount = state.level % bossLevels === 0 ? Math.floor(state.level / bossLevels) + 1 : 1;
-  const coreSprite = resources.sprites.core0;
+  const coreSprite = resources.sprites.enemyCore00;
   const coreRadius = 0.5 * coreCount * coreSprite.radius;
   const coreCenter = vec2.random(vec2.create(), Math.random() * 32);
   while (vec2.distance(coreCenter, state.player.position) < 16) {
@@ -35,7 +36,7 @@ function initLevel(state: State, resources: Resources) {
   }
   state.enemies.length = 0;
   for (let i = 0; i < coreCount; i++) {
-    const enemyCore = createDrone(state.world, resources.sprites.core0);
+    const enemyCore = createDrone(state.world, resources.sprites.enemyCore00);
     enemyCore.isCore = true;
     enemyCore.maxArmor = 10 * state.level;
     enemyCore.armor = enemyCore.maxArmor;
@@ -43,17 +44,32 @@ function initLevel(state: State, resources: Resources) {
     vec2.set(enemyCore.position, coreRadius * Math.cos(angle), coreRadius * Math.sin(angle));
     vec2.add(enemyCore.position, enemyCore.position, coreCenter);
     state.enemies.push(enemyCore);
-    const nEnemies = Math.min(state.level, Math.ceil(Math.random() * 5));
     const children: Drone[] = [];
-    for (let i = 0; i < nEnemies; i++) {
-      const child = createDrone(state.world, resources.sprites.ship1);
+    let pointsLeft = state.level;
+    while (pointsLeft > 0) {
+      const points = Math.max(1, Math.round(Math.random() * pointsLeft));
+      pointsLeft -= points;
+      let sprite = "enemy00";
+      if (points > 5) {
+        sprite = "enemy01";
+      }
+      if (points > 10) {
+        sprite = "enemy02";
+      }
+      if (points > 20) {
+        sprite = "enemy03";
+      }
+      if (points > 50) {
+        sprite = "enemy04";
+      }
+      const child = createDrone(state.world, (resources.sprites as Record<string, Sprite>)[sprite]);
       child.parent = enemyCore;
       vec2.random(child.position, Math.random() * 1);
       vec2.add(child.position, child.position, enemyCore.position);
       child.rotation = Math.random() * 2 * Math.PI;
       child.maxArmor = 5 * state.level;
       child.armor = child.maxArmor;
-      for (let i = 0; i < state.level; i++) {
+      for (let i = 0; i < points; i++) {
         applyRandomUpgrade(child, false);
       }
       children.push(child);
@@ -62,10 +78,10 @@ function initLevel(state: State, resources: Resources) {
   }
 }
 
-export async function game(resources: Resources) {
+export async function game(resources: Resources, playerDrone: PlayerDrone) {
   resources.sounds.engine0.play();
   resources.sounds.engine0.volume(0);
-  const state = buildState(resources);
+  const state = buildState(resources, playerDrone);
   initLevel(state, resources);
 
   for (const upgrade of getPermanentUpgrades()) {
@@ -195,7 +211,7 @@ export async function game(resources: Resources) {
         continue;
       }
       const dist = vec2.distance(enemy.position, state.player.position);
-      if (dist < 5) {
+      if (dist < 10) {
         droneTargetPoint(enemy, state.player.position);
       }
       rotateDrone(enemy, state.time.dt);
@@ -392,7 +408,7 @@ export async function game(resources: Resources) {
     }
 
     // If the level has ended, handle the necessary updates.
-    if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 4.0) {
+    if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 2.0) {
       if (state.player.armor <= 0) {
         resources.sounds.engine0.mute(true);
         await loseGame();

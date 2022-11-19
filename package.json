@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --host 0.0.0.0",
     "clean": "rm -rf docs",
     "build": "npm run clean && tsc && vite build --base '/game-off-2022/' --outDir docs && cp -r static docs",
     "preview": "vite preview"

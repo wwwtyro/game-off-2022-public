@@ -10,6 +10,9 @@
     <title>Guns Blazing</title>
     <script src="/src/main.ts" type="module" defer></script>
     <style>
+      * {
+        user-select: none;
+      }
       html,
       body {
         margin: 0;
@@ -48,7 +51,7 @@
       .center-content {
         display: none;
         flex-direction: column;
-        justify-content: center;
+        justify-content: center safe;
         row-gap: 16px;
         margin: auto;
         z-index: inherit;
@@ -58,6 +61,18 @@
         font-family: "Electrolize", sans-serif;
         font-weight: normal;
         font-size: 24px;
+        max-height: 75%;
+        max-width: 75%;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 7px;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+
+      .title {
+        max-width: 90%;
+        height: auto;
+        width: auto;
       }
 
       .upgrade {
@@ -93,6 +108,41 @@
       .menubutton:hover {
         color: #fff;
         text-shadow: 0px 0px 8px yellow;
+      }
+    </style>
+    <style type="text/css">
+      ::-webkit-scrollbar {
+        width: 2px;
+        height: 2px;
+      }
+      ::-webkit-scrollbar-button {
+        width: 0px;
+        height: 0px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #e1e1e1;
+        border: 0px none #ffffff;
+        border-radius: 50px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #ffffff;
+      }
+      ::-webkit-scrollbar-thumb:active {
+        background: #000000;
+      }
+      ::-webkit-scrollbar-track {
+        background: #666666;
+        border: 0px none #ffffff;
+        border-radius: 50px;
+      }
+      ::-webkit-scrollbar-track:hover {
+        background: #666666;
+      }
+      ::-webkit-scrollbar-track:active {
+        background: #333333;
+      }
+      ::-webkit-scrollbar-corner {
+        background: transparent;
       }
     </style>
   </head>

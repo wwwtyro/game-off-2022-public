@@ -4,7 +4,7 @@ export async function intro() {
   const menu = new Menu();
   menu.addItem(
     new MenuHTML(`
-    <div style="text-align: center"><img src="static/title.png"></div>
+    <div style="text-align: center"><img src="static/title.png" class="title"></div>
     <div style="font-family: 'Electrolize', sans-serif; font-size: 18px; font-weight: normal">
 
       <p>

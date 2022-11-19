@@ -21,7 +21,7 @@ export interface Texture {
 }
 
 export interface Sprite {
-  original: HTMLImageElement;
+  original: HTMLCanvasElement;
   powerOfTwo: HTMLCanvasElement;
   powerOfTwoNormal: HTMLCanvasElement;
   outline: vec2[];
@@ -33,8 +33,17 @@ export interface Sprite {
 
 export async function loadResources(callback: (fraction: number) => void) {
   const promises: Record<string, any> = {
-    ship0: loadSprite("destroyer.png", "nn5.png", 0.5),
-    ship1: loadSprite("blueshuttlenoweps.png", "cnormal.png", 0.35),
+    player00: loadSprite("player-00-diffuse.png", "player-00-normal.png", 0.5),
+    player01: loadSprite("player-01-diffuse.png", "player-01-normal.png", 0.55),
+    player02: loadSprite("player-02-diffuse.png", "player-02-normal.png", 0.6),
+    player03: loadSprite("player-03-diffuse.png", "player-03-normal.png", 0.65),
+    player04: loadSprite("player-04-diffuse.png", "player-04-normal.png", 0.7),
+    enemy00: loadSprite("enemy-00-diffuse.png", "enemy-00-normal.png", 0.5),
+    enemy01: loadSprite("enemy-01-diffuse.png", "enemy-01-normal.png", 0.5),
+    enemy02: loadSprite("enemy-02-diffuse.png", "enemy-02-normal.png", 0.6),
+    enemy03: loadSprite("enemy-03-diffuse.png", "enemy-03-normal.png", 0.8),
+    enemy04: loadSprite("enemy-04-diffuse.png", "enemy-04-normal.png", 1),
+    enemyCore00: loadSprite("enemy-core-00-diffuse.png", "enemy-core-00-normal.png", 3),
     core0: loadSprite("tribase-u1-d0.png", "st1normal.png", 3.0),
     sand0: loadTexture("Sand_001_COLOR.png", "Sand_001_NRM.png"),
     noise0: loadTexture("noise.jpg", "noise.jpg"),
@@ -57,9 +66,17 @@ export async function loadResources(callback: (fraction: number) => void) {
 
   const results = {
     sprites: {
-      ship0: (await promises["ship0"]) as Sprite,
-      ship1: (await promises["ship1"]) as Sprite,
-      core0: (await promises["core0"]) as Sprite,
+      player00: (await promises["player00"]) as Sprite,
+      player01: (await promises["player01"]) as Sprite,
+      player02: (await promises["player02"]) as Sprite,
+      player03: (await promises["player03"]) as Sprite,
+      player04: (await promises["player04"]) as Sprite,
+      enemy00: (await promises["enemy00"]) as Sprite,
+      enemy01: (await promises["enemy01"]) as Sprite,
+      enemy02: (await promises["enemy02"]) as Sprite,
+      enemy03: (await promises["enemy03"]) as Sprite,
+      enemy04: (await promises["enemy04"]) as Sprite,
+      enemyCore00: (await promises["enemyCore00"]) as Sprite,
     },
     textures: {
       sand0: (await promises["sand0"]) as Texture,
@@ -86,7 +103,7 @@ export async function loadResources(callback: (fraction: number) => void) {
   return results;
 }
 
-function pot(original: HTMLImageElement) {
+function pot(original: HTMLImageElement | HTMLCanvasElement) {
   const size = Math.max(original.width, original.height);
   let pot = 1;
   while (pot < size) {
@@ -145,8 +162,22 @@ async function loadTexture(url: string, urlNormal: string): Promise<Texture> {
   return texture;
 }
 
+function padImage(img: HTMLImageElement, padding = 8) {
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("padImage: Error generating context.");
+  }
+  canvas.width = img.width + padding * 2;
+  canvas.height = img.height + padding * 2;
+  ctx.drawImage(img, padding, padding);
+  return canvas;
+}
+
 async function loadSprite(url: string, urlNormal: string, scale: number): Promise<Sprite> {
-  const [original, normal] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
+  const [originalImage, normal] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
+
+  const original = padImage(originalImage);
 
   const powerOfTwo = pot(original);
   const powerOfTwoNormal = pot(normal);
@@ -188,7 +219,7 @@ function loadImage(url: string) {
   });
 }
 
-export function generateOutline(original: HTMLImageElement) {
+export function generateOutline(original: HTMLCanvasElement) {
   const operatingScale = 0.25;
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d")!;

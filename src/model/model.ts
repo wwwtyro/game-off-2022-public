@@ -2,7 +2,8 @@ import { vec2 } from "gl-matrix";
 import RAPIER, { ColliderDesc, Collider } from "@dimforge/rapier2d-compat";
 import { Resources, Sprite } from "../controller/loading";
 import { modulo, randomChoice, vec2Origin } from "../util";
-import { Upgrade, upgrades } from "./upgrades";
+import { Upgrade, upgradeDrone, upgrades } from "./upgrades";
+import { PlayerDrone } from "./player-drones";
 
 export type Team = "player" | "enemy";
 
@@ -183,7 +184,7 @@ export function rotateDrone(drone: Drone, dt: number) {
 
 export function accelerateDrone(drone: Drone, rawAcceleration: vec2, dt: number) {
   const accel = vec2.normalize(vec2.create(), rawAcceleration);
-  vec2.scale(accel, accel, 5.0 * drone.acceleration);
+  vec2.scale(accel, accel, 5 * drone.acceleration);
   const drag = vec2.scale(vec2.create(), drone.velocity, -drone.drag);
   vec2.add(accel, accel, drag);
   vec2.scaleAndAdd(drone.velocity, drone.velocity, accel, dt);
@@ -227,7 +228,7 @@ export interface State {
   levelEndTimestamp: number | null;
 }
 
-export function buildState(resources: Resources): State {
+export function buildState(resources: Resources, playerDrone: PlayerDrone): State {
   const world = new RAPIER.World({ x: 0, y: 0 });
 
   const state = {
@@ -241,7 +242,7 @@ export function buildState(resources: Resources): State {
       fov: 2,
       shake: 0,
     },
-    player: createDrone(world, resources.sprites.ship0),
+    player: createDrone(world, (resources.sprites as Record<string, Sprite>)[playerDrone.spriteId]),
     enemies: [],
     beams: [],
     sparks: [],
@@ -253,6 +254,9 @@ export function buildState(resources: Resources): State {
 
   state.player.armor = 5;
   state.player.maxArmor = 5;
+  for (const upgrade of playerDrone.getUpgrades()) {
+    upgradeDrone(upgrade, state.player);
+  }
   state.player.team = "player";
 
   return state;

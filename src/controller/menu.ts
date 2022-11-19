@@ -26,9 +26,19 @@ class MenuItem {
 }
 
 export class MenuHTML extends MenuItem {
-  constructor(html: string) {
+  constructor(html: string, callback?: Callback) {
     super();
     this.div.innerHTML = html;
+    if (callback) {
+      this.div.style.cursor = "pointer";
+      this.div.addEventListener("click", () => {
+        resources.sounds.click0.play();
+        callback();
+      });
+      this.disposer = () => {
+        this.div.removeEventListener("click", callback);
+      };
+    }
   }
 }
 
@@ -131,9 +141,6 @@ export class Menu {
     this.div = document.createElement("div");
     this.div.classList.add("center-content");
     document.getElementById("center-container")?.appendChild(this.div);
-    this.style.background = "rgba(0, 0, 0, 0.5)";
-    this.style.borderRadius = "7px";
-    this.style.maxWidth = "75%";
     this.hide();
   }
 
