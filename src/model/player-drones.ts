@@ -15,7 +15,7 @@ export const playerDrones: PlayerDrone[] = [
     name: "Base Combat Drone",
     unlock: "N/A",
     spriteId: "player00",
-    url: "/static/player-00-diffuse.png",
+    url: "static/player-00-diffuse.png",
     available: () => true,
     getUpgrades: () => [],
   },
@@ -23,7 +23,7 @@ export const playerDrones: PlayerDrone[] = [
     name: "Speed Drone",
     unlock: "Unlocked at 3 Acceleration",
     spriteId: "player01",
-    url: "/static/player-01-diffuse.png",
+    url: "static/player-01-diffuse.png",
     available: () => getPermanentUpgrades().filter((u) => u.label === "Acceleration").length >= 3,
     getUpgrades: () => {
       const acceleration = upgrades.find((u) => u.label === "Acceleration");
@@ -55,7 +55,7 @@ export const playerDrones: PlayerDrone[] = [
     name: "Shield Drone",
     unlock: "Unlocked at 10 Shield",
     spriteId: "player02",
-    url: "/static/player-02-diffuse.png",
+    url: "static/player-02-diffuse.png",
     available: () => getPermanentUpgrades().filter((u) => u.label === "Increase Shields").length >= 10,
     getUpgrades: () => {
       const increaseShields = upgrades.find((u) => u.label === "Increase Shields");
@@ -94,7 +94,7 @@ export const playerDrones: PlayerDrone[] = [
     name: "Cannon Drone",
     unlock: "Unlocked at 10 Ion Cannon Power",
     spriteId: "player03",
-    url: "/static/player-03-diffuse.png",
+    url: "static/player-03-diffuse.png",
     available: () => getPermanentUpgrades().filter((u) => u.label === "Ion Cannon Power").length >= 10,
     getUpgrades: () => {
       const ionCannonFiringRate = upgrades.find((u) => u.label === "Ion Cannon Firing Rate");
@@ -139,7 +139,7 @@ export const playerDrones: PlayerDrone[] = [
     name: "Armor Drone",
     unlock: "Unlocked at 10 Armor",
     spriteId: "player04",
-    url: "/static/player-04-diffuse.png",
+    url: "static/player-04-diffuse.png",
     available: () => getPermanentUpgrades().filter((u) => u.label === "Increase Armor").length >= 10,
     getUpgrades: () => {
       const increaseArmor = upgrades.find((u) => u.label === "Increase Armor");
