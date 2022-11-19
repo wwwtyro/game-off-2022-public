@@ -8,6 +8,7 @@ export interface Upgrade {
   readonly available: (drone: Drone) => boolean;
   readonly _upgrade: (drone: Drone) => void;
   readonly permable: boolean;
+  readonly oneOff?: boolean;
 }
 
 const weaponColor = "filter-weapon";
@@ -110,6 +111,7 @@ export const upgrades: Upgrade[] = [
     color: armorColor,
     frequency: 1,
     permable: false,
+    oneOff: true,
     available: (drone: Drone) => drone.armor < drone.maxArmor,
     _upgrade: (drone: Drone) => {
       drone.armor = drone.maxArmor;
@@ -140,7 +142,9 @@ export const upgrades: Upgrade[] = [
 ];
 
 export function upgradeDrone(upgrade: Upgrade, drone: Drone) {
-  drone.tempUpgrades.push(upgrade);
+  if (!upgrade.oneOff) {
+    drone.tempUpgrades.push(upgrade);
+  }
   upgrade._upgrade(drone);
 }
 

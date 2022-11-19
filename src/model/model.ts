@@ -254,9 +254,15 @@ export function buildState(resources: Resources, playerDrone: PlayerDrone): Stat
 
   state.player.armor = 5;
   state.player.maxArmor = 5;
+  for (const upgrade of getPermanentUpgrades()) {
+    if (upgrade.available(state.player)) {
+      upgradeDrone(upgrade, state.player);
+    }
+  }
   for (const upgrade of playerDrone.getUpgrades()) {
     upgradeDrone(upgrade, state.player);
   }
+
   state.player.team = "player";
 
   return state;

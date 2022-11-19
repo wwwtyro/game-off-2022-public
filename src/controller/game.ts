@@ -10,12 +10,11 @@ import {
   droneTargetPoint,
   explodeDrone,
   fireDroneWeapons,
-  getPermanentUpgrades,
   rotateDrone,
   State,
 } from "../model/model";
 import { PlayerDrone } from "../model/player-drones";
-import { applyRandomUpgrade, upgradeDrone } from "../model/upgrades";
+import { applyRandomUpgrade } from "../model/upgrades";
 import { animationFrame } from "../util";
 import { Renderer } from "../view/renderer";
 import { inGameOptionsMenu } from "./in-game-options-menu";
@@ -83,12 +82,6 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
   resources.sounds.engine0.volume(0);
   const state = buildState(resources, playerDrone);
   initLevel(state, resources);
-
-  for (const upgrade of getPermanentUpgrades()) {
-    if (upgrade.available(state.player)) {
-      upgradeDrone(upgrade, state.player);
-    }
-  }
 
   (window as any).state = state; // Degub.
 
@@ -185,7 +178,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       let maxScore = -Infinity;
       for (const enemy of state.enemies) {
         const dist = vec2.distance(enemy.position, state.player.position);
-        if (dist > 5) {
+        if (dist > 8) {
           continue;
         }
         const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), enemy.position, state.player.position));
