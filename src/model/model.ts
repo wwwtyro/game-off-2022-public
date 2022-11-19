@@ -50,8 +50,35 @@ function getColliderDesc(sprite: Sprite): RAPIER.ColliderDesc {
   return colliderDescs.get(sprite)!;
 }
 
+export interface Droid {
+  parent: Drone;
+  sprite: Sprite;
+  offset: vec2;
+  position: vec2;
+  rotation: number;
+  targetRotation: number;
+  ionCannonLastFired: number;
+}
+
+export function createDroid(parent: Drone): Droid {
+  if (!parent.droidSprite) {
+    throw new Error("Droid sprite not found.");
+  }
+  return {
+    parent,
+    sprite: parent.droidSprite,
+    position: vec2.clone(parent.position),
+    offset: vec2.random(vec2.create(), 1 * Math.random()),
+    rotation: 0,
+    targetRotation: 0,
+    ionCannonLastFired: 0,
+  };
+}
+
 export interface Drone {
   tempUpgrades: Upgrade[];
+  droids: Droid[];
+  droidSprite?: Sprite;
   parent?: Drone;
   sprite: Sprite;
   collider: Collider | null;
@@ -81,6 +108,7 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
   collider.setMass(0);
   return {
     tempUpgrades: [],
+    droids: [],
     sprite: sprite,
     collider,
     position: vec2.fromValues(0, 0),
@@ -254,6 +282,7 @@ export function buildState(resources: Resources, playerDrone: PlayerDrone): Stat
 
   state.player.armor = 5;
   state.player.maxArmor = 5;
+  state.player.droidSprite = resources.sprites.playerDroid00;
   for (const upgrade of getPermanentUpgrades()) {
     if (upgrade.available(state.player)) {
       upgradeDrone(upgrade, state.player);

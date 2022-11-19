@@ -15,7 +15,7 @@ import {
 } from "../model/model";
 import { PlayerDrone } from "../model/player-drones";
 import { applyRandomUpgrade } from "../model/upgrades";
-import { animationFrame } from "../util";
+import { animationFrame, randomChoice } from "../util";
 import { Renderer } from "../view/renderer";
 import { inGameOptionsMenu } from "./in-game-options-menu";
 import { levelEnd } from "./level-end";
@@ -23,6 +23,8 @@ import { Resources, Sprite } from "./loading";
 import { loseGame } from "./lose-game";
 import { permanentUpgrade } from "./permanent-upgrade";
 import { winGame } from "./win-game";
+
+const PLAYER_TARGETTING_DISTANCE = 6;
 
 function initLevel(state: State, resources: Resources) {
   const bossLevels = 10;
@@ -69,7 +71,7 @@ function initLevel(state: State, resources: Resources) {
       child.maxArmor = 5 * state.level;
       child.armor = child.maxArmor;
       for (let i = 0; i < points; i++) {
-        applyRandomUpgrade(child, false);
+        applyRandomUpgrade(child);
       }
       children.push(child);
     }
@@ -178,7 +180,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       let maxScore = -Infinity;
       for (const enemy of state.enemies) {
         const dist = vec2.distance(enemy.position, state.player.position);
-        if (dist > 8) {
+        if (dist > PLAYER_TARGETTING_DISTANCE) {
           continue;
         }
         const de = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), enemy.position, state.player.position));
@@ -195,6 +197,21 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
         droneTargetDirection(state.player, rawAcceleration);
       }
       rotateDrone(state.player, state.time.dt);
+
+      // Update droid positions and rotations.
+      for (const droid of state.player.droids) {
+        if (Math.random() < 1 / 120) {
+          droid.targetRotation = 2 * Math.PI * Math.random();
+        }
+        droid.targetRotation += 1 * state.time.dt;
+        droid.rotation += 0.1 * (droid.targetRotation - droid.rotation);
+        if (Math.random() < 1 / 120) {
+          vec2.random(droid.offset, 3 * Math.random());
+        }
+        const targetPosition = vec2.create();
+        vec2.add(targetPosition, state.player.position, droid.offset);
+        vec2.scaleAndAdd(droid.position, droid.position, vec2.sub(vec2.create(), targetPosition, droid.position), 0.1);
+      }
     }
 
     // Update enemy rotations.
@@ -258,6 +275,27 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       const id = resources.sounds.shoot0.play();
       resources.sounds.shoot0.rate(Math.random() * 0.5 + 0.75, id);
       resources.sounds.shoot0.volume(0.125, id);
+    }
+    if (state.player.armor > 0) {
+      for (const droid of state.player.droids) {
+        if (state.time.now - droid.ionCannonLastFired > 1 / state.player.ionCannonFiringRate) {
+          const target = randomChoice(state.enemies);
+          if (target && vec2.distance(target.position, droid.position) < PLAYER_TARGETTING_DISTANCE) {
+            const direction = vec2.sub(vec2.create(), target.position, droid.position);
+            vec2.normalize(direction, direction);
+            state.beams.push({
+              position: vec2.clone(droid.position),
+              lastPosition: vec2.clone(droid.position),
+              direction,
+              velocity: 3 * (0.5 * state.player.ionCannonBeamSpeed + 0.5 * Math.random() * state.player.ionCannonBeamSpeed),
+              timestamp: state.time.now,
+              power: state.player.ionCannonPower * 0.1,
+              team: state.player.team,
+            });
+            droid.ionCannonLastFired = state.time.now;
+          }
+        }
+      }
     }
 
     // Fire enemy weapons.

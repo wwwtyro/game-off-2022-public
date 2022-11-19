@@ -1,4 +1,4 @@
-import { Drone } from "./model";
+import { createDroid, Drone } from "./model";
 
 export interface Upgrade {
   readonly label: string;
@@ -9,12 +9,14 @@ export interface Upgrade {
   readonly _upgrade: (drone: Drone) => void;
   readonly permable: boolean;
   readonly oneOff?: boolean;
+  readonly playerOnly?: boolean;
 }
 
 const weaponColor = "filter-weapon";
 const shipColor = "filter-ship";
 const armorColor = "filter-armor";
 const shieldColor = "filter-shields";
+const droidColor = "filter-droid";
 
 export const upgrades: Upgrade[] = [
   {
@@ -112,6 +114,7 @@ export const upgrades: Upgrade[] = [
     frequency: 1,
     permable: false,
     oneOff: true,
+    playerOnly: true,
     available: (drone: Drone) => drone.armor < drone.maxArmor,
     _upgrade: (drone: Drone) => {
       drone.armor = drone.maxArmor;
@@ -139,6 +142,18 @@ export const upgrades: Upgrade[] = [
       drone.maxShields++;
     },
   },
+  {
+    label: "Battle Droid",
+    icon: "delivery-drone.svg",
+    color: droidColor,
+    frequency: 0.1,
+    permable: true,
+    playerOnly: true,
+    available: (drone: Drone) => drone.droids.length < 10,
+    _upgrade: (drone: Drone) => {
+      drone.droids.push(createDroid(drone));
+    },
+  },
 ];
 
 export function upgradeDrone(upgrade: Upgrade, drone: Drone) {
@@ -163,12 +178,12 @@ function randomUpgrade(availableUpgrades: Upgrade[]) {
   return null;
 }
 
-export function getRandomUpgrades(drone: Drone, count: number, permableOnly: boolean) {
+export function getRandomUpgrades(drone: Drone, count: number) {
   let availableUpgrades = upgrades.filter((u) => {
     if (!u.available(drone)) {
       return false;
     }
-    if (permableOnly && !u.permable) {
+    if (u.playerOnly && drone.team !== "player") {
       return false;
     }
     return true;
@@ -184,8 +199,8 @@ export function getRandomUpgrades(drone: Drone, count: number, permableOnly: boo
   return selectedUpgrades;
 }
 
-export function applyRandomUpgrade(drone: Drone, permableOnly: false) {
-  const upgrades = getRandomUpgrades(drone, 1, permableOnly);
+export function applyRandomUpgrade(drone: Drone) {
+  const upgrades = getRandomUpgrades(drone, 1);
   for (const upgrade of upgrades) {
     upgradeDrone(upgrade, drone);
   }

@@ -348,6 +348,23 @@ export class Renderer {
         projection,
         viewport: shadowViewport,
       });
+      for (const droid of state.player.droids) {
+        mat4.identity(model);
+        mat4.translate(model, model, [droid.position[0] - 0.25, droid.position[1] - 0.25, 0]);
+        mat4.rotateZ(model, model, droid.rotation);
+        mat4.scale(model, model, [
+          (droid.sprite.scale * droid.sprite.original.width) / droid.sprite.original.height,
+          droid.sprite.scale,
+          1,
+        ]);
+        this.renderShadow({
+          albedo: this.getTexture(droid.sprite.powerOfTwo),
+          model,
+          view,
+          projection,
+          viewport: shadowViewport,
+        });
+      }
     }
 
     for (const enemy of state.enemies) {
@@ -493,6 +510,25 @@ export class Renderer {
         projection,
         viewport,
       });
+      for (const droid of state.player.droids) {
+        mat4.identity(model);
+        mat4.translate(model, model, [droid.position[0], droid.position[1], 0]);
+        mat4.rotateZ(model, model, droid.rotation);
+        mat4.scale(model, model, [
+          (droid.sprite.scale * droid.sprite.original.width) / droid.sprite.original.height,
+          droid.sprite.scale,
+          1,
+        ]);
+        this.renderSprite({
+          albedo: this.getTexture(droid.sprite.powerOfTwo),
+          normal: this.getTexture(droid.sprite.powerOfTwoNormal),
+          rotation: droid.rotation,
+          model,
+          view,
+          projection,
+          viewport,
+        });
+      }
     }
 
     // Render player outline.
