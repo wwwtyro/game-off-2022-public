@@ -178,12 +178,15 @@ function randomUpgrade(availableUpgrades: Upgrade[]) {
   return null;
 }
 
-export function getRandomUpgrades(drone: Drone, count: number) {
+export function getRandomUpgrades(drone: Drone, count: number, permable = false) {
   let availableUpgrades = upgrades.filter((u) => {
     if (!u.available(drone)) {
       return false;
     }
     if (u.playerOnly && drone.team !== "player") {
+      return false;
+    }
+    if (permable && !u.permable) {
       return false;
     }
     return true;

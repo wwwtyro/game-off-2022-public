@@ -4,7 +4,7 @@ import { Resources } from "./loading";
 import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
 
 export async function levelEnd(state: State, resources: Resources) {
-  const selectedUpgrades = getRandomUpgrades(state.player, 3, false);
+  const selectedUpgrades = getRandomUpgrades(state.player, 3);
   const menu = new Menu();
   menu.style.background = "rgba(0, 0, 0, 0.5)";
   menu.style.borderRadius = "7px";
