@@ -237,6 +237,7 @@ export function getPermanentUpgrades() {
 
 export interface State {
   time: {
+    last: number;
     now: number;
     dt: number;
   };
@@ -261,6 +262,7 @@ export function buildState(resources: Resources, playerDrone: PlayerDrone): Stat
 
   const state = {
     time: {
+      last: 0,
       now: 0,
       dt: 0,
     },

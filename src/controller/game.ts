@@ -70,7 +70,7 @@ function initLevel(state: State, resources: Resources) {
       child.rotation = Math.random() * 2 * Math.PI;
       child.maxArmor = 5 * state.level;
       child.armor = child.maxArmor;
-      for (let i = 0; i < points; i++) {
+      for (let i = 0; i < points * 2; i++) {
         applyRandomUpgrade(child);
       }
       children.push(child);
@@ -99,14 +99,16 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
   const renderer = new Renderer(canvas, resources);
 
   while (true) {
+    const timestamp = performance.now() / 1000;
+    state.time.dt = Math.min(timestamp - state.time.last, 1 / 30);
+    state.time.now += state.time.dt;
+    state.time.last = timestamp;
+
     if (state.keys["Escape"]) {
       resources.sounds.engine0.mute(true);
       await inGameOptionsMenu(state, resources);
       resources.sounds.engine0.mute(false);
     }
-
-    state.time.dt = 1 / 60;
-    state.time.now += state.time.dt;
 
     // Needs to be called after adding colliders and before casting rays against them.
     state.world.step();
