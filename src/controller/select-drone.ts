@@ -1,5 +1,5 @@
 import { playerDrones } from "../model/player-drones";
-import { Menu, MenuHTML } from "./menu";
+import { Menu, MenuHTML, upgradeHTML } from "./menu";
 
 export async function selectDrone() {
   const menu = new Menu();
@@ -13,9 +13,10 @@ export async function selectDrone() {
     menu.addItem(
       new MenuHTML(
         `
-      <div style="text-align: center; margin-bottom: 16px">
+      <div style="text-align: center; margin-bottom: 32px; color: ${drone.available() ? "white" : "#777"}">
         <img src="${drone.url}" width=128 style="${drone.available() ? "" : "filter: saturate(0%)"}"><br>
         ${drone.name}<br>
+        <div style="display: flex; justify-content: center">${upgradeHTML(drone.getUpgrades()).innerHTML}</div>
         <span style="font-size:50%;">${drone.available() ? "Unlocked" : drone.unlock}</span>
       </div>
     `,

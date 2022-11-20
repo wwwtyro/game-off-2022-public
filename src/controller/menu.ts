@@ -90,46 +90,52 @@ export class MenuSlider extends MenuItem {
   }
 }
 
+export function upgradeHTML(upgrades: Upgrade[]) {
+  const container = document.createElement("div");
+  upgrades.sort((a, b) => (a.color > b.color ? -1 : 1));
+  const upgradeCount = new Map<Upgrade, number>();
+  for (const upgrade of upgrades) {
+    if (!upgradeCount.has(upgrade)) {
+      upgradeCount.set(upgrade, 0);
+    }
+    upgradeCount.set(upgrade, upgradeCount.get(upgrade)! + 1);
+  }
+  container.style.margin = "auto";
+  container.style.display = "flex";
+  container.style.justifyContent = "center";
+  container.style.flexWrap = "wrap";
+  container.style.width = `${48 * 5}px`;
+  for (const [upgrade, count] of upgradeCount.entries()) {
+    const div = document.createElement("div");
+    div.style.display = "block";
+    div.style.position = "relative";
+    div.style.margin = "8px";
+    container.appendChild(div);
+    const img = document.createElement("img");
+    img.src = `static/${upgrade.icon}`;
+    img.classList.add(upgrade.color);
+    img.width = 32;
+    img.title = upgrade.label;
+    div.appendChild(img);
+    const countDiv = document.createElement("div");
+    countDiv.innerText = `${count}`;
+    countDiv.style.color = "#FFF";
+    countDiv.style.fontSize = "12px";
+    countDiv.style.fontWeight = "bolder";
+    countDiv.style.textShadow = "1px 1px 0px #000";
+    countDiv.style.display = "inline-block";
+    countDiv.style.position = "absolute";
+    countDiv.style.bottom = "0";
+    countDiv.style.right = "0";
+    div.appendChild(countDiv);
+  }
+  return container;
+}
+
 export class MenuUpgrades extends MenuItem {
   constructor(upgrades: Upgrade[]) {
     super();
-    upgrades.sort((a, b) => (a.color > b.color ? -1 : 1));
-    const upgradeCount = new Map<Upgrade, number>();
-    for (const upgrade of upgrades) {
-      if (!upgradeCount.has(upgrade)) {
-        upgradeCount.set(upgrade, 0);
-      }
-      upgradeCount.set(upgrade, upgradeCount.get(upgrade)! + 1);
-    }
-    this.div.style.margin = "auto";
-    this.div.style.display = "flex";
-    this.div.style.justifyContent = "center";
-    this.div.style.flexWrap = "wrap";
-    this.div.style.width = `${48 * 5}px`;
-    for (const [upgrade, count] of upgradeCount.entries()) {
-      const div = document.createElement("div");
-      div.style.display = "block";
-      div.style.position = "relative";
-      div.style.margin = "8px";
-      this.div.appendChild(div);
-      const img = document.createElement("img");
-      img.src = `static/${upgrade.icon}`;
-      img.classList.add(upgrade.color);
-      img.width = 32;
-      img.title = upgrade.label;
-      div.appendChild(img);
-      const countDiv = document.createElement("div");
-      countDiv.innerText = `${count}`;
-      countDiv.style.color = "#FFF";
-      countDiv.style.fontSize = "12px";
-      countDiv.style.fontWeight = "bolder";
-      countDiv.style.textShadow = "1px 1px 0px #000";
-      countDiv.style.display = "inline-block";
-      countDiv.style.position = "absolute";
-      countDiv.style.bottom = "0";
-      countDiv.style.right = "0";
-      div.appendChild(countDiv);
-    }
+    this.div = upgradeHTML(upgrades);
   }
 }
 
