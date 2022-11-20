@@ -20,7 +20,7 @@ export async function mainMenu(resources: Resources) {
       await game(resources, selectedDrone);
       document.getElementById("render-canvas")!.style.display = "none";
       resources.sounds.music.stop();
-      menu.show();
+      menu.exit();
     })
   );
   menu.addItem(

@@ -18,6 +18,7 @@ const shipColor = "filter-ship";
 const armorColor = "filter-armor";
 const shieldColor = "filter-shields";
 const droidColor = "filter-droid";
+const specialColor = "filter-special";
 
 export const upgrades: Upgrade[] = [
   {
@@ -153,6 +154,18 @@ export const upgrades: Upgrade[] = [
     available: (drone: Drone) => drone.droids.length < 10,
     _upgrade: (drone: Drone) => {
       drone.droids.push(createDroid(drone));
+    },
+  },
+  {
+    label: "Ricochet",
+    icon: "laser-sparks.svg",
+    color: specialColor,
+    frequency: 0.02,
+    permable: false,
+    playerOnly: true,
+    available: (drone: Drone) => drone.ricochet === false,
+    _upgrade: (drone: Drone) => {
+      drone.ricochet = true;
     },
   },
 ];

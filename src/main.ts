@@ -7,7 +7,9 @@ async function main() {
   await RAPIER.init();
   const resources = await loadingScreen();
   setMenuResources(resources);
-  await mainMenu(resources);
+  while (true) {
+    await mainMenu(resources);
+  }
 }
 
 main();

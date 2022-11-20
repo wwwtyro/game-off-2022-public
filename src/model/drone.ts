@@ -32,6 +32,7 @@ export interface Drone {
   ionCannons: number;
   ionCannonBeamSpeed: number;
   turningSpeed: number;
+  ricochet: boolean;
   team: Team;
 }
 
@@ -61,6 +62,7 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     ionCannons: 1,
     ionCannonBeamSpeed: 1,
     turningSpeed: 1,
+    ricochet: false,
     team: "enemy",
   };
 }

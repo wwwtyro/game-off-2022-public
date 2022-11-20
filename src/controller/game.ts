@@ -11,6 +11,7 @@ import {
   fireDroneWeapons,
   explodeDrone,
 } from "../model/drone";
+import { Beam } from "../model/model";
 import { PlayerDrone } from "../model/player-drones";
 import { State, buildState } from "../model/state";
 import { applyRandomUpgrade } from "../model/upgrades";
@@ -343,8 +344,9 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       }
     }
 
-    // Get rid of any beams that hit something.
+    // Handle any beams that hit something.
     const ray = new RAPIER.Ray({ x: 0, y: 0 }, { x: 0, y: 0 });
+    const newBeams: Beam[] = [];
     state.beams = state.beams.filter((beam) => {
       ray.origin.x = beam.lastPosition[0];
       ray.origin.y = beam.lastPosition[1];
@@ -378,7 +380,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
             resources.sounds.hit0.volume(0.25 / vec2.distance(state.player.position, target.position), id);
           }
 
-          // We hit something, create some sparks!
+          // Create some sparks.
           while (Math.random() < 0.99) {
             state.sparks.push({
               position: vec2.clone(beam.position),
@@ -394,6 +396,28 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
               source: target.shields > beam.power ? "shields" : "armor",
             });
           }
+
+          // Handle ricochet.
+          if (state.player.ricochet && target !== state.player) {
+            if (Math.random() < 0.5) {
+              const nextTarget = randomChoice(state.enemies);
+              if (nextTarget && nextTarget !== target) {
+                const direction = vec2.sub(vec2.create(), nextTarget.position, target.position);
+                vec2.normalize(direction, direction);
+                const position = vec2.scaleAndAdd(vec2.create(), target.position, direction, target.sprite.radius);
+                newBeams.push({
+                  position,
+                  lastPosition: vec2.clone(position),
+                  direction,
+                  velocity: beam.velocity,
+                  timestamp: state.time.now,
+                  power: state.player.ionCannonPower,
+                  team: beam.team,
+                });
+              }
+            }
+          }
+
           let totalDamage = beam.power;
           if (target.shields > 0) {
             target.shields -= totalDamage;
@@ -406,11 +430,13 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
           }
           target.armor -= totalDamage;
         }
-
         return false;
       }
       return true;
     });
+
+    // Add ricochet beams to beam list.
+    state.beams.push(...newBeams);
 
     // If a core dies, kill its children.
     state.enemies.forEach((e) => {
