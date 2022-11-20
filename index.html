@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Electrolize&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet" />
     <title>Guns Blazing</title>
     <script src="/src/main.ts" type="module" defer></script>
     <style>
@@ -47,6 +48,20 @@
         font-family: "Electrolize", sans-serif;
         font-size: 32px;
         font-weight: bolder;
+      }
+
+      #game-stats {
+        display: none;
+        position: fixed;
+        padding: 4px;
+        text-align: center;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        box-sizing: border-box;
+        color: #fff;
+        font-family: "Share Tech Mono", monospace;
+        text-shadow: 0px 0px 3px #000, 0px 0px 4px #000, 0px 0px 4px #000, 0px 0px 4px #000, 0px 0px 4px #000;
       }
 
       .center-content {
@@ -152,6 +167,7 @@
   </head>
   <body>
     <canvas id="render-canvas"></canvas>
+    <div id="game-stats"></div>
     <div id="center-container">
       <div id="loading">Loading 0%</div>
     </div>

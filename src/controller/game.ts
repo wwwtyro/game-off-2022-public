@@ -98,11 +98,17 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
   canvas.style.display = "block";
   const renderer = new Renderer(canvas, resources);
 
+  const stats = document.getElementById("game-stats") as HTMLElement;
+  stats.style.display = "block";
+  stats.innerText = "";
+
   while (true) {
     const timestamp = performance.now() / 1000;
     state.time.dt = Math.min(timestamp - state.time.last, 1 / 30);
     state.time.now += state.time.dt;
     state.time.last = timestamp;
+
+    stats.innerHTML = `Level ${state.level} / Elapsed time: ${new Date(state.time.now * 1000).toISOString().substring(11, 19)}`;
 
     if (state.keys["Escape"]) {
       resources.sounds.engine0.mute(true);
