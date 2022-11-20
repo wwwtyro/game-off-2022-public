@@ -367,7 +367,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
             const id = resources.sounds.hit0.play();
             resources.sounds.hit0.rate(Math.random() * 0.5 + 0.75, id);
             resources.sounds.hit0.volume(0.25, id);
-            state.camera.shake = 1;
+            state.camera.shake = 0.5;
           } else {
             const id = resources.sounds.hit0.play();
             resources.sounds.hit0.rate(Math.random() * 0.5 + 0.75, id);
@@ -433,7 +433,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
     // If a core dies, kill its children.
     state.enemies.forEach((e) => {
-      if (e.parent && e.parent.armor <= 0 && Math.random() < 1 / 120) {
+      if (e.parent && e.parent.armor <= 0 && Math.random() < 1 / 60) {
         e.armor = -1;
       }
     });
@@ -444,7 +444,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
         return true;
       }
       explodeDrone(enemy, state);
-      state.camera.shake = 1;
+      state.camera.shake = 2 * enemy.sprite.radius;
       const id = resources.sounds.explode0.play();
       resources.sounds.explode0.volume(enemy.sprite.radius / vec2.distance(state.player.position, enemy.position), id);
       return false;
@@ -455,7 +455,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       if (state.player.armor <= 0) {
         state.levelEndTimestamp = state.time.now;
         explodeDrone(state.player, state);
-        state.camera.shake = 1;
+        state.camera.shake = 3;
         resources.sounds.explode0.play();
         resources.sounds.engine0.volume(0);
       }
