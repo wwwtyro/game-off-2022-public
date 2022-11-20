@@ -1,6 +1,6 @@
 precision highp float;
 attribute vec2 position, center;
-attribute float age;
+attribute float age, scale;
 uniform mat4 view, projection;
 uniform float flameout, smokeout;
 varying vec2 vPosition;
@@ -17,16 +17,17 @@ float smooth(float e0, float e1, float x) {
 }
 
 void main() {
+  float age2 = age / scale;
   vPosition = position;
   float radius;
-  float dFlameout = clamp(age / flameout, 0.0, 1.0);
-  radius = 0.125 * dFlameout;
-  if (age < flameout) {
+  float dFlameout = clamp(age2 / flameout, 0.0, 1.0);
+  radius = scale * dFlameout;
+  if (age2 < flameout) {
     vColor = mix(vec4(3, 2, 1, 1), vec4(0, 0, 0, 0.5), dFlameout);
   } else {
-    float dSmokeout = smooth(flameout, smokeout, age);
-    vColor = mix(vec4(0, 0, 0, 0.5), vec4(0, 0, 0, 0), dSmokeout);
-    radius += 0.125 * dSmokeout;
+    float dSmokeout = smooth(flameout, smokeout, age2);
+    vColor = mix(vec4(0, 0, 0, 0.5), vec4(0.2, 0.2, 0.2, 0), dSmokeout);
+    radius += scale * dSmokeout;
   }
   gl_Position = projection * view * vec4(center + radius * position, 0.0, 1.0);
 }

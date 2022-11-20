@@ -271,7 +271,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     }
 
     // Remove all aged flames.
-    state.flames = state.flames.filter((f) => f.age < 3.0);
+    state.flames = state.flames.filter((f) => f.age < 6.0);
 
     // Fire player weapons.
     if (
@@ -336,12 +336,6 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     for (const spark of state.sparks) {
       vec2.copy(spark.lastPosition, spark.position);
       vec2.scaleAndAdd(spark.position, spark.position, spark.direction, state.time.dt * spark.velocity * spark.energy);
-      if (spark.smokey && Math.random() < 0.1) {
-        state.flames.push({
-          position: vec2.clone(spark.position),
-          age: 0,
-        });
-      }
     }
 
     // Handle any beams that hit something.
@@ -392,7 +386,6 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
               velocity: Math.random(),
               energy: 2 * -Math.log(1 - Math.random()),
               decay: 0.2 * Math.random() + 0.7,
-              smokey: false,
               source: target.shields > beam.power ? "shields" : "armor",
             });
           }

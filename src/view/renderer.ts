@@ -26,8 +26,10 @@ export class Renderer {
   private renderDirection: REGL.DrawCommand;
   private tempBuffer1: REGL.Buffer;
   private tempBuffer2: REGL.Buffer;
+  private tempBuffer3: REGL.Buffer;
   private tempArray1: Array<number | number[] | vec2> = [];
   private tempArray2: Array<number | number[] | vec2> = [];
+  private tempArray3: Array<number | number[] | vec2> = [];
   private fbShadow: REGL.Framebuffer2D[];
 
   constructor(private canvas: HTMLCanvasElement, resources: Resources) {
@@ -41,6 +43,7 @@ export class Renderer {
 
     this.tempBuffer1 = this.regl.buffer(1);
     this.tempBuffer2 = this.regl.buffer(1);
+    this.tempBuffer3 = this.regl.buffer(1);
 
     this.fbShadow = [
       this.regl.framebuffer({ color: this.regl.texture({ min: "linear", mag: "linear" }) }),
@@ -124,6 +127,10 @@ export class Renderer {
           buffer: this.regl.prop<any, any>("points"),
           divisor: 1,
         },
+        scale: {
+          buffer: this.regl.prop<any, any>("scale"),
+          divisor: 1,
+        },
         age: {
           buffer: this.regl.prop<any, any>("age"),
           divisor: 1,
@@ -132,7 +139,7 @@ export class Renderer {
 
       uniforms: {
         flameout: 0.5,
-        smokeout: 3.0,
+        smokeout: 4,
         view: this.regl.prop<any, any>("view"),
         projection: this.regl.prop<any, any>("projection"),
       },
@@ -559,24 +566,6 @@ export class Renderer {
       });
     }
 
-    // Render the flames.
-    this.tempArray1.length = 0;
-    this.tempArray2.length = 0;
-    for (const flame of state.flames) {
-      this.tempArray1.push(flame.position);
-      this.tempArray2.push(flame.age);
-    }
-    this.tempBuffer1(this.tempArray1);
-    this.tempBuffer2(this.tempArray2);
-    this.renderFlame({
-      points: this.tempBuffer1,
-      age: this.tempBuffer2,
-      instances: state.flames.length,
-      view,
-      projection,
-      viewport,
-    });
-
     // Render the sparks.
     this.tempArray1.length = 0;
     this.tempArray2.length = 0;
@@ -595,11 +584,33 @@ export class Renderer {
       view,
       projection,
       viewport,
-      width: 0.01,
+      width: 0.02,
       colors: this.tempBuffer1,
       points: this.tempBuffer2,
       segments: state.sparks.length,
       framebuffer: null,
+    });
+
+    // Render the flames.
+    this.tempArray1.length = 0;
+    this.tempArray2.length = 0;
+    this.tempArray3.length = 0;
+    for (const flame of state.flames) {
+      this.tempArray1.push(flame.position);
+      this.tempArray2.push(flame.age);
+      this.tempArray3.push(flame.scale);
+    }
+    this.tempBuffer1(this.tempArray1);
+    this.tempBuffer2(this.tempArray2);
+    this.tempBuffer3(this.tempArray3);
+    this.renderFlame({
+      points: this.tempBuffer1,
+      age: this.tempBuffer2,
+      scale: this.tempBuffer3,
+      instances: state.flames.length,
+      view,
+      projection,
+      viewport,
     });
 
     // Render UI elements.

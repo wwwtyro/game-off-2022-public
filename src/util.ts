@@ -18,3 +18,10 @@ export function randomChoice<T>(arr: T[]): T | undefined {
   }
   return arr[Math.floor(Math.random() * arr.length)];
 }
+
+export function vec2RandomOffset(v: vec2, scale: number) {
+  const out = vec2.create();
+  vec2.random(out, Math.random() * scale);
+  vec2.add(out, v, out);
+  return out;
+}

@@ -19,11 +19,11 @@ export interface Spark {
   velocity: number;
   energy: number;
   decay: number;
-  smokey: boolean;
   source: "armor" | "shields";
 }
 
 export interface Flame {
   position: vec2;
+  scale: number;
   age: number;
 }
