@@ -1,4 +1,4 @@
-import { State } from "../model/model";
+import { State } from "../model/state";
 import { endGame } from "./end-game";
 import { instructions } from "./instructions";
 import { Resources } from "./loading";

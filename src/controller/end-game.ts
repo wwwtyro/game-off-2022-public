@@ -1,4 +1,4 @@
-import { State } from "../model/model";
+import { State } from "../model/state";
 import { MenuButton, Menu, MenuHTML } from "./menu";
 
 export async function endGame(state: State) {
