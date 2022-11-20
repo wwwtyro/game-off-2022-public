@@ -1,5 +1,5 @@
-import { getPermanentUpgrades, State } from "../model/model";
-import { getRandomUpgrades, upgradeDrone } from "../model/upgrades";
+import { State } from "../model/state";
+import { getPermanentUpgrades, getRandomUpgrades, upgradeDrone } from "../model/upgrades";
 import { Resources } from "./loading";
 import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
 

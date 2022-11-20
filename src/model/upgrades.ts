@@ -1,4 +1,5 @@
-import { createDroid, Drone } from "./model";
+import { createDroid } from "./droid";
+import { Drone } from "./drone";
 
 export interface Upgrade {
   readonly label: string;
@@ -207,4 +208,10 @@ export function applyRandomUpgrade(drone: Drone) {
   for (const upgrade of upgrades) {
     upgradeDrone(upgrade, drone);
   }
+}
+
+export function getPermanentUpgrades() {
+  return (JSON.parse(localStorage.getItem("permanentUpgrades") ?? JSON.stringify([])) as string[])
+    .map((label) => upgrades.find((upgrade) => upgrade.label === label))
+    .filter((upgrade) => upgrade !== undefined) as Upgrade[];
 }

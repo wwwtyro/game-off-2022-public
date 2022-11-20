@@ -1,5 +1,4 @@
-import { getPermanentUpgrades } from "./model";
-import { Upgrade, upgrades } from "./upgrades";
+import { getPermanentUpgrades, Upgrade, upgrades } from "./upgrades";
 
 export interface PlayerDrone {
   name: string;

@@ -1,4 +1,4 @@
-import { State } from "../model/model";
+import { State } from "../model/state";
 import { getRandomUpgrades, upgradeDrone } from "../model/upgrades";
 import { Resources } from "./loading";
 import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";

@@ -1,4 +1,4 @@
-import { getPermanentUpgrades } from "../model/model";
+import { getPermanentUpgrades } from "../model/upgrades";
 import { game } from "./game";
 import { instructions } from "./instructions";
 import { intro } from "./intro";

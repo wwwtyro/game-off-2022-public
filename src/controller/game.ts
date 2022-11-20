@@ -1,19 +1,18 @@
 import RAPIER from "@dimforge/rapier2d-compat";
 import { vec2 } from "gl-matrix";
 import {
-  accelerateDrone,
-  buildState,
-  chargeDroneShields,
   createDrone,
   Drone,
-  droneTargetDirection,
+  chargeDroneShields,
+  accelerateDrone,
   droneTargetPoint,
-  explodeDrone,
-  fireDroneWeapons,
+  droneTargetDirection,
   rotateDrone,
-  State,
-} from "../model/model";
+  fireDroneWeapons,
+  explodeDrone,
+} from "../model/drone";
 import { PlayerDrone } from "../model/player-drones";
+import { State, buildState } from "../model/state";
 import { applyRandomUpgrade } from "../model/upgrades";
 import { animationFrame, randomChoice } from "../util";
 import { Renderer } from "../view/renderer";

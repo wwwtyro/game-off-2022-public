@@ -9,8 +9,8 @@ import surfaceShader from "./glsl/surface.glsl?raw";
 import lineShader from "./glsl/lines.glsl?raw";
 import directionShader from "./glsl/direction.glsl?raw";
 import { Resources } from "../controller/loading";
-import { State } from "../model/model";
 import { modulo } from "../util";
+import { State } from "../model/state";
 
 const DEBUG = false;
 
