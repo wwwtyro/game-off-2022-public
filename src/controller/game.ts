@@ -241,7 +241,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       state.camera.position,
       state.camera.position,
       vec2.sub(vec2.create(), state.player.position, state.camera.position),
-      0.05
+      0.125
     );
     const targetFov = 3 + 0.2 * vec2.length(state.player.velocity);
     const df = targetFov > state.camera.fov ? 0.1 : 0.001;

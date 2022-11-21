@@ -48,7 +48,7 @@ export class MenuButton extends MenuItem {
     if (this.icon && this.iconClass) {
       this.div.innerHTML = `
         <div style="display: inline-block; margin-right: 8px; vertical-align: middle; width: 48px; height: 48px;">
-          <img src="static/${this.icon}" class="${this.iconClass}" width=48>
+          <img src="static/${this.icon}" class="${this.iconClass}" width=48 draggable=false>
         </div>
       
         <span class='menubutton'>${this.text}</span>
@@ -119,6 +119,7 @@ export function upgradeHTML(upgrades: Upgrade[]) {
     img.classList.add(upgrade.color);
     img.width = 32;
     img.title = upgrade.label;
+    img.draggable = false;
     div.appendChild(img);
     const countDiv = document.createElement("div");
     countDiv.innerText = `${count}`;
