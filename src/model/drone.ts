@@ -34,6 +34,8 @@ export interface Drone {
   turningSpeed: number;
   ricochet: boolean;
   team: Team;
+  stun: boolean;
+  slow: number;
 }
 
 export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
@@ -64,6 +66,8 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     turningSpeed: 1,
     ricochet: false,
     team: "enemy",
+    stun: false,
+    slow: 1,
   };
 }
 
@@ -136,7 +140,7 @@ export function fireDroneWeapons(drone: Drone, state: State) {
       position,
       lastPosition: vec2.clone(position),
       direction: vec2.clone(direction),
-      velocity: 3 * (0.5 * drone.ionCannonBeamSpeed + 0.5 * Math.random() * drone.ionCannonBeamSpeed),
+      velocity: drone.slow * 3 * (0.5 * drone.ionCannonBeamSpeed + 0.5 * Math.random() * drone.ionCannonBeamSpeed),
       timestamp: state.time.now,
       power: state.player.ionCannonPower,
       team: drone.team,
@@ -152,7 +156,7 @@ export function rotateDrone(drone: Drone, dt: number) {
   if (Math.abs(dr) > Math.PI) {
     dr = -Math.sign(dr) * (2 * Math.PI - Math.abs(dr));
   }
-  const maxTurn = 1.0 * drone.turningSpeed * dt;
+  const maxTurn = 1.0 * drone.slow * drone.turningSpeed * dt;
   if (Math.abs(dr) > maxTurn) {
     dr = Math.sign(dr) * maxTurn;
   }
@@ -161,7 +165,7 @@ export function rotateDrone(drone: Drone, dt: number) {
 
 export function accelerateDrone(drone: Drone, rawAcceleration: vec2, dt: number) {
   const accel = vec2.normalize(vec2.create(), rawAcceleration);
-  vec2.scale(accel, accel, 5 * drone.acceleration);
+  vec2.scale(accel, accel, 5 * drone.slow * drone.acceleration);
   const drag = vec2.scale(vec2.create(), drone.velocity, -drone.drag);
   vec2.add(accel, accel, drag);
   vec2.scaleAndAdd(drone.velocity, drone.velocity, accel, dt);

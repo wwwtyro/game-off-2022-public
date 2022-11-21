@@ -160,12 +160,24 @@ export const upgrades: Upgrade[] = [
     label: "Ricochet",
     icon: "laser-sparks.svg",
     color: specialColor,
-    frequency: 0.02,
+    frequency: 0.01,
     permable: false,
     playerOnly: true,
     available: (drone: Drone) => drone.ricochet === false,
     _upgrade: (drone: Drone) => {
       drone.ricochet = true;
+    },
+  },
+  {
+    label: "Stun",
+    icon: "sunbeams.svg",
+    color: specialColor,
+    frequency: 0.01,
+    permable: false,
+    playerOnly: true,
+    available: (drone: Drone) => drone.stun === false,
+    _upgrade: (drone: Drone) => {
+      drone.stun = true;
     },
   },
 ];

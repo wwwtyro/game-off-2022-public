@@ -125,6 +125,11 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       chargeDroneShields(enemy, state.time.dt);
     }
 
+    // Reduce all slow effects.
+    for (const enemy of state.enemies) {
+      enemy.slow = Math.min(1, Math.max(0.01, enemy.slow * 1.01));
+    }
+
     // Update enemy positions.
     for (const enemy of state.enemies) {
       if (enemy.isCore) {
@@ -390,6 +395,11 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
             });
           }
 
+          // Handle stun.
+          if (state.player.stun && target != state.player) {
+            target.slow *= 0.9;
+          }
+
           // Handle ricochet.
           if (state.player.ricochet && target !== state.player) {
             if (Math.random() < 0.5) {
@@ -404,7 +414,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
                   direction,
                   velocity: beam.velocity,
                   timestamp: state.time.now,
-                  power: state.player.ionCannonPower,
+                  power: beam.power,
                   team: beam.team,
                 });
               }
