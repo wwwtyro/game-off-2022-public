@@ -1,6 +1,15 @@
 import { vec2 } from "gl-matrix";
+import { Drone } from "./drone";
 
 export type Team = "player" | "enemy";
+
+export interface Missile {
+  position: vec2;
+  velocity: vec2;
+  target: Drone;
+  parent: Drone;
+  timestamp: number;
+}
 
 export interface Beam {
   position: vec2;

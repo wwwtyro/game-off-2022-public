@@ -10,12 +10,13 @@ import {
   rotateDrone,
   fireDroneWeapons,
   explodeDrone,
+  damageDrone,
 } from "../model/drone";
-import { Beam } from "../model/model";
+import { Beam, Missile } from "../model/model";
 import { PlayerDrone } from "../model/player-drones";
 import { State, buildState } from "../model/state";
 import { applyRandomUpgrade } from "../model/upgrades";
-import { animationFrame, randomChoice } from "../util";
+import { animationFrame, randomChoice, vec2RandomOffset } from "../util";
 import { Renderer } from "../view/renderer";
 import { inGameOptionsMenu } from "./in-game-options-menu";
 import { levelEnd } from "./level-end";
@@ -248,8 +249,8 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       vec2.sub(vec2.create(), state.player.position, state.camera.position),
       0.125
     );
-    const targetFov = 3 + 0.2 * vec2.length(state.player.velocity);
-    const df = targetFov > state.camera.fov ? 0.1 : 0.001;
+    const targetFov = 3 + 0.4 * vec2.length(state.player.velocity);
+    const df = targetFov > state.camera.fov ? 0.1 : 0.01;
     state.camera.fov += df * (targetFov - state.camera.fov);
 
     // Update collider positions.
@@ -278,7 +279,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     // Remove all aged flames.
     state.flames = state.flames.filter((f) => f.age < 6.0);
 
-    // Fire player weapons.
+    // Fire player ion cannons.
     if (
       state.player.armor > 0 &&
       playerIsTargetingEnemy &&
@@ -308,6 +309,21 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
             droid.ionCannonLastFired = state.time.now;
           }
         }
+      }
+    }
+
+    // Fire player missiles.
+    if (state.player.armor > 0 && state.time.now - state.player.missileLastFired > 10 / state.player.missileFiringRate) {
+      const target = randomChoice(state.enemies);
+      if (target && vec2.distance(state.player.position, target.position) < PLAYER_TARGETTING_DISTANCE) {
+        state.missiles.push({
+          position: vec2.clone(state.player.position),
+          velocity: vec2.create(),
+          target,
+          parent: state.player,
+          timestamp: state.time.now,
+        });
+        state.player.missileLastFired = state.time.now;
       }
     }
 
@@ -342,6 +358,57 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       vec2.copy(spark.lastPosition, spark.position);
       vec2.scaleAndAdd(spark.position, spark.position, spark.direction, state.time.dt * spark.velocity * spark.energy);
     }
+
+    // Update all missiles.
+    const missilesToRemove: Missile[] = [];
+    for (const missile of state.missiles) {
+      if (missile.target.armor < 0) {
+        missilesToRemove.push(missile);
+        continue;
+      }
+      if (state.time.now - missile.timestamp > 10) {
+        missilesToRemove.push(missile);
+        continue;
+      }
+      state.flames.push({
+        position: vec2.clone(missile.position),
+        scale: 0.25,
+        age: 0,
+      });
+      const accel = vec2.sub(vec2.create(), missile.target.position, missile.position);
+      vec2.normalize(accel, accel);
+      vec2.scale(accel, accel, 100.0);
+      vec2.scaleAndAdd(accel, accel, missile.velocity, -10.0); // drag
+      vec2.scaleAndAdd(missile.velocity, missile.velocity, accel, state.time.dt);
+      vec2.scaleAndAdd(missile.position, missile.position, missile.velocity, state.time.dt);
+      if (vec2.distance(missile.position, missile.target.position) < 0.25) {
+        for (let i = 0; i < 32; i++) {
+          const pos = vec2RandomOffset(missile.position, 0.5);
+          state.sparks.push({
+            position: pos,
+            lastPosition: vec2.clone(pos),
+            direction: vec2.random(vec2.create(), 1),
+            velocity: Math.random(),
+            energy: 2 * Math.random(),
+            decay: 0.98 * Math.random(),
+            source: "armor",
+          });
+        }
+        for (let i = 0; i < 32; i++) {
+          state.flames.push({
+            position: vec2RandomOffset(missile.position, 0.5),
+            scale: 0.5 * Math.random(),
+            age: -0.125 * Math.random(),
+          });
+        }
+        damageDrone(missile.target, missile.parent.missilePower * 10.0);
+        const id = resources.sounds.explode0.play();
+        resources.sounds.explode0.volume(1 / vec2.dist(state.player.position, missile.position), id);
+        missilesToRemove.push(missile);
+      }
+    }
+
+    state.missiles = state.missiles.filter((m) => !missilesToRemove.includes(m));
 
     // Handle any beams that hit something.
     const ray = new RAPIER.Ray({ x: 0, y: 0 }, { x: 0, y: 0 });
@@ -426,18 +493,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
               }
             }
           }
-
-          let totalDamage = beam.power;
-          if (target.shields > 0) {
-            target.shields -= totalDamage;
-            if (target.shields < 0) {
-              totalDamage = -target.shields;
-              target.shields = 0;
-            } else {
-              totalDamage = 0;
-            }
-          }
-          target.armor -= totalDamage;
+          damageDrone(target, beam.power);
         }
         return false;
       }

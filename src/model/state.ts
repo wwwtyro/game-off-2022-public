@@ -2,7 +2,7 @@ import RAPIER from "@dimforge/rapier2d-compat";
 import { vec2 } from "gl-matrix";
 import { Resources, Sprite } from "../controller/loading";
 import { Drone, createDrone } from "./drone";
-import { Beam, Spark, Flame } from "./model";
+import { Beam, Spark, Flame, Missile } from "./model";
 import { PlayerDrone } from "./player-drones";
 import { getPermanentUpgrades, upgradeDrone } from "./upgrades";
 
@@ -19,6 +19,7 @@ export interface State {
     shake: number;
   };
   player: Drone;
+  missiles: Missile[];
   enemies: Drone[];
   beams: Beam[];
   sparks: Spark[];
@@ -44,6 +45,7 @@ export function buildState(resources: Resources, playerDrone: PlayerDrone): Stat
       shake: 0,
     },
     player: createDrone(world, (resources.sprites as Record<string, Sprite>)[playerDrone.spriteId]),
+    missiles: [],
     enemies: [],
     beams: [],
     sparks: [],
@@ -57,9 +59,7 @@ export function buildState(resources: Resources, playerDrone: PlayerDrone): Stat
   state.player.maxArmor = 5;
   state.player.droidSprite = resources.sprites.playerDroid00;
   for (const upgrade of getPermanentUpgrades()) {
-    if (upgrade.available(state.player)) {
-      upgradeDrone(upgrade, state.player);
-    }
+    upgradeDrone(upgrade, state.player);
   }
   for (const upgrade of playerDrone.getUpgrades()) {
     upgradeDrone(upgrade, state.player);

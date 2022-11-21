@@ -19,6 +19,7 @@ const armorColor = "filter-armor";
 const shieldColor = "filter-shields";
 const droidColor = "filter-droid";
 const specialColor = "filter-special";
+const missileColor = "filter-missile";
 
 export const upgrades: Upgrade[] = [
   {
@@ -69,6 +70,30 @@ export const upgrades: Upgrade[] = [
     },
     _upgrade: (drone: Drone) => {
       drone.ionCannonBeamSpeed++;
+    },
+  },
+  {
+    label: "Missile Firing Rate",
+    icon: "rocket.svg",
+    color: missileColor,
+    frequency: 1,
+    permable: true,
+    available: (drone: Drone) => {
+      return drone.missileFiringRate < 30;
+    },
+    _upgrade: (drone: Drone) => {
+      drone.missileFiringRate++;
+    },
+  },
+  {
+    label: "Missile Power",
+    icon: "incoming-rocket.svg",
+    color: missileColor,
+    frequency: 1,
+    permable: true,
+    available: (drone: Drone) => drone.missileFiringRate > 0,
+    _upgrade: (drone: Drone) => {
+      drone.missilePower++;
     },
   },
   {

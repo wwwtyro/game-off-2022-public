@@ -30,6 +30,9 @@ export interface Drone {
   ionCannonLastFired: number;
   ionCannonPower: number;
   ionCannons: number;
+  missileFiringRate: number;
+  missileLastFired: number;
+  missilePower: number;
   ionCannonBeamSpeed: number;
   turningSpeed: number;
   ricochet: boolean;
@@ -64,6 +67,9 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     ionCannonLastFired: 0,
     ionCannons: 1,
     ionCannonBeamSpeed: 1,
+    missileFiringRate: 0,
+    missileLastFired: 0,
+    missilePower: 1,
     turningSpeed: 1,
     ricochet: false,
     team: "enemy",
@@ -163,6 +169,19 @@ export function rotateDrone(drone: Drone, dt: number) {
     dr = Math.sign(dr) * maxTurn;
   }
   drone.rotation += dr;
+}
+
+export function damageDrone(drone: Drone, damage: number) {
+  if (drone.shields > 0) {
+    drone.shields -= damage;
+    if (drone.shields < 0) {
+      damage = -drone.shields;
+      drone.shields = 0;
+    } else {
+      damage = 0;
+    }
+  }
+  drone.armor -= damage;
 }
 
 export function accelerateDrone(drone: Drone, rawAcceleration: vec2, dt: number) {
