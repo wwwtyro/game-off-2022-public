@@ -397,7 +397,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
           // Handle impact.
           const IMPACT_SCALE = 1;
-          if (state.player.impact && target != state.player) {
+          if (state.player.impact && target != state.player && !target.isCore) {
             target.rotation += IMPACT_SCALE * Math.random() - 0.5 * IMPACT_SCALE;
           }
 
