@@ -47,7 +47,10 @@ export class MenuButton extends MenuItem {
     super();
     if (this.icon && this.iconClass) {
       this.div.innerHTML = `
-        <img src="static/${this.icon}" style="vertical-align: middle; margin-right: 16px" class="${this.iconClass}" width=48>
+        <div style="display: inline-block; margin-right: 8px; vertical-align: middle; width: 48px; height: 48px;">
+          <img src="static/${this.icon}" class="${this.iconClass}" width=48>
+        </div>
+      
         <span class='menubutton'>${this.text}</span>
       `;
       this.div.style.textAlign = "left";
