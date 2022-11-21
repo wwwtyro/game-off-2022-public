@@ -180,6 +180,18 @@ export const upgrades: Upgrade[] = [
       drone.stun = true;
     },
   },
+  {
+    label: "Impact",
+    icon: "gooey-impact.svg",
+    color: specialColor,
+    frequency: 0.01,
+    permable: false,
+    playerOnly: true,
+    available: (drone: Drone) => drone.impact === false,
+    _upgrade: (drone: Drone) => {
+      drone.impact = true;
+    },
+  },
 ];
 
 export function upgradeDrone(upgrade: Upgrade, drone: Drone) {

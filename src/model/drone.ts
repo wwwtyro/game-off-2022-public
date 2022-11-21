@@ -35,6 +35,7 @@ export interface Drone {
   ricochet: boolean;
   team: Team;
   stun: boolean;
+  impact: boolean;
   slow: number;
 }
 
@@ -67,6 +68,7 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     ricochet: false,
     team: "enemy",
     stun: false,
+    impact: false,
     slow: 1,
   };
 }

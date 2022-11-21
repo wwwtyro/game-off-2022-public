@@ -395,6 +395,12 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
             });
           }
 
+          // Handle impact.
+          const IMPACT_SCALE = 1;
+          if (state.player.impact && target != state.player) {
+            target.rotation += IMPACT_SCALE * Math.random() - 0.5 * IMPACT_SCALE;
+          }
+
           // Handle stun.
           if (state.player.stun && target != state.player) {
             target.slow *= 0.9;
