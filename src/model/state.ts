@@ -7,6 +7,12 @@ import { Beam, Spark, Flame, Missile } from "./model";
 import { PlayerDrone } from "./player-drones";
 import { getPermanentUpgrades, upgradeDrone } from "./upgrades";
 
+interface Pointer {
+  x: number;
+  y: number;
+  down: boolean;
+}
+
 export interface State {
   time: {
     last: number;
@@ -26,6 +32,7 @@ export interface State {
   sparks: Spark[];
   flames: Flame[];
   keys: Record<string, boolean>;
+  pointer: Pointer;
   level: number;
   levelEndTimestamp: number | null;
 }
@@ -52,6 +59,11 @@ export function buildState(resources: Resources, playerDrone: PlayerDrone): Stat
     sparks: [],
     flames: [],
     keys: {},
+    pointer: {
+      x: 0,
+      y: 0,
+      down: false,
+    },
     level: 1,
     levelEndTimestamp: null,
   };

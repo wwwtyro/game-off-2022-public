@@ -1,5 +1,6 @@
 import RAPIER from "@dimforge/rapier2d-compat";
 import { vec2 } from "gl-matrix";
+import { EventManager } from "../event-manager";
 import {
   createDrone,
   Drone,
@@ -88,16 +89,42 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
   (window as any).state = state; // Degub.
 
-  window.addEventListener("keydown", (e) => {
-    state.keys[e.code] = true;
-  });
-  window.addEventListener("keyup", (e) => {
-    state.keys[e.code] = false;
-  });
+  const eventManager = new EventManager();
 
   const canvas = document.getElementById("render-canvas") as HTMLCanvasElement;
   canvas.style.display = "block";
   const renderer = new Renderer(canvas, resources);
+
+  eventManager.addEventListener(window, "keydown", (e) => {
+    state.keys[e.code] = true;
+  });
+
+  eventManager.addEventListener(window, "keyup", (e) => {
+    state.keys[e.code] = false;
+  });
+
+  eventManager.addEventListener(canvas, "pointerdown", (e) => {
+    state.pointer.x = e.offsetX;
+    state.pointer.y = e.offsetY;
+    state.pointer.down = true;
+  });
+
+  eventManager.addEventListener(canvas, "pointerup", () => {
+    state.pointer.down = false;
+  });
+
+  eventManager.addEventListener(canvas, "pointerleave", () => {
+    state.pointer.down = false;
+  });
+
+  eventManager.addEventListener(canvas, "pointerout", () => {
+    state.pointer.down = false;
+  });
+
+  eventManager.addEventListener(canvas, "pointermove", (e) => {
+    state.pointer.x = e.offsetX;
+    state.pointer.y = e.offsetY;
+  });
 
   const stats = document.getElementById("game-stats") as HTMLElement;
   stats.style.display = "block";
@@ -182,6 +209,16 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       }
       if (state.keys.KeyW) {
         rawAcceleration[1] += 1;
+        accelerated = true;
+      }
+      if (state.pointer.down) {
+        const uvx = state.pointer.x / canvas.width;
+        const uvy = 1 - state.pointer.y / canvas.height;
+        const fovv = state.camera.fov;
+        const fovh = (fovv * canvas.width) / canvas.height;
+        const px = state.camera.position[0] - fovh + uvx * 2 * fovh;
+        const py = state.camera.position[1] - fovv + uvy * 2 * fovv;
+        vec2.subtract(rawAcceleration, vec2.fromValues(px, py), state.player.position);
         accelerated = true;
       }
       accelerateDrone(state.player, rawAcceleration, state.time.dt);
@@ -523,12 +560,14 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
         resources.sounds.engine0.mute(true);
         await loseGame();
         resources.sounds.engine0.mute(false);
+        eventManager.dispose();
         return;
       }
       if (state.level === 100) {
         resources.sounds.engine0.mute(true);
         await winGame();
         resources.sounds.engine0.mute(false);
+        eventManager.dispose();
         return;
       }
       resources.sounds.engine0.mute(true);
