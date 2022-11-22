@@ -1,10 +1,10 @@
 import RAPIER, { Collider, ColliderDesc } from "@dimforge/rapier2d-compat";
 import { vec2 } from "gl-matrix";
 import { Sprite } from "../controller/loading";
-import { randomChoice, vec2Origin, modulo, vec2RandomOffset } from "../util";
+import { randomChoice, vec2Origin, modulo } from "../util";
 import { Droid } from "./droid";
 import { Team } from "./model";
-import { State } from "./state";
+import { addExplosion, State } from "./state";
 import { Upgrade } from "./upgrades";
 
 export interface Drone {
@@ -111,27 +111,7 @@ export function explodeDrone(drone: Drone, state: State) {
     state.world.removeCollider(drone.collider, false);
     drone.collider = null;
   }
-  for (let j = 0; j < drone.sprite.outline!.length; j++) {
-    const p = randomInteriorPoint(drone);
-    for (let i = 0; i < 128; i++) {
-      state.sparks.push({
-        position: vec2.clone(p),
-        lastPosition: vec2.clone(p),
-        direction: vec2.random(vec2.create(), 1),
-        velocity: Math.random(),
-        energy: drone.sprite.radius * 2 * -Math.log(1 - Math.random()),
-        decay: 0.98 * Math.random(),
-        source: "armor",
-      });
-    }
-    for (let i = 0; i < 8; i++) {
-      state.flames.push({
-        position: vec2RandomOffset(p, 0.5 * drone.sprite.radius),
-        scale: drone.sprite.radius * 0.125 * -Math.log(1 - Math.random()),
-        age: -0.125 * Math.random(),
-      });
-    }
-  }
+  addExplosion(state, drone.position, drone.sprite.radius);
 }
 
 export function fireDroneWeapons(drone: Drone, state: State) {

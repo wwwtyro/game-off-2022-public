@@ -14,9 +14,9 @@ import {
 } from "../model/drone";
 import { Beam, Missile } from "../model/model";
 import { PlayerDrone } from "../model/player-drones";
-import { State, buildState } from "../model/state";
+import { State, buildState, addExplosion } from "../model/state";
 import { applyRandomUpgrade } from "../model/upgrades";
-import { animationFrame, randomChoice, vec2RandomOffset } from "../util";
+import { animationFrame, randomChoice } from "../util";
 import { Renderer } from "../view/renderer";
 import { inGameOptionsMenu } from "./in-game-options-menu";
 import { levelEnd } from "./level-end";
@@ -267,8 +267,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
     // Remove all tired sparks.
     state.sparks = state.sparks.filter((spark) => {
-      spark.energy *= spark.decay;
-      return spark.energy > 1 / 255;
+      return spark.velocity > 1 / 255;
     });
 
     // Update all flames.
@@ -355,8 +354,9 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
     // Update all sparks.
     for (const spark of state.sparks) {
+      spark.velocity *= spark.decay;
       vec2.copy(spark.lastPosition, spark.position);
-      vec2.scaleAndAdd(spark.position, spark.position, spark.direction, state.time.dt * spark.velocity * spark.energy);
+      vec2.scaleAndAdd(spark.position, spark.position, spark.direction, state.time.dt * spark.velocity);
     }
 
     // Update all missiles.
@@ -381,26 +381,8 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       vec2.scaleAndAdd(accel, accel, missile.velocity, -10.0); // drag
       vec2.scaleAndAdd(missile.velocity, missile.velocity, accel, state.time.dt);
       vec2.scaleAndAdd(missile.position, missile.position, missile.velocity, state.time.dt);
-      if (vec2.distance(missile.position, missile.target.position) < 0.25) {
-        for (let i = 0; i < 32; i++) {
-          const pos = vec2RandomOffset(missile.position, 0.5);
-          state.sparks.push({
-            position: pos,
-            lastPosition: vec2.clone(pos),
-            direction: vec2.random(vec2.create(), 1),
-            velocity: Math.random(),
-            energy: 2 * Math.random(),
-            decay: 0.98 * Math.random(),
-            source: "armor",
-          });
-        }
-        for (let i = 0; i < 32; i++) {
-          state.flames.push({
-            position: vec2RandomOffset(missile.position, 0.5),
-            scale: 0.5 * Math.random(),
-            age: -0.125 * Math.random(),
-          });
-        }
+      if (vec2.distance(missile.position, missile.target.position) < missile.target.sprite.radius) {
+        addExplosion(state, missile.position, 0.25);
         damageDrone(missile.target, missile.parent.missilePower * 10.0);
         const id = resources.sounds.explode0.play();
         resources.sounds.explode0.volume(1 / vec2.dist(state.player.position, missile.position), id);
@@ -447,17 +429,16 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
           }
 
           // Create some sparks.
-          while (Math.random() < 0.99) {
+          for (let i = 0; i < 32; i++) {
             state.sparks.push({
               position: vec2.clone(beam.position),
               lastPosition: vec2.clone(beam.position),
               direction: vec2.normalize(
                 vec2.create(),
-                vec2.add(vec2.create(), vec2.fromValues(hit.normal.x, hit.normal.y), vec2.random(vec2.create(), 1.25))
+                vec2.add(vec2.create(), vec2.fromValues(hit.normal.x, hit.normal.y), vec2.random(vec2.create(), 0.5))
               ),
-              velocity: Math.random(),
-              energy: 2 * -Math.log(1 - Math.random()),
-              decay: 0.2 * Math.random() + 0.7,
+              velocity: 10 * Math.random(),
+              decay: 0.7 + 0.2 * Math.random(),
               source: target.shields > beam.power ? "shields" : "armor",
             });
           }

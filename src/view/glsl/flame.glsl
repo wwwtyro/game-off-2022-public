@@ -17,15 +17,14 @@ float smooth(float e0, float e1, float x) {
 }
 
 void main() {
-  float age2 = age / scale;
   vPosition = position;
   float radius;
-  float dFlameout = clamp(age2 / flameout, 0.0, 1.0);
+  float dFlameout = clamp(age / flameout, 0.0, 1.0);
   radius = scale * dFlameout;
-  if (age2 < flameout) {
+  if (age < flameout) {
     vColor = mix(vec4(3, 2, 1, 1), vec4(0, 0, 0, 0.5), dFlameout);
   } else {
-    float dSmokeout = smooth(flameout, smokeout, age2);
+    float dSmokeout = smooth(flameout, smokeout, age);
     vColor = mix(vec4(0, 0, 0, 0.5), vec4(0.2, 0.2, 0.2, 0), dSmokeout);
     radius += scale * dSmokeout;
   }

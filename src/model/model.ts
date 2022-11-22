@@ -26,7 +26,6 @@ export interface Spark {
   lastPosition: vec2;
   direction: vec2;
   velocity: number;
-  energy: number;
   decay: number;
   source: "armor" | "shields";
 }

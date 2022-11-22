@@ -139,7 +139,7 @@ export class Renderer {
 
       uniforms: {
         flameout: 0.5,
-        smokeout: 4,
+        smokeout: 1.5,
         view: this.regl.prop<any, any>("view"),
         projection: this.regl.prop<any, any>("projection"),
       },
@@ -571,9 +571,9 @@ export class Renderer {
     this.tempArray2.length = 0;
     for (const spark of state.sparks) {
       if (spark.source === "armor") {
-        this.tempArray1.push(2 * spark.energy, 1 * spark.energy, 0.5 * spark.energy, spark.energy);
+        this.tempArray1.push(2 * spark.velocity, 1 * spark.velocity, 0.5 * spark.velocity, spark.velocity);
       } else {
-        this.tempArray1.push(0.5 * spark.energy, 1 * spark.energy, 2.0 * spark.energy, spark.energy);
+        this.tempArray1.push(0.5 * spark.velocity, 1 * spark.velocity, 2.0 * spark.velocity, spark.velocity);
       }
       this.tempArray2.push(spark.lastPosition, spark.position);
     }
