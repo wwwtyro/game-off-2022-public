@@ -89,7 +89,7 @@ export const upgrades: Upgrade[] = [
     label: "Missile Power",
     icon: "incoming-rocket.svg",
     color: missileColor,
-    frequency: 1,
+    frequency: 0.1,
     permable: true,
     available: (drone: Drone) => drone.missileFiringRate > 0,
     _upgrade: (drone: Drone) => {
