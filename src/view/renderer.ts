@@ -1,6 +1,10 @@
 import { mat4, vec2 } from "gl-matrix";
 import REGL, { Regl } from "regl";
 
+import { Resources } from "../controller/loading";
+import { modulo } from "../util";
+import { State } from "../model/state";
+import { SmartBuffer } from "./smart-buffer";
 import blurShader from "./glsl/blur.glsl?raw";
 import spriteShader from "./glsl/sprite.glsl?raw";
 import flameShader from "./glsl/flame.glsl?raw";
@@ -8,9 +12,6 @@ import shadowShader from "./glsl/shadow.glsl?raw";
 import surfaceShader from "./glsl/surface.glsl?raw";
 import lineShader from "./glsl/lines.glsl?raw";
 import directionShader from "./glsl/direction.glsl?raw";
-import { Resources } from "../controller/loading";
-import { modulo } from "../util";
-import { State } from "../model/state";
 
 const DEBUG = false;
 
@@ -24,12 +25,9 @@ export class Renderer {
   private renderSurface: REGL.DrawCommand;
   private renderShadow: REGL.DrawCommand;
   private renderDirection: REGL.DrawCommand;
-  private tempBuffer1: REGL.Buffer;
-  private tempBuffer2: REGL.Buffer;
-  private tempBuffer3: REGL.Buffer;
-  private tempArray1: Array<number | number[] | vec2> = [];
-  private tempArray2: Array<number | number[] | vec2> = [];
-  private tempArray3: Array<number | number[] | vec2> = [];
+  private tempBuffer1: SmartBuffer;
+  private tempBuffer2: SmartBuffer;
+  private tempBuffer3: SmartBuffer;
   private fbShadow: REGL.Framebuffer2D[];
 
   constructor(private canvas: HTMLCanvasElement, resources: Resources) {
@@ -41,9 +39,9 @@ export class Renderer {
       },
     });
 
-    this.tempBuffer1 = this.regl.buffer(1);
-    this.tempBuffer2 = this.regl.buffer(1);
-    this.tempBuffer3 = this.regl.buffer(1);
+    this.tempBuffer1 = new SmartBuffer(this.regl);
+    this.tempBuffer2 = new SmartBuffer(this.regl);
+    this.tempBuffer3 = new SmartBuffer(this.regl);
 
     this.fbShadow = [
       this.regl.framebuffer({ color: this.regl.texture({ min: "linear", mag: "linear" }) }),
@@ -422,19 +420,16 @@ export class Renderer {
     });
 
     // Render the beams.
-    this.tempArray1.length = 0;
-    this.tempArray2.length = 0;
+    this.tempBuffer1.reset();
+    this.tempBuffer2.reset();
     for (const beam of state.beams) {
       if (beam.team === "player") {
-        this.tempArray1.push(0.5, 1, 1, 1);
+        this.tempBuffer1.push(0.5, 1, 1, 1);
       } else {
-        this.tempArray1.push(1, 1, 0.5, 1);
+        this.tempBuffer1.push(1, 1, 0.5, 1);
       }
-      this.tempArray2.push(beam.lastPosition, beam.position);
+      this.tempBuffer2.pushVec2(beam.lastPosition, beam.position);
     }
-
-    this.tempBuffer1(this.tempArray1);
-    this.tempBuffer2(this.tempArray2);
 
     this.renderLines({
       model: mat4.create(),
@@ -442,8 +437,8 @@ export class Renderer {
       projection,
       viewport,
       width: 0.02,
-      colors: this.tempBuffer1,
-      points: this.tempBuffer2,
+      colors: this.tempBuffer1.getBuffer(),
+      points: this.tempBuffer2.getBuffer(),
       segments: state.beams.length,
       framebuffer: null,
     });
@@ -472,16 +467,14 @@ export class Renderer {
     // Render enemy outlines.
     if (DEBUG) {
       for (const enemy of state.enemies) {
-        this.tempArray1.length = 0;
-        this.tempArray2.length = 0;
+        this.tempBuffer1.reset();
+        this.tempBuffer2.reset();
         for (let i = 0; i < enemy.sprite.outline!.length; i++) {
           const p0 = enemy.sprite.outline![i + 0];
           const p1 = enemy.sprite.outline![modulo(i + 1, enemy.sprite.outline!.length)];
-          this.tempArray1.push(p0, p1);
-          this.tempArray2.push(1, 1, 1, 1);
+          this.tempBuffer1.pushVec2(p0, p1);
+          this.tempBuffer2.push(1, 1, 1, 1);
         }
-        this.tempBuffer1(this.tempArray1);
-        this.tempBuffer2(this.tempArray2);
         mat4.identity(model);
         mat4.translate(model, model, [enemy.position[0], enemy.position[1], 0]);
         mat4.rotateZ(model, model, enemy.rotation);
@@ -491,9 +484,9 @@ export class Renderer {
           projection,
           viewport,
           width: 0.025,
-          points: this.tempBuffer1,
-          colors: this.tempBuffer2,
-          segments: this.tempArray1.length / 2,
+          points: this.tempBuffer1.getBuffer(),
+          colors: this.tempBuffer2.getBuffer(),
+          segments: this.tempBuffer1.length / 4,
           framebuffer: null,
         });
       }
@@ -541,16 +534,14 @@ export class Renderer {
 
     // Render player outline.
     if (DEBUG) {
-      this.tempArray1.length = 0;
-      this.tempArray2.length = 0;
+      this.tempBuffer1.reset();
+      this.tempBuffer2.reset();
       for (let i = 0; i < state.player.sprite.outline!.length; i++) {
         const p0 = state.player.sprite.outline![i + 0];
         const p1 = state.player.sprite.outline![modulo(i + 1, state.player.sprite.outline!.length)];
-        this.tempArray1.push(p0, p1);
-        this.tempArray2.push(1, 1, 1, 1);
+        this.tempBuffer1.pushVec2(p0, p1);
+        this.tempBuffer2.push(1, 1, 1, 1);
       }
-      this.tempBuffer1(this.tempArray1);
-      this.tempBuffer2(this.tempArray2);
       mat4.identity(model);
       mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
       mat4.rotateZ(model, model, state.player.rotation);
@@ -560,54 +551,49 @@ export class Renderer {
         projection,
         viewport,
         width: 0.01,
-        points: this.tempBuffer1,
-        colors: this.tempBuffer2,
-        segments: this.tempArray1.length / 2,
+        points: this.tempBuffer1.getBuffer(),
+        colors: this.tempBuffer2.getBuffer(),
+        segments: this.tempBuffer1.length / 4,
         framebuffer: null,
       });
     }
 
     // Render the sparks.
-    this.tempArray1.length = 0;
-    this.tempArray2.length = 0;
+    this.tempBuffer1.reset();
+    this.tempBuffer2.reset();
     for (const spark of state.sparks) {
       if (spark.source === "armor") {
-        this.tempArray1.push(2 * spark.velocity, 1 * spark.velocity, 0.5 * spark.velocity, spark.velocity);
+        this.tempBuffer1.push(2 * spark.velocity, 1 * spark.velocity, 0.5 * spark.velocity, spark.velocity);
       } else {
-        this.tempArray1.push(0.5 * spark.velocity, 1 * spark.velocity, 2.0 * spark.velocity, spark.velocity);
+        this.tempBuffer1.push(0.5 * spark.velocity, 1 * spark.velocity, 2.0 * spark.velocity, spark.velocity);
       }
-      this.tempArray2.push(spark.lastPosition, spark.position);
+      this.tempBuffer2.pushVec2(spark.lastPosition, spark.position);
     }
-    this.tempBuffer1(this.tempArray1);
-    this.tempBuffer2(this.tempArray2);
     this.renderLines({
       model: mat4.create(),
       view,
       projection,
       viewport,
       width: 0.02,
-      colors: this.tempBuffer1,
-      points: this.tempBuffer2,
+      colors: this.tempBuffer1.getBuffer(),
+      points: this.tempBuffer2.getBuffer(),
       segments: state.sparks.length,
       framebuffer: null,
     });
 
     // Render the flames.
-    this.tempArray1.length = 0;
-    this.tempArray2.length = 0;
-    this.tempArray3.length = 0;
+    this.tempBuffer1.reset();
+    this.tempBuffer2.reset();
+    this.tempBuffer3.reset();
     for (const flame of state.flames) {
-      this.tempArray1.push(flame.position);
-      this.tempArray2.push(flame.age);
-      this.tempArray3.push(flame.scale);
+      this.tempBuffer1.pushVec2(flame.position);
+      this.tempBuffer2.push(flame.age);
+      this.tempBuffer3.push(flame.scale);
     }
-    this.tempBuffer1(this.tempArray1);
-    this.tempBuffer2(this.tempArray2);
-    this.tempBuffer3(this.tempArray3);
     this.renderFlame({
-      points: this.tempBuffer1,
-      age: this.tempBuffer2,
-      scale: this.tempBuffer3,
+      points: this.tempBuffer1.getBuffer(),
+      age: this.tempBuffer2.getBuffer(),
+      scale: this.tempBuffer3.getBuffer(),
       instances: state.flames.length,
       view,
       projection,
@@ -617,8 +603,8 @@ export class Renderer {
     // Render UI elements.
 
     // Armor and shield indicators.
-    this.tempArray1.length = 0;
-    this.tempArray2.length = 0;
+    this.tempBuffer1.reset();
+    this.tempBuffer2.reset();
     if (state.player.armor > 0) {
       arc(
         state.player.rotation,
@@ -626,8 +612,8 @@ export class Renderer {
         state.player.sprite.radius * 1.1,
         state.player.position,
         [0, 0.5, 1.0, 1],
-        this.tempArray1 as number[],
-        this.tempArray2 as number[]
+        this.tempBuffer1,
+        this.tempBuffer2
       );
       arc(
         state.player.rotation,
@@ -635,8 +621,8 @@ export class Renderer {
         state.player.sprite.radius * 1.0,
         state.player.position,
         [0, 0.75, 0, 1],
-        this.tempArray1 as number[],
-        this.tempArray2 as number[]
+        this.tempBuffer1,
+        this.tempBuffer2
       );
     }
 
@@ -649,8 +635,8 @@ export class Renderer {
         enemy.sprite.radius * 1.1,
         enemy.position,
         [0, 0.5, 1.0, 1],
-        this.tempArray1 as number[],
-        this.tempArray2 as number[]
+        this.tempBuffer1,
+        this.tempBuffer2
       );
       arc(
         angle,
@@ -658,23 +644,21 @@ export class Renderer {
         enemy.sprite.radius * 1.0,
         enemy.position,
         [0, 0.75, 0, 1],
-        this.tempArray1 as number[],
-        this.tempArray2 as number[]
+        this.tempBuffer1,
+        this.tempBuffer2
       );
     }
 
-    if (this.tempArray1.length > 0) {
-      this.tempBuffer1(this.tempArray1);
-      this.tempBuffer2(this.tempArray2);
+    if (this.tempBuffer1.length > 0) {
       this.renderLines({
         model: mat4.create(),
         view,
         projection,
         viewport,
         width: 0.02,
-        points: this.tempBuffer1,
-        colors: this.tempBuffer2,
-        segments: this.tempArray1.length / 4,
+        points: this.tempBuffer1.getBuffer(),
+        colors: this.tempBuffer2.getBuffer(),
+        segments: this.tempBuffer1.length / 4,
         framebuffer: null,
       });
     }
@@ -704,8 +688,8 @@ function arc(
   radius: number,
   offset: vec2,
   color: number[],
-  positionArray: number[],
-  colorArray: number[]
+  positionBuffer: SmartBuffer,
+  colorArray: SmartBuffer
 ) {
   const count = 9;
   for (let i = 0; i < count; i++) {
@@ -715,7 +699,7 @@ function arc(
     const y0 = radius * Math.sin(theta0) + offset[1];
     const x1 = radius * Math.cos(theta1) + offset[0];
     const y1 = radius * Math.sin(theta1) + offset[1];
-    positionArray.push(x0, y0, x1, y1);
+    positionBuffer.push(x0, y0, x1, y1);
     colorArray.push(...color);
   }
 }
