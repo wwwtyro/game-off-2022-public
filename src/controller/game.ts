@@ -400,11 +400,13 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     const missilesToRemove: Missile[] = [];
     for (const missile of state.missiles) {
       if (missile.target.armor < 0) {
+        addExplosion(state, missile.position, 0.25);
         missilesToRemove.push(missile);
         continue;
       }
       if (state.time.now - missile.timestamp > 10) {
         missilesToRemove.push(missile);
+        addExplosion(state, missile.position, 0.25);
         continue;
       }
       state.flames.push({
