@@ -88,6 +88,7 @@ export class Renderer {
         texture: this.getTexture(resources.textures.arrow0.powerOfTwo),
         scale: this.regl.prop<any, any>("scale"),
         rotation: this.regl.prop<any, any>("rotation"),
+        time: this.regl.prop<any, any>("time"),
         color: this.regl.prop<any, any>("color"),
         resolution: this.regl.prop<any, any>("resolution"),
       },
@@ -689,6 +690,7 @@ export class Renderer {
         resolution: [this.canvas.width, this.canvas.height],
         color: enemy.isCore ? [1, 1, 1] : [1, 0.5, 0.25],
         scale: enemy.isCore ? 1 : 0.75,
+        time: performance.now() * 0.015,
         rotation,
         viewport,
       });

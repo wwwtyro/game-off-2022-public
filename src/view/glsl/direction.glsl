@@ -24,9 +24,11 @@ void main() {
 precision highp float;
 uniform sampler2D texture;
 uniform vec3 color;
+uniform float time;
 varying vec2 vUV;
 
 void main() {
   vec4 value = texture2D(texture, vUV);
-  gl_FragColor = vec4(value.rgb * color, value.a * 0.75);
+  float blink = 0.5 + 0.5 * sin(time);
+  gl_FragColor = vec4(value.rgb * color, value.a * blink);
 }
