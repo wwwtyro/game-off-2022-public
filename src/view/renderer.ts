@@ -33,7 +33,7 @@ export class Renderer {
   constructor(private canvas: HTMLCanvasElement, resources: Resources) {
     this.regl = REGL({
       canvas,
-      extensions: ["angle_instanced_arrays", "OES_texture_float", "OES_texture_float_linear"],
+      extensions: ["angle_instanced_arrays"],
       attributes: {
         alpha: false,
       },
