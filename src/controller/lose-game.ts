@@ -13,8 +13,10 @@ export async function loseGame(state: State) {
     </p>
   `)
   );
-  menu.addItem(new MenuHTML('<div style="text-align: center">New Permanent Upgrades</div>'));
-  menu.addItem(new MenuUpgrades(state.newPermanentUpgrades));
+  if (state.newPermanentUpgrades.length > 0) {
+    menu.addItem(new MenuHTML('<div style="text-align: center">New Permanent Upgrades</div>'));
+    menu.addItem(new MenuUpgrades(state.newPermanentUpgrades));
+  }
   menu.addItem(
     new MenuButton("Continue", async () => {
       menu.exit();
