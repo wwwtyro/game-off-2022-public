@@ -17,6 +17,7 @@ export async function permanentUpgrade(state: State, resources: Resources) {
           upgradeDrone(upgrade, state.player);
           permanentUpgrades.push(upgrade);
           localStorage.setItem("permanentUpgrades", JSON.stringify(permanentUpgrades.map((u) => u.label)));
+          state.newPermanentUpgrades.push(upgrade);
           menu.exit();
         },
         upgrade.icon,

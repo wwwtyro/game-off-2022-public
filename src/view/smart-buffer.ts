@@ -15,7 +15,6 @@ export class SmartBuffer {
       const newArray = new Float32Array(this.array.length * 2);
       newArray.set(this.array);
       this.array = newArray;
-      console.log("double", this.array.length);
     }
     for (const value of values) {
       this.array[this.index] = value;

@@ -560,7 +560,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 2.0) {
       if (state.player.armor <= 0) {
         resources.sounds.engine0.mute(true);
-        await loseGame();
+        await loseGame(state);
         resources.sounds.engine0.mute(false);
         eventManager.dispose();
         return;
@@ -575,7 +575,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       resources.sounds.engine0.mute(true);
       await levelEnd(state, resources);
       resources.sounds.engine0.mute(false);
-      if (Math.random() < 0.1) {
+      if (Math.random() < 10.1) {
         resources.sounds.engine0.mute(true);
         await permanentUpgrade(state, resources);
         resources.sounds.engine0.mute(false);

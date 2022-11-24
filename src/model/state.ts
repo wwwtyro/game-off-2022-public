@@ -5,7 +5,7 @@ import { vec2RandomOffset } from "../util";
 import { Drone, createDrone } from "./drone";
 import { Beam, Spark, Flame, Missile } from "./model";
 import { PlayerDrone } from "./player-drones";
-import { getPermanentUpgrades, upgradeDrone } from "./upgrades";
+import { getPermanentUpgrades, Upgrade, upgradeDrone } from "./upgrades";
 
 interface Pointer {
   x: number;
@@ -35,6 +35,7 @@ export interface State {
   pointer: Pointer;
   level: number;
   levelEndTimestamp: number | null;
+  newPermanentUpgrades: Upgrade[];
 }
 
 export function buildState(resources: Resources, playerDrone: PlayerDrone): State {
@@ -66,6 +67,7 @@ export function buildState(resources: Resources, playerDrone: PlayerDrone): Stat
     },
     level: 1,
     levelEndTimestamp: null,
+    newPermanentUpgrades: [],
   };
 
   state.player.armor = 5;
