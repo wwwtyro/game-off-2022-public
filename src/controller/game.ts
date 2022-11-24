@@ -102,7 +102,6 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
   thumbCanvas.style.position = "fixed";
   thumbCanvas.style.top = "0px";
   thumbCanvas.style.left = "0px";
-  thumbCanvas.height = thumbCanvas.width = Math.round(0.5 * Math.min(canvas.width, canvas.height));
   const thumbCtx = thumbCanvas.getContext("2d");
 
   function removeThumb() {
@@ -116,7 +115,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       return;
     }
     document.body.appendChild(thumbCanvas);
-    thumbCanvas.width = thumbCanvas.width;
+    thumbCanvas.height = thumbCanvas.width = Math.round(0.5 * Math.min(canvas.width, canvas.height));
     const w = thumbCanvas.width;
     const h = thumbCanvas.height;
     thumbCtx.strokeStyle = "rgba(255,255,255,0.5)";
