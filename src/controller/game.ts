@@ -93,7 +93,48 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
   const canvas = document.getElementById("render-canvas") as HTMLCanvasElement;
   canvas.style.display = "block";
+  canvas.width = canvas.clientWidth;
+  canvas.height = canvas.clientHeight;
   const renderer = new Renderer(canvas, resources);
+
+  const thumbCanvas = document.createElement("canvas");
+  thumbCanvas.style.pointerEvents = "none";
+  thumbCanvas.style.position = "fixed";
+  thumbCanvas.style.top = "0px";
+  thumbCanvas.style.left = "0px";
+  thumbCanvas.height = thumbCanvas.width = Math.round(0.5 * Math.min(canvas.width, canvas.height));
+  const thumbCtx = thumbCanvas.getContext("2d");
+
+  function removeThumb() {
+    if (thumbCanvas.parentElement !== null) {
+      document.body.removeChild(thumbCanvas);
+    }
+  }
+
+  function renderThumb() {
+    if (!thumbCtx) {
+      return;
+    }
+    document.body.appendChild(thumbCanvas);
+    thumbCanvas.width = thumbCanvas.width;
+    const w = thumbCanvas.width;
+    const h = thumbCanvas.height;
+    thumbCtx.strokeStyle = "rgba(255,255,255,0.5)";
+    thumbCtx.beginPath();
+    thumbCtx.arc(0.5 * w, 0.5 * h, 0.5 * w - 1, 0, 2 * Math.PI);
+    thumbCtx.stroke();
+    const delta = vec2.subtract(vec2.create(), state.pointer.position, state.pointer.origin);
+    if (vec2.length(delta) > 0.25 * w) {
+      vec2.normalize(delta, delta);
+      vec2.scale(delta, delta, 0.25 * w);
+    }
+    thumbCtx.beginPath();
+    thumbCtx.arc(0.5 * w + delta[0], 0.5 * h + delta[1], 0.25 * w, 0, 2 * Math.PI);
+    thumbCtx.stroke();
+
+    thumbCanvas.style.left = `${state.pointer.origin[0] - 0.5 * w}px`;
+    thumbCanvas.style.top = `${state.pointer.origin[1] - 0.5 * h}px`;
+  }
 
   eventManager.addEventListener(window, "keydown", (e) => {
     state.keys[e.code] = true;
@@ -104,31 +145,41 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
   });
 
   eventManager.addEventListener(canvas, "pointerdown", (e) => {
-    state.pointer.x = e.offsetX;
-    state.pointer.y = e.offsetY;
+    vec2.set(state.pointer.position, e.offsetX, e.offsetY);
+    vec2.copy(state.pointer.origin, state.pointer.position);
+    state.pointer.type = e.pointerType;
     state.pointer.down = true;
   });
 
-  eventManager.addEventListener(canvas, "pointerup", () => {
+  eventManager.addEventListener(canvas, "pointerup", (e) => {
+    state.pointer.type = e.pointerType;
     state.pointer.down = false;
   });
 
-  eventManager.addEventListener(canvas, "pointerleave", () => {
+  eventManager.addEventListener(canvas, "pointerleave", (e) => {
+    state.pointer.type = e.pointerType;
     state.pointer.down = false;
   });
 
-  eventManager.addEventListener(canvas, "pointerout", () => {
+  eventManager.addEventListener(canvas, "pointerout", (e) => {
+    state.pointer.type = e.pointerType;
     state.pointer.down = false;
   });
 
   eventManager.addEventListener(canvas, "pointermove", (e) => {
-    state.pointer.x = e.offsetX;
-    state.pointer.y = e.offsetY;
+    state.pointer.type = e.pointerType;
+    vec2.set(state.pointer.position, e.offsetX, e.offsetY);
   });
 
   const stats = document.getElementById("game-stats") as HTMLElement;
   stats.style.display = "block";
   stats.innerText = "";
+
+  function exit() {
+    removeThumb();
+    eventManager.dispose();
+    canvas.style.opacity = "100%";
+  }
 
   while (true) {
     const timestamp = performance.now() / 1000;
@@ -137,6 +188,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     state.time.last = timestamp;
 
     stats.innerHTML = `Level ${state.level} / Elapsed time: ${new Date(state.time.now * 1000).toISOString().substring(11, 19)}`;
+    removeThumb();
 
     if (state.keys["Escape"]) {
       resources.sounds.engine0.mute(true);
@@ -212,13 +264,19 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
         accelerated = true;
       }
       if (state.pointer.down) {
-        const uvx = state.pointer.x / canvas.width;
-        const uvy = 1 - state.pointer.y / canvas.height;
-        const fovv = state.camera.fov;
-        const fovh = (fovv * canvas.width) / canvas.height;
-        const px = state.camera.position[0] - fovh + uvx * 2 * fovh;
-        const py = state.camera.position[1] - fovv + uvy * 2 * fovv;
-        vec2.subtract(rawAcceleration, vec2.fromValues(px, py), state.player.position);
+        if (state.pointer.type === "mouse") {
+          const uvx = state.pointer.position[0] / canvas.width;
+          const uvy = 1 - state.pointer.position[1] / canvas.height;
+          const fovv = state.camera.fov;
+          const fovh = (fovv * canvas.width) / canvas.height;
+          const px = state.camera.position[0] - fovh + uvx * 2 * fovh;
+          const py = state.camera.position[1] - fovv + uvy * 2 * fovv;
+          vec2.subtract(rawAcceleration, vec2.fromValues(px, py), state.player.position);
+        } else {
+          vec2.subtract(rawAcceleration, state.pointer.position, state.pointer.origin);
+          rawAcceleration[1] *= -1;
+          renderThumb();
+        }
         accelerated = true;
       }
       accelerateDrone(state.player, rawAcceleration, state.time.dt);
@@ -563,13 +621,12 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
         resources.sounds.engine0.mute(true);
         await loseGame(state);
         resources.sounds.engine0.mute(false);
-        eventManager.dispose();
+        exit();
         return;
       }
       if (state.level === 100) {
         resources.sounds.engine0.mute(true);
         await winGame(state);
-        eventManager.dispose();
         const t0 = performance.now();
         while (performance.now() - t0 < 5000) {
           const timestamp = performance.now() / 1000;
@@ -599,7 +656,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
           renderer.render(state);
           await animationFrame();
         }
-        canvas.style.opacity = "100%";
+        exit();
         return;
       }
       resources.sounds.engine0.mute(true);

@@ -8,9 +8,10 @@ import { PlayerDrone } from "./player-drones";
 import { getPermanentUpgrades, Upgrade, upgradeDrone } from "./upgrades";
 
 interface Pointer {
-  x: number;
-  y: number;
+  position: vec2;
   down: boolean;
+  type?: "mouse" | "touch";
+  origin: vec2;
 }
 
 export interface State {
@@ -61,9 +62,9 @@ export function buildState(resources: Resources, playerDrone: PlayerDrone): Stat
     flames: [],
     keys: {},
     pointer: {
-      x: 0,
-      y: 0,
+      position: vec2.create(),
       down: false,
+      origin: vec2.create(),
     },
     level: 1,
     levelEndTimestamp: null,
