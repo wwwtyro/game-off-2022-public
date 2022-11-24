@@ -17,7 +17,7 @@ import { Beam, Missile } from "../model/model";
 import { PlayerDrone } from "../model/player-drones";
 import { State, buildState, addExplosion } from "../model/state";
 import { applyRandomUpgrade } from "../model/upgrades";
-import { animationFrame, randomChoice } from "../util";
+import { animationFrame, randomChoice, vec2RandomOffset } from "../util";
 import { Renderer } from "../view/renderer";
 import { inGameOptionsMenu } from "./in-game-options-menu";
 import { levelEnd } from "./level-end";
@@ -568,9 +568,38 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       }
       if (state.level === 100) {
         resources.sounds.engine0.mute(true);
-        await winGame();
-        resources.sounds.engine0.mute(false);
+        await winGame(state);
         eventManager.dispose();
+        const t0 = performance.now();
+        while (performance.now() - t0 < 5000) {
+          const timestamp = performance.now() / 1000;
+          state.time.dt = Math.min(timestamp - state.time.last, 1 / 30);
+          state.time.now += state.time.dt;
+          state.time.last = timestamp;
+
+          const dt = performance.now() - t0;
+          canvas.style.opacity = "100%";
+          if (dt > 4000) {
+            canvas.style.opacity = `${100 * (1.0 - (dt - 4000) / 1000)}%`;
+          }
+          if (Math.random() < 1 / 5) {
+            addExplosion(state, vec2RandomOffset(state.player.position, 2 * state.camera.fov), 0.1 + Math.random());
+            state.camera.shake = 1;
+            resources.sounds.explode0.play();
+          }
+          for (const spark of state.sparks) {
+            spark.velocity *= spark.decay;
+            vec2.copy(spark.lastPosition, spark.position);
+            vec2.scaleAndAdd(spark.position, spark.position, spark.direction, state.time.dt * spark.velocity);
+          }
+          for (const flame of state.flames) {
+            flame.age += state.time.dt;
+          }
+          state.flames = state.flames.filter((f) => f.age < 6.0);
+          renderer.render(state);
+          await animationFrame();
+        }
+        canvas.style.opacity = "100%";
         return;
       }
       resources.sounds.engine0.mute(true);
