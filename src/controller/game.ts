@@ -575,7 +575,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       resources.sounds.engine0.mute(true);
       await levelEnd(state, resources);
       resources.sounds.engine0.mute(false);
-      if (Math.random() < 10.1) {
+      if (Math.random() < 0.1) {
         resources.sounds.engine0.mute(true);
         await permanentUpgrade(state, resources);
         resources.sounds.engine0.mute(false);

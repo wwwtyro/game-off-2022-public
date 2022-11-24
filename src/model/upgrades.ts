@@ -76,7 +76,7 @@ export const upgrades: Upgrade[] = [
     label: "Missile Firing Rate",
     icon: "rocket.svg",
     color: missileColor,
-    frequency: 1,
+    frequency: 0.25,
     permable: true,
     available: (drone: Drone) => {
       return drone.missileFiringRate < 30;
@@ -130,8 +130,8 @@ export const upgrades: Upgrade[] = [
     permable: true,
     available: () => true,
     _upgrade: (drone: Drone) => {
-      drone.maxArmor += 1;
-      drone.armor += 1;
+      drone.maxArmor += 5;
+      drone.armor += 5;
     },
   },
   {
