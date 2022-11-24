@@ -247,19 +247,19 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     if (state.player.armor > 0) {
       const rawAcceleration = vec2.fromValues(0, 0);
       let accelerated = false;
-      if (state.keys.KeyA) {
+      if (state.keys.KeyA || state.keys.ArrowLeft) {
         rawAcceleration[0] -= 1;
         accelerated = true;
       }
-      if (state.keys.KeyD) {
+      if (state.keys.KeyD || state.keys.ArrowRight) {
         rawAcceleration[0] += 1;
         accelerated = true;
       }
-      if (state.keys.KeyS) {
+      if (state.keys.KeyS || state.keys.ArrowDown) {
         rawAcceleration[1] -= 1;
         accelerated = true;
       }
-      if (state.keys.KeyW) {
+      if (state.keys.KeyW || state.keys.ArrowUp) {
         rawAcceleration[1] += 1;
         accelerated = true;
       }
