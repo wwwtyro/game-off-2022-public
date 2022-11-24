@@ -1,8 +1,27 @@
 import { createDroid } from "./droid";
 import { Drone } from "./drone";
 
+type UpgradeId =
+  | "beam rate"
+  | "beam power"
+  | "additional cannon"
+  | "beam speed"
+  | "missile rate"
+  | "missile power"
+  | "rotation speed"
+  | "acceleration"
+  | "armor"
+  | "repair armor"
+  | "shields"
+  | "shield recharge"
+  | "battle droid"
+  | "ricochet"
+  | "stun"
+  | "impact";
+
 export interface Upgrade {
   readonly label: string;
+  readonly id: UpgradeId;
   readonly icon: string;
   readonly color: string;
   readonly frequency: number;
@@ -23,7 +42,8 @@ const missileColor = "filter-missile";
 
 export const upgrades: Upgrade[] = [
   {
-    label: "Ion Cannon Firing Rate",
+    label: "Ion Cannon Rate",
+    id: "beam rate",
     icon: "laser-warning.svg",
     color: weaponColor,
     frequency: 1,
@@ -36,7 +56,8 @@ export const upgrades: Upgrade[] = [
     },
   },
   {
-    label: "Ion Cannon Power",
+    label: "Ion Beam Power",
+    id: "beam power",
     icon: "laser-blast.svg",
     color: weaponColor,
     frequency: 1,
@@ -48,6 +69,7 @@ export const upgrades: Upgrade[] = [
   },
   {
     label: "Additional Ion Cannon",
+    id: "additional cannon",
     icon: "laser-turret.svg",
     color: weaponColor,
     frequency: 0.1,
@@ -60,7 +82,8 @@ export const upgrades: Upgrade[] = [
     },
   },
   {
-    label: "Ion Cannon Beam Speed",
+    label: "Ion Beam Speed",
+    id: "beam speed",
     icon: "laser-precision.svg",
     color: weaponColor,
     frequency: 1,
@@ -73,7 +96,8 @@ export const upgrades: Upgrade[] = [
     },
   },
   {
-    label: "Missile Firing Rate",
+    label: "Missile Rate",
+    id: "missile rate",
     icon: "rocket.svg",
     color: missileColor,
     frequency: 0.25,
@@ -87,6 +111,7 @@ export const upgrades: Upgrade[] = [
   },
   {
     label: "Missile Power",
+    id: "missile power",
     icon: "incoming-rocket.svg",
     color: missileColor,
     frequency: 0.1,
@@ -98,6 +123,7 @@ export const upgrades: Upgrade[] = [
   },
   {
     label: "Rotation Speed",
+    id: "rotation speed",
     icon: "clockwise-rotation.svg",
     color: shipColor,
     frequency: 1,
@@ -111,6 +137,7 @@ export const upgrades: Upgrade[] = [
   },
   {
     label: "Acceleration",
+    id: "acceleration",
     icon: "speedometer.svg",
     color: shipColor,
     frequency: 1,
@@ -123,7 +150,8 @@ export const upgrades: Upgrade[] = [
     },
   },
   {
-    label: "Increase Armor",
+    label: "Armor",
+    id: "armor",
     icon: "armor-upgrade.svg",
     color: armorColor,
     frequency: 1,
@@ -136,6 +164,7 @@ export const upgrades: Upgrade[] = [
   },
   {
     label: "Repair Armor",
+    id: "repair armor",
     icon: "mighty-spanner.svg",
     color: armorColor,
     frequency: 1,
@@ -148,7 +177,8 @@ export const upgrades: Upgrade[] = [
     },
   },
   {
-    label: "Increase Shields",
+    label: "Shields",
+    id: "shields",
     icon: "shieldcomb.svg",
     color: shieldColor,
     frequency: 1,
@@ -159,7 +189,8 @@ export const upgrades: Upgrade[] = [
     },
   },
   {
-    label: "Increase Shield Recharge Rate",
+    label: "Shield Recharge",
+    id: "shield recharge",
     icon: "electrical-crescent.svg",
     color: shieldColor,
     frequency: 1,
@@ -171,6 +202,7 @@ export const upgrades: Upgrade[] = [
   },
   {
     label: "Battle Droid",
+    id: "battle droid",
     icon: "delivery-drone.svg",
     color: droidColor,
     frequency: 0.1,
@@ -183,6 +215,7 @@ export const upgrades: Upgrade[] = [
   },
   {
     label: "Ricochet",
+    id: "ricochet",
     icon: "laser-sparks.svg",
     color: specialColor,
     frequency: 0.01,
@@ -195,6 +228,7 @@ export const upgrades: Upgrade[] = [
   },
   {
     label: "Stun",
+    id: "stun",
     icon: "sunbeams.svg",
     color: specialColor,
     frequency: 0.01,
@@ -207,6 +241,7 @@ export const upgrades: Upgrade[] = [
   },
   {
     label: "Impact",
+    id: "impact",
     icon: "gooey-impact.svg",
     color: specialColor,
     frequency: 0.01,
@@ -218,6 +253,14 @@ export const upgrades: Upgrade[] = [
     },
   },
 ];
+
+export function getUpgrade(id: UpgradeId) {
+  const upgrade = upgrades.find((u) => u.id === id);
+  if (upgrade === undefined) {
+    throw new Error(`No upgrade for ${id}`);
+  }
+  return upgrade;
+}
 
 export function upgradeDrone(upgrade: Upgrade, drone: Drone) {
   if (!upgrade.oneOff) {
@@ -273,7 +316,7 @@ export function applyRandomUpgrade(drone: Drone) {
 }
 
 export function getPermanentUpgrades() {
-  return (JSON.parse(localStorage.getItem("permanentUpgrades") ?? JSON.stringify([])) as string[])
-    .map((label) => upgrades.find((upgrade) => upgrade.label === label))
+  return (JSON.parse(localStorage.getItem("permanentUpgrades") ?? JSON.stringify([])) as UpgradeId[])
+    .map((id) => upgrades.find((upgrade) => upgrade.id === id))
     .filter((upgrade) => upgrade !== undefined) as Upgrade[];
 }

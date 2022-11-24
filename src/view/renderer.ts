@@ -3,7 +3,7 @@ import REGL, { Regl } from "regl";
 
 import { Resources } from "../controller/loading";
 import { modulo } from "../util";
-import { State } from "../model/state";
+import { Camera, State } from "../model/state";
 import { SmartBuffer } from "./smart-buffer";
 import blurShader from "./glsl/blur.glsl?raw";
 import spriteShader from "./glsl/sprite.glsl?raw";
@@ -314,6 +314,18 @@ export class Renderer {
     return this.textures.get(texture);
   }
 
+  public getFov(camera: Camera) {
+    if (this.canvas.height < this.canvas.width) {
+      const y = camera.fov;
+      const x = (y * this.canvas.width) / this.canvas.height;
+      return { x, y };
+    } else {
+      const x = camera.fov;
+      const y = (x * this.canvas.height) / this.canvas.width;
+      return { x, y };
+    }
+  }
+
   public render(state: State) {
     this.canvas.width = this.canvas.clientWidth;
     this.canvas.height = this.canvas.clientHeight;
@@ -324,8 +336,7 @@ export class Renderer {
     this.fbShadow[0].resize(shadowWidth, shadowHeight);
     this.fbShadow[1].resize(shadowWidth, shadowHeight);
 
-    const fovv = state.camera.fov;
-    const fovh = (fovv * this.canvas.width) / this.canvas.height;
+    const fov = this.getFov(state.camera);
 
     const viewport = { x: 0, y: 0, width: this.canvas.width, height: this.canvas.height };
     const model = mat4.create();
@@ -333,7 +344,15 @@ export class Renderer {
     const shakex = 0.1 * state.camera.shake * Math.cos(state.time.now * 100) * Math.cos(state.time.now);
     const shakey = 0.1 * state.camera.shake * Math.cos(state.time.now * 100) * Math.sin(state.time.now);
     const camPos = vec2.add(vec2.create(), state.camera.position, [shakex, shakey]);
-    const projection = mat4.ortho(mat4.create(), camPos[0] - fovh, camPos[0] + fovh, camPos[1] - fovv, camPos[1] + fovv, 0, 1000);
+    const projection = mat4.ortho(
+      mat4.create(),
+      camPos[0] - fov.x,
+      camPos[0] + fov.x,
+      camPos[1] - fov.y,
+      camPos[1] + fov.y,
+      0,
+      1000
+    );
 
     // Render shadows.
     this.regl.clear({ color: [1, 1, 1, 1], framebuffer: this.fbShadow[0] });
@@ -415,7 +434,7 @@ export class Renderer {
     this.regl.clear({ color: [0, 0, 0, 1], depth: 1 });
     this.renderSurface({
       offset: camPos,
-      range: [fovh, fovv],
+      range: [fov.x, fov.y],
       viewport,
     });
 

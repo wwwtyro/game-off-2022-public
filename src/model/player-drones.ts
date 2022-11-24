@@ -1,4 +1,4 @@
-import { getPermanentUpgrades, Upgrade, upgrades } from "./upgrades";
+import { getPermanentUpgrades, getUpgrade, Upgrade } from "./upgrades";
 
 export interface PlayerDrone {
   name: string;
@@ -23,16 +23,10 @@ export const playerDrones: PlayerDrone[] = [
     unlock: "Unlocked at 3 Acceleration",
     spriteId: "player01",
     url: "static/player-01-diffuse.png",
-    available: () => getPermanentUpgrades().filter((u) => u.label === "Acceleration").length >= 3,
+    available: () => getPermanentUpgrades().filter((u) => u.id === "acceleration").length >= 3,
     getUpgrades: () => {
-      const acceleration = upgrades.find((u) => u.label === "Acceleration");
-      if (!acceleration) {
-        throw new Error("Didn't find upgrade.");
-      }
-      const rotationSpeed = upgrades.find((u) => u.label === "Rotation Speed");
-      if (!rotationSpeed) {
-        throw new Error("Didn't find upgrade.");
-      }
+      const acceleration = getUpgrade("acceleration");
+      const rotationSpeed = getUpgrade("rotation speed");
       return [
         acceleration,
         acceleration,
@@ -55,16 +49,10 @@ export const playerDrones: PlayerDrone[] = [
     unlock: "Unlocked at 10 Shield",
     spriteId: "player02",
     url: "static/player-02-diffuse.png",
-    available: () => getPermanentUpgrades().filter((u) => u.label === "Increase Shields").length >= 10,
+    available: () => getPermanentUpgrades().filter((u) => u.id === "shields").length >= 10,
     getUpgrades: () => {
-      const increaseShields = upgrades.find((u) => u.label === "Increase Shields");
-      if (!increaseShields) {
-        throw new Error("Didn't find upgrade.");
-      }
-      const increaseShieldRechargeRate = upgrades.find((u) => u.label === "Increase Shield Recharge Rate");
-      if (!increaseShieldRechargeRate) {
-        throw new Error("Didn't find upgrade.");
-      }
+      const increaseShields = getUpgrade("shields");
+      const increaseShieldRechargeRate = getUpgrade("shield recharge");
       return [
         increaseShields,
         increaseShields,
@@ -94,24 +82,12 @@ export const playerDrones: PlayerDrone[] = [
     unlock: "Unlocked at 10 Ion Cannon Power",
     spriteId: "player03",
     url: "static/player-03-diffuse.png",
-    available: () => getPermanentUpgrades().filter((u) => u.label === "Ion Cannon Power").length >= 10,
+    available: () => getPermanentUpgrades().filter((u) => u.id === "beam power").length >= 10,
     getUpgrades: () => {
-      const ionCannonFiringRate = upgrades.find((u) => u.label === "Ion Cannon Firing Rate");
-      if (!ionCannonFiringRate) {
-        throw new Error("Didn't find upgrade.");
-      }
-      const ionCannonPower = upgrades.find((u) => u.label === "Ion Cannon Power");
-      if (!ionCannonPower) {
-        throw new Error("Didn't find upgrade.");
-      }
-      const additionalIonCannon = upgrades.find((u) => u.label === "Additional Ion Cannon");
-      if (!additionalIonCannon) {
-        throw new Error("Didn't find upgrade.");
-      }
-      const ionCannonBeamSpeed = upgrades.find((u) => u.label === "Ion Cannon Beam Speed");
-      if (!ionCannonBeamSpeed) {
-        throw new Error("Didn't find upgrade.");
-      }
+      const ionCannonFiringRate = getUpgrade("beam rate");
+      const ionCannonPower = getUpgrade("beam power");
+      const additionalIonCannon = getUpgrade("additional cannon");
+      const ionCannonBeamSpeed = getUpgrade("beam speed");
       return [
         ionCannonFiringRate,
         ionCannonFiringRate,
@@ -139,12 +115,9 @@ export const playerDrones: PlayerDrone[] = [
     unlock: "Unlocked at 10 Armor",
     spriteId: "player04",
     url: "static/player-04-diffuse.png",
-    available: () => getPermanentUpgrades().filter((u) => u.label === "Increase Armor").length >= 10,
+    available: () => getPermanentUpgrades().filter((u) => u.id === "armor").length >= 10,
     getUpgrades: () => {
-      const increaseArmor = upgrades.find((u) => u.label === "Increase Armor");
-      if (!increaseArmor) {
-        throw new Error("Didn't find upgrade.");
-      }
+      const increaseArmor = getUpgrade("armor");
       const armorUpgrades: Upgrade[] = [];
       for (let i = 0; i < 50; i++) {
         armorUpgrades.push(increaseArmor);

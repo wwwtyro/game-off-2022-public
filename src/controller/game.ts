@@ -266,10 +266,9 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
         if (state.pointer.type === "mouse") {
           const uvx = state.pointer.position[0] / canvas.width;
           const uvy = 1 - state.pointer.position[1] / canvas.height;
-          const fovv = state.camera.fov;
-          const fovh = (fovv * canvas.width) / canvas.height;
-          const px = state.camera.position[0] - fovh + uvx * 2 * fovh;
-          const py = state.camera.position[1] - fovv + uvy * 2 * fovv;
+          const fov = renderer.getFov(state.camera);
+          const px = state.camera.position[0] - fov.x + uvx * 2 * fov.x;
+          const py = state.camera.position[1] - fov.y + uvy * 2 * fov.y;
           vec2.subtract(rawAcceleration, vec2.fromValues(px, py), state.player.position);
         } else {
           vec2.subtract(rawAcceleration, state.pointer.position, state.pointer.origin);

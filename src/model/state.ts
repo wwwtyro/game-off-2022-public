@@ -7,11 +7,17 @@ import { Beam, Spark, Flame, Missile } from "./model";
 import { PlayerDrone } from "./player-drones";
 import { getPermanentUpgrades, Upgrade, upgradeDrone } from "./upgrades";
 
-interface Pointer {
+export interface Pointer {
   position: vec2;
   down: boolean;
   type?: "mouse" | "touch";
   origin: vec2;
+}
+
+export interface Camera {
+  position: vec2;
+  fov: number;
+  shake: number;
 }
 
 export interface State {
@@ -21,11 +27,7 @@ export interface State {
     dt: number;
   };
   world: RAPIER.World;
-  camera: {
-    position: vec2;
-    fov: number;
-    shake: number;
-  };
+  camera: Camera;
   player: Drone;
   missiles: Missile[];
   enemies: Drone[];
