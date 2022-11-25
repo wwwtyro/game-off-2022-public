@@ -461,8 +461,8 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
         continue;
       }
       if (state.time.now - missile.timestamp > 10) {
-        missilesToRemove.push(missile);
         addExplosion(state, missile.position, 0.25);
+        missilesToRemove.push(missile);
         continue;
       }
       state.flames.push({
@@ -477,10 +477,21 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       vec2.scaleAndAdd(missile.velocity, missile.velocity, accel, state.time.dt);
       vec2.scaleAndAdd(missile.position, missile.position, missile.velocity, state.time.dt);
       if (vec2.distance(missile.position, missile.target.position) < missile.target.sprite.radius) {
+        const damage = missile.parent.missilePower * 10;
         addExplosion(state, missile.position, 0.25);
-        damageDrone(missile.target, missile.parent.missilePower * 10.0);
+        damageDrone(missile.target, damage);
         const id = resources.sounds.explode0.play();
         resources.sounds.explode0.volume(1 / vec2.dist(state.player.position, missile.position), id);
+        if (state.player.splash) {
+          for (const enemy of state.enemies) {
+            if (enemy === missile.target) {
+              continue;
+            }
+            const dist = vec2.distance(missile.position, enemy.position);
+            const splashDamage = damage * Math.exp(-dist);
+            damageDrone(enemy, splashDamage);
+          }
+        }
         missilesToRemove.push(missile);
       }
     }

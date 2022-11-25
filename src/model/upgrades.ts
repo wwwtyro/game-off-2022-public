@@ -17,7 +17,8 @@ type UpgradeId =
   | "battle droid"
   | "ricochet"
   | "stun"
-  | "impact";
+  | "impact"
+  | "splash damage";
 
 export interface Upgrade {
   readonly label: string;
@@ -250,6 +251,19 @@ export const upgrades: Upgrade[] = [
     available: (drone: Drone) => drone.impact === false,
     _upgrade: (drone: Drone) => {
       drone.impact = true;
+    },
+  },
+  {
+    label: "Splash Damage",
+    id: "splash damage",
+    icon: "droplet-splash.svg",
+    color: specialColor,
+    frequency: 0.01,
+    permable: false,
+    playerOnly: true,
+    available: (drone: Drone) => drone.splash === false,
+    _upgrade: (drone: Drone) => {
+      drone.splash = true;
     },
   },
 ];

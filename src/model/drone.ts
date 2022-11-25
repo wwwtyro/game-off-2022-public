@@ -41,6 +41,7 @@ export interface Drone {
   impact: boolean;
   slow: number;
   dead: boolean;
+  splash: boolean;
 }
 
 export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
@@ -78,6 +79,7 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     impact: false,
     slow: 1,
     dead: false,
+    splash: false,
   };
 }
 
@@ -154,16 +156,10 @@ export function rotateDrone(drone: Drone, dt: number) {
 }
 
 export function damageDrone(drone: Drone, damage: number) {
-  if (drone.shields > 0) {
-    drone.shields -= damage;
-    if (drone.shields < 0) {
-      damage = -drone.shields;
-      drone.shields = 0;
-    } else {
-      damage = 0;
-    }
-  }
-  drone.armor -= damage;
+  const shieldDamage = Math.min(drone.shields, damage);
+  const armorDamage = damage - shieldDamage;
+  drone.shields -= shieldDamage;
+  drone.armor -= armorDamage;
 }
 
 export function accelerateDrone(drone: Drone, rawAcceleration: vec2, dt: number) {
