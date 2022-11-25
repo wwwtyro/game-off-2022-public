@@ -357,7 +357,7 @@ export class Renderer {
     // Render shadows.
     this.regl.clear({ color: [1, 1, 1, 1], framebuffer: this.fbShadow[0] });
 
-    if (state.player.armor > 0) {
+    if (!state.player.dead) {
       mat4.identity(model);
       mat4.translate(model, model, [state.player.position[0] - 0.25, state.player.position[1] - 0.25, 0]);
       mat4.rotateZ(model, model, state.player.rotation);
@@ -512,7 +512,7 @@ export class Renderer {
     }
 
     // Render the player.
-    if (state.player.armor > 0) {
+    if (!state.player.dead) {
       mat4.identity(model);
       mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
       mat4.rotateZ(model, model, state.player.rotation);
@@ -624,7 +624,7 @@ export class Renderer {
     // Armor and shield indicators.
     this.tempBuffer1.reset();
     this.tempBuffer2.reset();
-    if (state.player.armor > 0) {
+    if (!state.player.dead) {
       arc(
         state.player.rotation,
         (0.5 * Math.PI * state.player.shields) / state.player.maxShields,

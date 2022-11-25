@@ -243,7 +243,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
     // Update player position.
     let playerIsTargetingEnemy = false;
-    if (state.player.armor > 0) {
+    if (!state.player.dead) {
       const rawAcceleration = vec2.fromValues(0, 0);
       let accelerated = false;
       if (state.keys.KeyA || state.keys.ArrowLeft) {
@@ -373,7 +373,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
     // Fire player ion cannons.
     if (
-      state.player.armor > 0 &&
+      !state.player.dead &&
       playerIsTargetingEnemy &&
       state.time.now - state.player.ionCannonLastFired > 1 / state.player.ionCannonFiringRate
     ) {
@@ -382,7 +382,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       resources.sounds.shoot0.rate(Math.random() * 0.5 + 0.75, id);
       resources.sounds.shoot0.volume(0.125, id);
     }
-    if (state.player.armor > 0) {
+    if (!state.player.dead) {
       for (const droid of state.player.droids) {
         if (state.time.now - droid.ionCannonLastFired > 1 / state.player.ionCannonFiringRate) {
           const target = randomChoice(state.enemies);
@@ -405,7 +405,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     }
 
     // Fire player missiles.
-    if (state.player.armor > 0 && state.time.now - state.player.missileLastFired > 10 / state.player.missileFiringRate) {
+    if (!state.player.dead && state.time.now - state.player.missileLastFired > 10 / state.player.missileFiringRate) {
       const target = randomChoice(state.enemies);
       if (target && vec2.distance(state.player.position, target.position) < PLAYER_TARGETTING_DISTANCE) {
         state.missiles.push({
@@ -420,7 +420,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     }
 
     // Fire enemy weapons.
-    if (state.player.armor > 0) {
+    if (!state.player.dead) {
       for (const enemy of state.enemies) {
         if (enemy.isCore) {
           continue;
@@ -455,7 +455,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     // Update all missiles.
     const missilesToRemove: Missile[] = [];
     for (const missile of state.missiles) {
-      if (missile.target.armor < 0) {
+      if (missile.target.dead) {
         addExplosion(state, missile.position, 0.25);
         missilesToRemove.push(missile);
         continue;
@@ -582,14 +582,18 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
     // If a core dies, kill its children.
     state.enemies.forEach((e) => {
-      if (e.parent && e.parent.armor <= 0 && Math.random() < 1 / 60) {
+      if (e.parent && e.parent.dead && Math.random() < 1 / 60) {
         e.armor = -1;
+        e.dead = true;
       }
     });
 
     // Remove any dead enemies.
     state.enemies = state.enemies.filter((enemy) => {
-      if (enemy.armor > 0) {
+      if (enemy.armor <= 0) {
+        enemy.dead = true;
+      }
+      if (!enemy.dead) {
         return true;
       }
       explodeDrone(enemy, state);
@@ -599,15 +603,19 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       return false;
     });
 
-    // Check to see if we've completed the level.
-    if (state.levelEndTimestamp === null) {
-      if (state.player.armor <= 0) {
+    if (state.player.armor <= 0) {
+      if (!state.player.dead) {
+        state.player.dead = true;
         state.levelEndTimestamp = state.time.now;
         explodeDrone(state.player, state);
         state.camera.shake = 3;
         resources.sounds.explode0.play();
         resources.sounds.engine0.volume(0);
       }
+    }
+
+    // Check to see if we've completed the level.
+    if (state.levelEndTimestamp === null) {
       if (state.enemies.length === 0) {
         state.levelEndTimestamp = state.time.now;
       }
@@ -615,7 +623,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
     // If the level has ended, handle the necessary updates.
     if (state.levelEndTimestamp !== null && state.time.now - state.levelEndTimestamp > 2.0) {
-      if (state.player.armor <= 0) {
+      if (state.player.dead) {
         resources.sounds.engine0.mute(true);
         await loseGame(state);
         resources.sounds.engine0.mute(false);

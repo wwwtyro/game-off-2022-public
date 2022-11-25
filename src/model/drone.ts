@@ -40,6 +40,7 @@ export interface Drone {
   stun: boolean;
   impact: boolean;
   slow: number;
+  dead: boolean;
 }
 
 export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
@@ -76,6 +77,7 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     stun: false,
     impact: false,
     slow: 1,
+    dead: false,
   };
 }
 

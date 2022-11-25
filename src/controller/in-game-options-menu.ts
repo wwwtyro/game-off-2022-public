@@ -33,7 +33,7 @@ export async function inGameOptionsMenu(state: State, resources: Resources) {
     new MenuButton("End Game", async () => {
       menu.hide();
       await endGame(state);
-      if (state.player.armor < 0) {
+      if (state.player.armor <= 0) {
         menu.exit();
       } else {
         menu.show();
