@@ -51,7 +51,7 @@ export class MenuButton extends MenuItem {
           <img src="static/${this.icon}" class="${this.iconClass}" width=48 draggable=false>
         </div>
       
-        <span class='menubutton'>${this.text}</span>
+        <span class='menubutton' style="font-size: 18px">${this.text}</span>
       `;
       this.div.style.textAlign = "left";
     } else {

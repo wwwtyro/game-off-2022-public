@@ -42,7 +42,7 @@ const missileColor = "filter-missile";
 
 export const upgrades: Upgrade[] = [
   {
-    label: "Ion Cannon Rate",
+    label: "Ion Cannon Firing Rate",
     id: "beam rate",
     icon: "laser-warning.svg",
     color: weaponColor,
@@ -56,7 +56,7 @@ export const upgrades: Upgrade[] = [
     },
   },
   {
-    label: "Ion Beam Power",
+    label: "Ion Cannon Power",
     id: "beam power",
     icon: "laser-blast.svg",
     color: weaponColor,
@@ -96,7 +96,7 @@ export const upgrades: Upgrade[] = [
     },
   },
   {
-    label: "Missile Rate",
+    label: "Missile Firing Rate",
     id: "missile rate",
     icon: "rocket.svg",
     color: missileColor,
@@ -136,7 +136,7 @@ export const upgrades: Upgrade[] = [
     },
   },
   {
-    label: "Acceleration",
+    label: "Speed",
     id: "acceleration",
     icon: "speedometer.svg",
     color: shipColor,
@@ -189,7 +189,7 @@ export const upgrades: Upgrade[] = [
     },
   },
   {
-    label: "Shield Recharge",
+    label: "Shield Recharge Rate",
     id: "shield recharge",
     icon: "electrical-crescent.svg",
     color: shieldColor,
@@ -320,3 +320,5 @@ export function getPermanentUpgrades() {
     .map((id) => upgrades.find((upgrade) => upgrade.id === id))
     .filter((upgrade) => upgrade !== undefined) as Upgrade[];
 }
+
+(window as any).upgrades = upgrades; // degub
