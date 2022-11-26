@@ -1,7 +1,7 @@
 import { createDroid } from "./droid";
 import { Drone } from "./drone";
 
-type UpgradeId =
+export type UpgradeId =
   | "beam rate"
   | "beam power"
   | "additional cannon"
@@ -43,7 +43,7 @@ export const upgrades: Upgrade[] = [
     frequency: 1,
     permable: true,
     available: (drone: Drone) => {
-      return drone.ionCannonFiringRate < 15;
+      return drone.ionCannonFiringRate < 20;
     },
     _upgrade: (drone: Drone) => {
       drone.ionCannonFiringRate++;
@@ -83,7 +83,7 @@ export const upgrades: Upgrade[] = [
     frequency: 1,
     permable: true,
     available: (drone: Drone) => {
-      return drone.ionCannonBeamSpeed < 10;
+      return drone.ionCannonBeamSpeed < 20;
     },
     _upgrade: (drone: Drone) => {
       drone.ionCannonBeamSpeed++;
@@ -191,7 +191,7 @@ export const upgrades: Upgrade[] = [
     permable: true,
     available: (drone: Drone) => drone.maxShields > 0,
     _upgrade: (drone: Drone) => {
-      drone.maxShields++;
+      drone.shieldRecharge++;
     },
   },
   {

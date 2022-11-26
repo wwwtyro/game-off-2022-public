@@ -1,12 +1,27 @@
-import { getPermanentUpgrades, getUpgrade, Upgrade } from "./upgrades";
+import { getPermanentUpgrades, getUpgrade, Upgrade, UpgradeId } from "./upgrades";
 
 export interface PlayerDrone {
   name: string;
   unlock: string;
   spriteId: string;
-  url: string;
   available: () => boolean;
   getUpgrades: () => Upgrade[];
+}
+
+interface UpgradeDescription {
+  upgradeId: UpgradeId;
+  count: number;
+}
+
+function getUpgradeList(descriptions: UpgradeDescription[]) {
+  const list: Upgrade[] = [];
+  for (const desc of descriptions) {
+    const up = getUpgrade(desc.upgradeId);
+    for (let i = 0; i < desc.count; i++) {
+      list.push(up);
+    }
+  }
+  return list;
 }
 
 export const playerDrones: PlayerDrone[] = [
@@ -14,115 +29,107 @@ export const playerDrones: PlayerDrone[] = [
     name: "Base Combat Drone",
     unlock: "N/A",
     spriteId: "player00",
-    url: "static/player-00-diffuse.png",
     available: () => true,
     getUpgrades: () => [],
   },
   {
-    name: "Speed Drone",
-    unlock: "Unlocked at 3 Acceleration",
-    spriteId: "player01",
-    url: "static/player-01-diffuse.png",
-    available: () => getPermanentUpgrades().filter((u) => u.id === "acceleration").length >= 3,
-    getUpgrades: () => {
-      const acceleration = getUpgrade("acceleration");
-      const rotationSpeed = getUpgrade("rotation speed");
-      return [
-        acceleration,
-        acceleration,
-        acceleration,
-        rotationSpeed,
-        rotationSpeed,
-        rotationSpeed,
-        rotationSpeed,
-        rotationSpeed,
-        rotationSpeed,
-        rotationSpeed,
-        rotationSpeed,
-        rotationSpeed,
-        rotationSpeed,
-      ];
-    },
-  },
-  {
-    name: "Shield Drone",
-    unlock: "Unlocked at 10 Shield",
-    spriteId: "player02",
-    url: "static/player-02-diffuse.png",
-    available: () => getPermanentUpgrades().filter((u) => u.id === "shields").length >= 10,
-    getUpgrades: () => {
-      const increaseShields = getUpgrade("shields");
-      const increaseShieldRechargeRate = getUpgrade("shield recharge");
-      return [
-        increaseShields,
-        increaseShields,
-        increaseShields,
-        increaseShields,
-        increaseShields,
-        increaseShields,
-        increaseShields,
-        increaseShields,
-        increaseShields,
-        increaseShields,
-        increaseShieldRechargeRate,
-        increaseShieldRechargeRate,
-        increaseShieldRechargeRate,
-        increaseShieldRechargeRate,
-        increaseShieldRechargeRate,
-        increaseShieldRechargeRate,
-        increaseShieldRechargeRate,
-        increaseShieldRechargeRate,
-        increaseShieldRechargeRate,
-        increaseShieldRechargeRate,
-      ];
-    },
-  },
-  {
     name: "Cannon Drone",
-    unlock: "Unlocked at 10 Ion Cannon Power",
+    unlock: "Unlocked at 10 Permanent Ion Beam Speed",
     spriteId: "player03",
-    url: "static/player-03-diffuse.png",
-    available: () => getPermanentUpgrades().filter((u) => u.id === "beam power").length >= 10,
+    available: () => getPermanentUpgrades().filter((u) => u.id === "beam speed").length >= 10,
     getUpgrades: () => {
-      const ionCannonFiringRate = getUpgrade("beam rate");
-      const ionCannonPower = getUpgrade("beam power");
-      const additionalIonCannon = getUpgrade("additional cannon");
-      const ionCannonBeamSpeed = getUpgrade("beam speed");
-      return [
-        ionCannonFiringRate,
-        ionCannonFiringRate,
-        ionCannonFiringRate,
-        ionCannonFiringRate,
-        ionCannonFiringRate,
-        ionCannonPower,
-        ionCannonPower,
-        ionCannonPower,
-        ionCannonPower,
-        ionCannonPower,
-        additionalIonCannon,
-        additionalIonCannon,
-        additionalIonCannon,
-        ionCannonBeamSpeed,
-        ionCannonBeamSpeed,
-        ionCannonBeamSpeed,
-        ionCannonBeamSpeed,
-        ionCannonBeamSpeed,
-      ];
+      return getUpgradeList([
+        {
+          upgradeId: "beam rate",
+          count: 10,
+        },
+        {
+          upgradeId: "beam power",
+          count: 20,
+        },
+        {
+          upgradeId: "beam speed",
+          count: 10,
+        },
+        {
+          upgradeId: "additional cannon",
+          count: 5,
+        },
+        {
+          upgradeId: "ricochet",
+          count: 1,
+        },
+      ]);
     },
   },
   {
-    name: "Armor Drone",
-    unlock: "Unlocked at 10 Armor",
-    spriteId: "player04",
-    url: "static/player-04-diffuse.png",
-    available: () => getPermanentUpgrades().filter((u) => u.id === "armor").length >= 10,
+    name: "Fleet Drone",
+    unlock: "Unlocked at 16 Permanent Battle Droids",
+    spriteId: "player02",
+    available: () => getPermanentUpgrades().filter((u) => u.id === "battle droid").length >= 16,
     getUpgrades: () => {
-      const increaseArmor = getUpgrade("armor");
-      const armorUpgrades: Upgrade[] = [];
-      for (let i = 0; i < 50; i++) {
-        armorUpgrades.push(increaseArmor);
-      }
-      return armorUpgrades;
+      return getUpgradeList([
+        {
+          upgradeId: "battle droid",
+          count: 16,
+        },
+        {
+          upgradeId: "droid deflection",
+          count: 1,
+        },
+        {
+          upgradeId: "stun",
+          count: 1,
+        },
+      ]);
+    },
+  },
+  {
+    name: "Missile Drone",
+    unlock: "Unlocked at 15 Permanent Missile Firing Rate",
+    spriteId: "player01",
+    available: () => getPermanentUpgrades().filter((u) => u.id === "missile rate").length >= 15,
+    getUpgrades: () => {
+      return getUpgradeList([
+        {
+          upgradeId: "missile rate",
+          count: 15,
+        },
+        {
+          upgradeId: "missile power",
+          count: 10,
+        },
+        {
+          upgradeId: "splash damage",
+          count: 1,
+        },
+      ]);
+    },
+  },
+  {
+    name: "Heavy Drone",
+    unlock: "Unlocked at 15 Permanent Armor",
+    spriteId: "player04",
+    available: () => getPermanentUpgrades().filter((u) => u.id === "armor").length >= 15,
+    getUpgrades: () => {
+      return getUpgradeList([
+        {
+          upgradeId: "armor",
+          count: 50,
+        },
+        {
+          upgradeId: "shields",
+          count: 50,
+        },
+        {
+          upgradeId: "shield recharge",
+          count: 50,
+        },
+        {
+          upgradeId: "impact",
+          count: 1,
+        },
+      ]);
     },
   },
 ];

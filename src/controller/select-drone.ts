@@ -14,7 +14,7 @@ export async function selectDrone(resources: Resources) {
     container.style.textAlign = "center";
     container.style.marginBottom = "32px";
     if (!drone.available()) {
-      container.style.filter = "saturate(0%)";
+      container.style.filter = "grayscale(100%) brightness(200%) brightness(70%) sepia(100%)";
     }
     const droneImage = cloneCanvas((resources.sprites as Record<string, Sprite>)[drone.spriteId].original);
     droneImage.style.width = "128px";
@@ -28,6 +28,7 @@ export async function selectDrone(resources: Resources) {
     upgrades.appendChild(upgradeList);
     const unlock = document.createElement("div");
     unlock.style.fontSize = "50%";
+    unlock.innerText = "Available";
     if (!drone.available()) {
       unlock.innerText = drone.unlock;
     }
