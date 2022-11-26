@@ -1,23 +1,45 @@
 import { playerDrones } from "../model/player-drones";
-import { Menu, MenuHTML, upgradeHTML } from "./menu";
+import { cloneCanvas } from "../util";
+import { Resources, Sprite } from "./loading";
+import { Menu, MenuDOM, MenuHTML, upgradeListDom } from "./menu";
 
-export async function selectDrone() {
+export async function selectDrone(resources: Resources) {
   const menu = new Menu();
   menu.style.fontSize = "24px";
 
   let selectedDrone = playerDrones[0];
   menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="static/select-drone.png" class="title"></div>`));
   for (const drone of playerDrones) {
+    const container = document.createElement("div");
+    container.style.textAlign = "center";
+    container.style.marginBottom = "32px";
+    if (!drone.available()) {
+      container.style.filter = "saturate(0%)";
+    }
+    const droneImage = cloneCanvas((resources.sprites as Record<string, Sprite>)[drone.spriteId].original);
+    droneImage.style.width = "128px";
+    const droneName = document.createElement("div");
+    droneName.innerText = drone.name;
+    const upgrades = document.createElement("div");
+    upgrades.style.display = "flex";
+    upgrades.style.justifyContent = "center";
+    const upgradeList = upgradeListDom(drone.getUpgrades());
+    upgradeList.style.marginTop = "0px";
+    upgrades.appendChild(upgradeList);
+    const unlock = document.createElement("div");
+    unlock.style.fontSize = "50%";
+    if (!drone.available()) {
+      unlock.innerText = drone.unlock;
+    }
+
+    container.appendChild(droneImage);
+    container.appendChild(droneName);
+    container.appendChild(unlock);
+    container.appendChild(upgrades);
+
     menu.addItem(
-      new MenuHTML(
-        `
-      <div style="text-align: center; margin-bottom: 32px; color: ${drone.available() ? "white" : "#777"}">
-        <img src="${drone.url}" width=128 style="${drone.available() ? "" : "filter: saturate(0%)"}"><br>
-        ${drone.name}<br>
-        <div style="display: flex; justify-content: center">${upgradeHTML(drone.getUpgrades()).innerHTML}</div>
-        <span style="font-size:50%;">${drone.available() ? "Unlocked" : drone.unlock}</span>
-      </div>
-    `,
+      new MenuDOM(
+        container,
         drone.available()
           ? () => {
               selectedDrone = drone;

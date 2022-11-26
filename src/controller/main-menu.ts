@@ -16,7 +16,7 @@ export async function mainMenu(resources: Resources) {
       menu.hide();
       resources.sounds.music.play();
       await intro();
-      const selectedDrone = await selectDrone();
+      const selectedDrone = await selectDrone(resources);
       await game(resources, selectedDrone);
       document.getElementById("render-canvas")!.style.display = "none";
       resources.sounds.music.stop();

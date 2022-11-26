@@ -126,7 +126,7 @@ export class MenuSlider extends MenuItem {
   }
 }
 
-export function upgradeHTML(upgrades: Upgrade[]) {
+export function upgradeListDom(upgrades: Upgrade[]) {
   const container = document.createElement("div");
   upgrades.sort((a, b) => (a.frequency > b.frequency ? -1 : 1));
   const upgradeCount = new Map<Upgrade, number>();
@@ -169,7 +169,7 @@ export function upgradeHTML(upgrades: Upgrade[]) {
 export class MenuUpgrades extends MenuItem {
   constructor(upgrades: Upgrade[]) {
     super();
-    this.div = upgradeHTML(upgrades);
+    this.div = upgradeListDom(upgrades);
   }
 }
 
