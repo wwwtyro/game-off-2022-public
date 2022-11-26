@@ -91,6 +91,17 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
   const eventManager = new EventManager();
 
+  let openMenuRequest = false;
+  const menubutton = document.getElementById("game-menu-button");
+  if (!menubutton) {
+    throw new Error("Couldn't find menu button.");
+  }
+  menubutton.style.display = "block";
+  eventManager.addEventListener(menubutton, "click", () => {
+    resources.sounds.click0.play();
+    openMenuRequest = true;
+  });
+
   const canvas = document.getElementById("render-canvas") as HTMLCanvasElement;
   canvas.style.display = "block";
   canvas.width = canvas.clientWidth;
@@ -178,6 +189,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     removeThumb();
     eventManager.dispose();
     canvas.style.opacity = "100%";
+    document.getElementById("game-menu-button")!.style.display = "none";
   }
 
   while (true) {
@@ -189,10 +201,11 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     stats.innerHTML = `Level ${state.level} / Elapsed time: ${new Date(state.time.now * 1000).toISOString().substring(11, 19)}`;
     removeThumb();
 
-    if (state.keys["Escape"]) {
+    if (state.keys["Escape"] || openMenuRequest) {
       resources.sounds.engine0.mute(true);
       await inGameOptionsMenu(state, resources);
       resources.sounds.engine0.mute(false);
+      openMenuRequest = false;
     }
 
     // Needs to be called after adding colliders and before casting rays against them.

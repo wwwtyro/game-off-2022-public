@@ -112,6 +112,17 @@
         color: #fff;
         text-shadow: 0px 0px 8px yellow;
       }
+
+      #game-menu-button {
+        display: none;
+        position: fixed;
+        top: 0px;
+        right: 0px;
+        color: white;
+        font-size: 32px;
+        text-shadow: 2px 2px 0px #000;
+        padding: 8px;
+      }
     </style>
     <style type="text/css">
       ::-webkit-scrollbar {
@@ -153,6 +164,7 @@
   <body>
     <canvas id="render-canvas"></canvas>
     <div id="game-stats"></div>
+    <div id="game-menu-button">☰</div>
     <div id="center-container">
       <div id="loading">Loading 0%</div>
     </div>
