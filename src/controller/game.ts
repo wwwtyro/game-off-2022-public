@@ -653,7 +653,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
         resources.sounds.engine0.mute(true);
         await winGame(state);
         const t0 = performance.now();
-        while (performance.now() - t0 < 5000) {
+        while (performance.now() - t0 < 10000) {
           const timestamp = performance.now() / 1000;
           state.time.dt = Math.min(timestamp - state.time.last, 1 / 30);
           state.time.now += state.time.dt;
@@ -661,8 +661,8 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
 
           const dt = performance.now() - t0;
           canvas.style.opacity = "100%";
-          if (dt > 4000) {
-            canvas.style.opacity = `${100 * (1.0 - (dt - 4000) / 1000)}%`;
+          if (dt > 7000) {
+            canvas.style.opacity = `${100 * (1.0 - (dt - 7000) / 3000)}%`;
           }
           if (Math.random() < 1 / 5) {
             addExplosion(state, vec2RandomOffset(state.player.position, 2 * state.camera.fov), 0.1 + Math.random());
