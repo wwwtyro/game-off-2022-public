@@ -3,7 +3,7 @@ import { vec2 } from "gl-matrix";
 import { Resources, Sprite } from "../controller/loading";
 import { vec2RandomOffset } from "../util";
 import { Drone, createDrone } from "./drone";
-import { Beam, Spark, Flame, Missile } from "./model";
+import { Beam, Spark, Flame, Missile, SparkSource } from "./model";
 import { PlayerDrone } from "./player-drones";
 import { getPermanentUpgrades, Upgrade, upgradeDrone } from "./upgrades";
 
@@ -107,6 +107,21 @@ export function addExplosion(state: State, center: vec2, radius: number) {
       position: vec2RandomOffset(center, radius),
       scale: 0.5 * radius + 0.25 * Math.random() * radius,
       age: -0.25 * Math.random(),
+    });
+  }
+}
+
+export function addSparks(state: State, position: vec2, count: number, source: SparkSource, normal?: vec2) {
+  for (let i = 0; i < count; i++) {
+    state.sparks.push({
+      position: vec2.clone(position),
+      lastPosition: vec2.clone(position),
+      direction: normal
+        ? vec2.normalize(vec2.create(), vec2.add(vec2.create(), normal, vec2.random(vec2.create(), 0.5)))
+        : vec2.random(vec2.create(), 1),
+      velocity: 10 * Math.random(),
+      decay: 0.7 + 0.2 * Math.random(),
+      source: source,
     });
   }
 }

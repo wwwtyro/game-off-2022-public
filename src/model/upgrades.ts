@@ -18,7 +18,8 @@ type UpgradeId =
   | "ricochet"
   | "stun"
   | "impact"
-  | "splash damage";
+  | "splash damage"
+  | "droid deflection";
 
 export interface Upgrade {
   readonly label: string;
@@ -209,7 +210,7 @@ export const upgrades: Upgrade[] = [
     frequency: 0.1,
     permable: true,
     playerOnly: true,
-    available: (drone: Drone) => drone.droids.length < 10,
+    available: (drone: Drone) => drone.droids.length < 32,
     _upgrade: (drone: Drone) => {
       drone.droids.push(createDroid(drone));
     },
@@ -264,6 +265,19 @@ export const upgrades: Upgrade[] = [
     available: (drone: Drone) => drone.splash === false,
     _upgrade: (drone: Drone) => {
       drone.splash = true;
+    },
+  },
+  {
+    label: "Droid Deflection",
+    id: "droid deflection",
+    icon: "divert.svg",
+    color: specialColor,
+    frequency: 0.01,
+    permable: false,
+    playerOnly: true,
+    available: (drone: Drone) => drone.deflect === false,
+    _upgrade: (drone: Drone) => {
+      drone.deflect = true;
     },
   },
 ];

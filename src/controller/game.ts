@@ -15,7 +15,7 @@ import {
 } from "../model/drone";
 import { Beam, Missile } from "../model/model";
 import { PlayerDrone } from "../model/player-drones";
-import { State, buildState, addExplosion } from "../model/state";
+import { State, buildState, addExplosion, addSparks } from "../model/state";
 import { applyRandomUpgrade } from "../model/upgrades";
 import { animationFrame, randomChoice, vec2RandomOffset } from "../util";
 import { Renderer } from "../view/renderer";
@@ -496,7 +496,26 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
       }
     }
 
+    // Remove dead missiles.
     state.missiles = state.missiles.filter((m) => !missilesToRemove.includes(m));
+
+    // If the player has the droid deflection upgrade, deflect beams.
+    if (!state.player.dead && state.player.deflect) {
+      state.beams = state.beams.filter((beam) => {
+        if (beam.team === "player") {
+          return true;
+        }
+        for (const droid of state.player.droids) {
+          if (vec2.distance(droid.position, beam.position) <= droid.sprite.radius) {
+            // Create some sparks.
+            const normal = vec2.normalize(vec2.create(), vec2.sub(vec2.create(), beam.position, droid.position));
+            addSparks(state, beam.position, 32, "shields", normal);
+            return false;
+          }
+        }
+        return true;
+      });
+    }
 
     // Handle any beams that hit something.
     const ray = new RAPIER.Ray({ x: 0, y: 0 }, { x: 0, y: 0 });
@@ -535,19 +554,8 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
           }
 
           // Create some sparks.
-          for (let i = 0; i < 32; i++) {
-            state.sparks.push({
-              position: vec2.clone(beam.position),
-              lastPosition: vec2.clone(beam.position),
-              direction: vec2.normalize(
-                vec2.create(),
-                vec2.add(vec2.create(), vec2.fromValues(hit.normal.x, hit.normal.y), vec2.random(vec2.create(), 0.5))
-              ),
-              velocity: 10 * Math.random(),
-              decay: 0.7 + 0.2 * Math.random(),
-              source: target.shields > beam.power ? "shields" : "armor",
-            });
-          }
+          const normal = vec2.fromValues(hit.normal.x, hit.normal.y);
+          addSparks(state, beam.position, 32, target.shields > beam.power ? "shields" : "armor", normal);
 
           // Handle impact.
           const IMPACT_SCALE = 1;

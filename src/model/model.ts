@@ -21,13 +21,15 @@ export interface Beam {
   team: Team;
 }
 
+export type SparkSource = "armor" | "shields";
+
 export interface Spark {
   position: vec2;
   lastPosition: vec2;
   direction: vec2;
   velocity: number;
   decay: number;
-  source: "armor" | "shields";
+  source: SparkSource;
 }
 
 export interface Flame {

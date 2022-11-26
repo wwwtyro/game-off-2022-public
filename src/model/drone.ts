@@ -42,6 +42,7 @@ export interface Drone {
   slow: number;
   dead: boolean;
   splash: boolean;
+  deflect: boolean;
 }
 
 export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
@@ -80,6 +81,7 @@ export function createDrone(world: RAPIER.World, sprite: Sprite): Drone {
     slow: 1,
     dead: false,
     splash: false,
+    deflect: false,
   };
 }
 
