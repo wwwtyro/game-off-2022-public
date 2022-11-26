@@ -147,6 +147,7 @@ export function upgradeListDom(upgrades: Upgrade[]) {
     div.style.display = "block";
     div.style.position = "relative";
     div.style.margin = "8px";
+    div.title = `${upgrade.label}: ${upgrade.description}`;
     container.appendChild(div);
     const icon = getIcon(upgrade.icon);
     icon.style.width = "32px";
