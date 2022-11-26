@@ -1,5 +1,5 @@
 import { mat4, vec2 } from "gl-matrix";
-import REGL, { Regl } from "regl";
+import REGL, { DrawCommand, Framebuffer2D, Regl, Texture2D } from "regl";
 
 import { Resources } from "../controller/loading";
 import { modulo } from "../util";
@@ -17,18 +17,18 @@ const DEBUG = false;
 
 export class Renderer {
   private regl: Regl;
-  private textures = new Map<HTMLCanvasElement, REGL.Texture>();
-  private renderBlur: REGL.DrawCommand;
-  private renderSprite: REGL.DrawCommand;
-  private renderFlame: REGL.DrawCommand;
-  private renderLines: REGL.DrawCommand;
-  private renderSurface: REGL.DrawCommand;
-  private renderShadow: REGL.DrawCommand;
-  private renderDirection: REGL.DrawCommand;
+  private textures = new Map<HTMLCanvasElement, Texture2D>();
+  private renderBlur: DrawCommand;
+  private renderSprite: DrawCommand;
+  private renderFlame: DrawCommand;
+  private renderLines: DrawCommand;
+  private renderSurface: DrawCommand;
+  private renderShadow: DrawCommand;
+  private renderDirection: DrawCommand;
   private tempBuffer1: SmartBuffer;
   private tempBuffer2: SmartBuffer;
   private tempBuffer3: SmartBuffer;
-  private fbShadow: REGL.Framebuffer2D[];
+  private fbShadow: Framebuffer2D[];
 
   constructor(private canvas: HTMLCanvasElement, resources: Resources) {
     this.regl = REGL({

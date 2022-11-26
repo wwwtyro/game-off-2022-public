@@ -47,7 +47,7 @@ export async function loadResources(callback: (fraction: number) => void) {
     enemyCore00: loadSprite("enemy-core-00-diffuse.png", "enemy-core-00-normal.png", 3),
     core0: loadSprite("tribase-u1-d0.png", "st1normal.png", 3.0),
     sand0: loadTexture("Sand_001_COLOR.png", "Sand_001_NRM.png"),
-    noise0: loadTexture("noise.jpg", "noise.jpg"),
+    noise0: loadTexture("noise-2048.png", "noise-2048.png"),
     metal0: loadTexture("Metal_Plate_047_basecolor.jpg", "Metal_Plate_047_normal.jpg"),
     arrow0: loadTexture("orb-direction.png", "orb-direction.png"),
   };
