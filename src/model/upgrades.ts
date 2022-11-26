@@ -25,7 +25,6 @@ export interface Upgrade {
   readonly label: string;
   readonly id: UpgradeId;
   readonly icon: string;
-  readonly color: string;
   readonly frequency: number;
   readonly available: (drone: Drone) => boolean;
   readonly _upgrade: (drone: Drone) => void;
@@ -34,20 +33,11 @@ export interface Upgrade {
   readonly playerOnly?: boolean;
 }
 
-const weaponColor = "filter-weapon";
-const shipColor = "filter-ship";
-const armorColor = "filter-armor";
-const shieldColor = "filter-shields";
-const droidColor = "filter-droid";
-const specialColor = "filter-special";
-const missileColor = "filter-missile";
-
 export const upgrades: Upgrade[] = [
   {
     label: "Ion Cannon Firing Rate",
     id: "beam rate",
-    icon: "laser-warning.svg",
-    color: weaponColor,
+    icon: "laserWarningIcon",
     frequency: 1,
     permable: true,
     available: (drone: Drone) => {
@@ -60,8 +50,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Ion Cannon Power",
     id: "beam power",
-    icon: "laser-blast.svg",
-    color: weaponColor,
+    icon: "laserBlastIcon",
     frequency: 1,
     permable: true,
     available: () => true,
@@ -72,8 +61,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Additional Ion Cannon",
     id: "additional cannon",
-    icon: "laser-turret.svg",
-    color: weaponColor,
+    icon: "laserTurretIcon",
     frequency: 0.1,
     permable: true,
     available: (drone: Drone) => {
@@ -86,8 +74,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Ion Beam Speed",
     id: "beam speed",
-    icon: "laser-precision.svg",
-    color: weaponColor,
+    icon: "laserPrecisionIcon",
     frequency: 1,
     permable: true,
     available: (drone: Drone) => {
@@ -100,8 +87,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Missile Firing Rate",
     id: "missile rate",
-    icon: "rocket.svg",
-    color: missileColor,
+    icon: "rocketIcon",
     frequency: 0.25,
     permable: true,
     available: (drone: Drone) => {
@@ -114,8 +100,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Missile Power",
     id: "missile power",
-    icon: "incoming-rocket.svg",
-    color: missileColor,
+    icon: "incomingRocketIcon",
     frequency: 0.1,
     permable: true,
     available: (drone: Drone) => drone.missileFiringRate > 0,
@@ -126,8 +111,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Rotation Speed",
     id: "rotation speed",
-    icon: "clockwise-rotation.svg",
-    color: shipColor,
+    icon: "clockwiseRotationIcon",
     frequency: 1,
     permable: true,
     available: (drone: Drone) => {
@@ -140,8 +124,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Speed",
     id: "acceleration",
-    icon: "speedometer.svg",
-    color: shipColor,
+    icon: "speedometerIcon",
     frequency: 1,
     permable: true,
     available: (drone: Drone) => {
@@ -154,8 +137,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Armor",
     id: "armor",
-    icon: "armor-upgrade.svg",
-    color: armorColor,
+    icon: "armorUpgradeIcon",
     frequency: 1,
     permable: true,
     available: () => true,
@@ -167,8 +149,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Repair Armor",
     id: "repair armor",
-    icon: "mighty-spanner.svg",
-    color: armorColor,
+    icon: "mightySpannerIcon",
     frequency: 1,
     permable: false,
     oneOff: true,
@@ -181,8 +162,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Shields",
     id: "shields",
-    icon: "shieldcomb.svg",
-    color: shieldColor,
+    icon: "shieldcombIcon",
     frequency: 1,
     permable: true,
     available: () => true,
@@ -193,8 +173,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Shield Recharge Rate",
     id: "shield recharge",
-    icon: "electrical-crescent.svg",
-    color: shieldColor,
+    icon: "electricalCrescentIcon",
     frequency: 1,
     permable: true,
     available: (drone: Drone) => drone.maxShields > 0,
@@ -205,8 +184,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Battle Droid",
     id: "battle droid",
-    icon: "delivery-drone.svg",
-    color: droidColor,
+    icon: "deliveryDroneIcon",
     frequency: 0.1,
     permable: true,
     playerOnly: true,
@@ -218,8 +196,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Ricochet",
     id: "ricochet",
-    icon: "laser-sparks.svg",
-    color: specialColor,
+    icon: "laserSparksIcon",
     frequency: 0.01,
     permable: false,
     playerOnly: true,
@@ -231,8 +208,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Stun",
     id: "stun",
-    icon: "sunbeams.svg",
-    color: specialColor,
+    icon: "sunbeamsIcon",
     frequency: 0.01,
     permable: false,
     playerOnly: true,
@@ -244,8 +220,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Impact",
     id: "impact",
-    icon: "gooey-impact.svg",
-    color: specialColor,
+    icon: "gooeyImpactIcon",
     frequency: 0.01,
     permable: false,
     playerOnly: true,
@@ -257,8 +232,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Splash Damage",
     id: "splash damage",
-    icon: "droplet-splash.svg",
-    color: specialColor,
+    icon: "dropletSplashIcon",
     frequency: 0.01,
     permable: false,
     playerOnly: true,
@@ -270,8 +244,7 @@ export const upgrades: Upgrade[] = [
   {
     label: "Droid Deflection",
     id: "droid deflection",
-    icon: "divert.svg",
-    color: specialColor,
+    icon: "divertIcon",
     frequency: 0.01,
     permable: false,
     playerOnly: true,

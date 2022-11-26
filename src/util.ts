@@ -25,3 +25,15 @@ export function vec2RandomOffset(v: vec2, scale: number) {
   vec2.add(out, v, out);
   return out;
 }
+
+export function cloneCanvas(source: HTMLCanvasElement) {
+  const canvas = document.createElement("canvas");
+  canvas.width = source.width;
+  canvas.height = source.height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Couldn't acquire context.");
+  }
+  ctx.drawImage(source, 0, 0);
+  return canvas;
+}

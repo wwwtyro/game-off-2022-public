@@ -7,7 +7,9 @@ export async function permanentUpgrade(state: State, resources: Resources) {
   const permanentUpgrades = getPermanentUpgrades();
   const selectedUpgrades = getRandomUpgrades(state.player, 3, true);
   const menu = new Menu();
-  menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="static/permanent-upgrade.png" class="title"></div>`));
+  menu.addItem(
+    new MenuHTML(`<div style="text-align: center"><img src="static/permanent-upgrade.png" class="title" width=256></div>`)
+  );
   for (const upgrade of selectedUpgrades) {
     menu.addItem(
       new MenuButton(
@@ -20,8 +22,7 @@ export async function permanentUpgrade(state: State, resources: Resources) {
           state.newPermanentUpgrades.push(upgrade);
           menu.exit();
         },
-        upgrade.icon,
-        upgrade.color
+        upgrade.icon
       )
     );
   }

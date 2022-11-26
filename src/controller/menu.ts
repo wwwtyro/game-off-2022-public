@@ -1,11 +1,16 @@
 import { Upgrade } from "../model/upgrades";
-import { animationFrame } from "../util";
+import { animationFrame, cloneCanvas } from "../util";
 import { Resources } from "./loading";
 
 let resources: Resources;
 
 export function setMenuResources(res: Resources) {
   resources = res;
+}
+
+function getIcon(id: string) {
+  const original = (resources.icons as Record<string, HTMLCanvasElement>)[id];
+  return cloneCanvas(original);
 }
 
 type Callback = (event?: any) => void | Promise<void>;
@@ -43,16 +48,22 @@ export class MenuHTML extends MenuItem {
 }
 
 export class MenuButton extends MenuItem {
-  constructor(private text: string, private callback: Callback, private icon?: string, private iconClass?: string) {
+  constructor(private text: string, private callback: Callback, icon?: string) {
     super();
-    if (this.icon && this.iconClass) {
-      this.div.innerHTML = `
-        <div style="display: inline-block; margin-right: 8px; vertical-align: middle; width: 48px; height: 48px;">
-          <img src="static/${this.icon}" class="${this.iconClass}" width=48 draggable=false>
-        </div>
-      
-        <span class='menubutton' style="font-size: 18px">${this.text}</span>
-      `;
+    if (icon) {
+      const container = document.createElement("div");
+      container.style.display = "inline-block";
+      container.style.marginRight = "8px";
+      this.div.appendChild(container);
+      const img = getIcon(icon);
+      img.style.width = "48px";
+      img.style.verticalAlign = "middle";
+      container.appendChild(img);
+      const span = document.createElement("span");
+      span.innerText = this.text;
+      span.classList.add("menubutton");
+      span.style.fontSize = "18px";
+      this.div.appendChild(span);
       this.div.style.textAlign = "left";
     } else {
       this.div.innerHTML = `<span class='menubutton'>${this.text}</span>`;
@@ -95,7 +106,7 @@ export class MenuSlider extends MenuItem {
 
 export function upgradeHTML(upgrades: Upgrade[]) {
   const container = document.createElement("div");
-  upgrades.sort((a, b) => (a.color > b.color ? -1 : 1));
+  upgrades.sort((a, b) => (a.frequency > b.frequency ? -1 : 1));
   const upgradeCount = new Map<Upgrade, number>();
   for (const upgrade of upgrades) {
     if (!upgradeCount.has(upgrade)) {
@@ -104,6 +115,7 @@ export function upgradeHTML(upgrades: Upgrade[]) {
     upgradeCount.set(upgrade, upgradeCount.get(upgrade)! + 1);
   }
   container.style.margin = "auto";
+  container.style.marginTop = "16px";
   container.style.display = "flex";
   container.style.justifyContent = "center";
   container.style.flexWrap = "wrap";
@@ -114,13 +126,9 @@ export function upgradeHTML(upgrades: Upgrade[]) {
     div.style.position = "relative";
     div.style.margin = "8px";
     container.appendChild(div);
-    const img = document.createElement("img");
-    img.src = `static/${upgrade.icon}`;
-    img.classList.add(upgrade.color);
-    img.width = 32;
-    img.title = upgrade.label;
-    img.draggable = false;
-    div.appendChild(img);
+    const icon = getIcon(upgrade.icon);
+    icon.style.width = "32px";
+    div.appendChild(icon);
     const countDiv = document.createElement("div");
     countDiv.innerText = `${count}`;
     countDiv.style.color = "#FFF";

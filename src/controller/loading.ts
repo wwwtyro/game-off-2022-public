@@ -31,6 +31,14 @@ export interface Sprite {
   length: number;
 }
 
+const weaponColor = [1, 1, 0];
+const missileColor = [1, 0, 0];
+const shipColor = [1, 0.5, 0];
+const armorColor = [0, 1, 0];
+const shieldColor = [0, 1, 1];
+const droidColor = [1, 1, 1];
+const specialColor = [1, 0, 1];
+
 export async function loadResources(callback: (fraction: number) => void) {
   const promises: Record<string, any> = {
     player00: loadSprite("player-00-diffuse.png", "player-00-normal.png", 0.5),
@@ -50,6 +58,24 @@ export async function loadResources(callback: (fraction: number) => void) {
     noise0: loadTexture("noise-2048.png", "noise-2048.png"),
     metal0: loadTexture("Metal_Plate_047_basecolor.jpg", "Metal_Plate_047_normal.jpg"),
     arrow0: loadTexture("orb-direction.png", "orb-direction.png"),
+    laserWarningIcon: loadIcon("laser-warning.svg", weaponColor),
+    laserBlastIcon: loadIcon("laser-blast.svg", weaponColor),
+    laserTurretIcon: loadIcon("laser-turret.svg", weaponColor),
+    laserPrecisionIcon: loadIcon("laser-precision.svg", weaponColor),
+    rocketIcon: loadIcon("rocket.svg", missileColor),
+    incomingRocketIcon: loadIcon("incoming-rocket.svg", missileColor),
+    clockwiseRotationIcon: loadIcon("clockwise-rotation.svg", shipColor),
+    speedometerIcon: loadIcon("speedometer.svg", shipColor),
+    armorUpgradeIcon: loadIcon("armor-upgrade.svg", armorColor),
+    mightySpannerIcon: loadIcon("mighty-spanner.svg", armorColor),
+    shieldcombIcon: loadIcon("shieldcomb.svg", shieldColor),
+    electricalCrescentIcon: loadIcon("electrical-crescent.svg", shieldColor),
+    deliveryDroneIcon: loadIcon("delivery-drone.svg", droidColor),
+    laserSparksIcon: loadIcon("laser-sparks.svg", specialColor),
+    sunbeamsIcon: loadIcon("sunbeams.svg", specialColor),
+    gooeyImpactIcon: loadIcon("gooey-impact.svg", specialColor),
+    dropletSplashIcon: loadIcon("droplet-splash.svg", specialColor),
+    divertIcon: loadIcon("divert.svg", specialColor),
   };
 
   const total = Object.keys(promises).length;
@@ -86,6 +112,26 @@ export async function loadResources(callback: (fraction: number) => void) {
       metal0: (await promises["metal0"]) as Texture,
       arrow0: (await promises["arrow0"]) as Texture,
     },
+    icons: {
+      laserWarningIcon: (await promises["laserWarningIcon"]) as HTMLCanvasElement,
+      laserBlastIcon: (await promises["laserBlastIcon"]) as HTMLCanvasElement,
+      laserTurretIcon: (await promises["laserTurretIcon"]) as HTMLCanvasElement,
+      laserPrecisionIcon: (await promises["laserPrecisionIcon"]) as HTMLCanvasElement,
+      rocketIcon: (await promises["rocketIcon"]) as HTMLCanvasElement,
+      incomingRocketIcon: (await promises["incomingRocketIcon"]) as HTMLCanvasElement,
+      clockwiseRotationIcon: (await promises["clockwiseRotationIcon"]) as HTMLCanvasElement,
+      speedometerIcon: (await promises["speedometerIcon"]) as HTMLCanvasElement,
+      armorUpgradeIcon: (await promises["armorUpgradeIcon"]) as HTMLCanvasElement,
+      mightySpannerIcon: (await promises["mightySpannerIcon"]) as HTMLCanvasElement,
+      shieldcombIcon: (await promises["shieldcombIcon"]) as HTMLCanvasElement,
+      electricalCrescentIcon: (await promises["electricalCrescentIcon"]) as HTMLCanvasElement,
+      deliveryDroneIcon: (await promises["deliveryDroneIcon"]) as HTMLCanvasElement,
+      laserSparksIcon: (await promises["laserSparksIcon"]) as HTMLCanvasElement,
+      sunbeamsIcon: (await promises["sunbeamsIcon"]) as HTMLCanvasElement,
+      gooeyImpactIcon: (await promises["gooeyImpactIcon"]) as HTMLCanvasElement,
+      dropletSplashIcon: (await promises["dropletSplashIcon"]) as HTMLCanvasElement,
+      divertIcon: (await promises["divertIcon"]) as HTMLCanvasElement,
+    },
     sounds: {
       music: new Howl({
         src: ["static/2020-03-22_-_A_Simple_Chill_-_FesliyanStudios.com_-_David_Renda.mp3"],
@@ -103,6 +149,26 @@ export async function loadResources(callback: (fraction: number) => void) {
   };
 
   return results;
+}
+
+async function loadIcon(url: string, color: number[]): Promise<HTMLCanvasElement> {
+  const size = 64;
+  const img = await loadImage(`${url}`);
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    throw new Error("Was unable to acquire context.");
+  }
+  ctx.drawImage(img, 0, 0, size, size);
+  const imageData = ctx.getImageData(0, 0, size, size);
+  for (let i = 0; i < imageData.data.length; i += 4) {
+    imageData.data[i + 0] *= color[0];
+    imageData.data[i + 1] *= color[1];
+    imageData.data[i + 2] *= color[2];
+  }
+  ctx.putImageData(imageData, 0, 0);
+  return canvas;
 }
 
 function pot(original: HTMLImageElement | HTMLCanvasElement) {

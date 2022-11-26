@@ -19,8 +19,7 @@ export async function levelEnd(state: State, resources: Resources) {
           upgradeDrone(upgrade, state.player);
           menu.exit();
         },
-        upgrade.icon,
-        upgrade.color
+        upgrade.icon
       )
     );
   }
