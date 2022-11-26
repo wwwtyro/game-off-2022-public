@@ -1,7 +1,7 @@
 import { State } from "../model/state";
 import { getRandomUpgrades, upgradeDrone } from "../model/upgrades";
 import { Resources } from "./loading";
-import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
+import { Menu, MenuHTML, MenuUpgrades, MenuDOM, upgradeDom } from "./menu";
 
 export async function levelEnd(state: State, resources: Resources) {
   const selectedUpgrades = getRandomUpgrades(state.player, 3);
@@ -12,15 +12,11 @@ export async function levelEnd(state: State, resources: Resources) {
   menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="static/upgrade.png" class="title"></div>`));
   for (const upgrade of selectedUpgrades) {
     menu.addItem(
-      new MenuButton(
-        upgrade.label,
-        () => {
-          resources.sounds.powerup1.play();
-          upgradeDrone(upgrade, state.player);
-          menu.exit();
-        },
-        upgrade.icon
-      )
+      new MenuDOM(upgradeDom(upgrade), () => {
+        resources.sounds.powerup1.play();
+        upgradeDrone(upgrade, state.player);
+        menu.exit();
+      })
     );
   }
   menu.addItem(new MenuUpgrades(state.player.tempUpgrades));

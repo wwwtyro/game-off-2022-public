@@ -15,6 +15,28 @@ function getIcon(id: string) {
 
 type Callback = (event?: any) => void | Promise<void>;
 
+export function upgradeDom(upgrade: Upgrade) {
+  const container = document.createElement("div");
+  container.style.display = "flex";
+  container.style.alignItems = "center";
+  const icon = getIcon(upgrade.icon);
+  icon.style.width = icon.style.height = "48px";
+  const textContainer = document.createElement("div");
+  textContainer.style.marginLeft = "8px";
+  const title = document.createElement("div");
+  title.style.fontSize = "18px";
+  title.style.marginBottom = "4px";
+  title.innerText = upgrade.label;
+  const description = document.createElement("div");
+  description.style.fontSize = "12px";
+  description.innerText = upgrade.description;
+  container.appendChild(icon);
+  container.appendChild(textContainer);
+  textContainer.appendChild(title);
+  textContainer.appendChild(description);
+  return container;
+}
+
 class MenuItem {
   protected div: HTMLElement = document.createElement("div");
   protected disposer?: () => void;
@@ -47,28 +69,28 @@ export class MenuHTML extends MenuItem {
   }
 }
 
-export class MenuButton extends MenuItem {
-  constructor(private text: string, private callback: Callback, icon?: string) {
+export class MenuDOM extends MenuItem {
+  constructor(dom: HTMLElement, callback?: Callback) {
     super();
-    if (icon) {
-      const container = document.createElement("div");
-      container.style.display = "inline-block";
-      container.style.marginRight = "8px";
-      this.div.appendChild(container);
-      const img = getIcon(icon);
-      img.style.width = "48px";
-      img.style.verticalAlign = "middle";
-      container.appendChild(img);
-      const span = document.createElement("span");
-      span.innerText = this.text;
-      span.classList.add("menubutton");
-      span.style.fontSize = "18px";
-      this.div.appendChild(span);
-      this.div.style.textAlign = "left";
-    } else {
-      this.div.innerHTML = `<span class='menubutton'>${this.text}</span>`;
-      this.div.style.textAlign = "center";
+    this.div.appendChild(dom);
+    if (callback) {
+      this.div.style.cursor = "pointer";
+      this.div.addEventListener("click", () => {
+        resources.sounds.click0.play();
+        callback();
+      });
+      this.disposer = () => {
+        this.div.removeEventListener("click", callback);
+      };
     }
+  }
+}
+
+export class MenuButton extends MenuItem {
+  constructor(private text: string, private callback: Callback) {
+    super();
+    this.div.innerHTML = `<span class='menubutton'>${this.text}</span>`;
+    this.div.style.textAlign = "center";
     this.div.style.cursor = "pointer";
     this.div.addEventListener("click", () => {
       resources.sounds.click0.play();

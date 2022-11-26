@@ -1,4 +1,5 @@
-import { MenuButton, Menu, MenuHTML } from "./menu";
+import { upgrades } from "../model/upgrades";
+import { MenuButton, Menu, MenuHTML, MenuDOM, upgradeDom } from "./menu";
 
 export async function instructions() {
   const menu = new Menu();
@@ -19,6 +20,10 @@ export async function instructions() {
     </div>
   `)
   );
+  menu.addItem(new MenuHTML(`<div style='color: yellow; text-align: center'>Upgrade Descriptions</div>`));
+  for (const upgrade of upgrades) {
+    menu.addItem(new MenuDOM(upgradeDom(upgrade)));
+  }
   menu.addItem(
     new MenuButton("Back", () => {
       menu.exit();

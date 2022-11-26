@@ -1,7 +1,7 @@
 import { State } from "../model/state";
 import { getPermanentUpgrades, getRandomUpgrades, upgradeDrone } from "../model/upgrades";
 import { Resources } from "./loading";
-import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
+import { Menu, MenuHTML, MenuUpgrades, MenuDOM, upgradeDom } from "./menu";
 
 export async function permanentUpgrade(state: State, resources: Resources) {
   const permanentUpgrades = getPermanentUpgrades();
@@ -12,18 +12,14 @@ export async function permanentUpgrade(state: State, resources: Resources) {
   );
   for (const upgrade of selectedUpgrades) {
     menu.addItem(
-      new MenuButton(
-        upgrade.label,
-        () => {
-          resources.sounds.powerup1.play();
-          upgradeDrone(upgrade, state.player);
-          permanentUpgrades.push(upgrade);
-          localStorage.setItem("permanentUpgrades", JSON.stringify(permanentUpgrades.map((u) => u.id)));
-          state.newPermanentUpgrades.push(upgrade);
-          menu.exit();
-        },
-        upgrade.icon
-      )
+      new MenuDOM(upgradeDom(upgrade), () => {
+        resources.sounds.powerup1.play();
+        upgradeDrone(upgrade, state.player);
+        permanentUpgrades.push(upgrade);
+        localStorage.setItem("permanentUpgrades", JSON.stringify(permanentUpgrades.map((u) => u.id)));
+        state.newPermanentUpgrades.push(upgrade);
+        menu.exit();
+      })
     );
   }
   menu.addItem(new MenuUpgrades(permanentUpgrades));
