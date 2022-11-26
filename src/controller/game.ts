@@ -41,7 +41,7 @@ function initLevel(state: State, resources: Resources) {
   for (let i = 0; i < coreCount; i++) {
     const enemyCore = createDrone(state.world, resources.sprites.enemyCore00);
     enemyCore.isCore = true;
-    enemyCore.maxArmor = 10 * state.level;
+    enemyCore.maxArmor = 10 + state.level * state.level;
     enemyCore.armor = enemyCore.maxArmor;
     const angle = (2 * Math.PI * i) / coreCount;
     vec2.set(enemyCore.position, coreRadius * Math.cos(angle), coreRadius * Math.sin(angle));
