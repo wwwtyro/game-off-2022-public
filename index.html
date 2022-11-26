@@ -49,6 +49,12 @@
         font-family: "Electrolize", sans-serif;
         font-size: 32px;
         font-weight: bolder;
+        background-color: rgba(0, 0, 0, 0.6);
+        width: 256px;
+        text-align: center;
+        padding: 32px;
+        border-radius: 7px;
+        box-shadow: 0px 0px 4px #0ff, 0px 0px 4px #0ff, 0px 0px 4px #0ff, 0px 0px 4px #0ff, 0px 0px 4px #0ff;
       }
 
       #game-stats {
@@ -78,12 +84,13 @@
         font-family: "Electrolize", sans-serif;
         font-weight: normal;
         font-size: 21px;
-        background: rgba(0, 0, 0, 0.5);
+        background: rgba(0, 0, 0, 0.6);
         border-radius: 7px;
         max-width: 75%;
         max-height: 75%;
         overflow-y: auto;
         overflow-x: hidden;
+        box-shadow: 0px 0px 8px #0ff, 0px 0px 8px #0ff, 0px 0px 8px #0ff, 0px 0px 8px #0ff;
       }
 
       .title {
@@ -141,15 +148,16 @@
     </style>
     <style type="text/css">
       ::-webkit-scrollbar {
-        width: 2px;
-        height: 2px;
+        width: 5px;
+        height: 0px;
+        background-clip: content-box;
       }
       ::-webkit-scrollbar-button {
         width: 0px;
         height: 0px;
       }
       ::-webkit-scrollbar-thumb {
-        background: #e1e1e1;
+        background: #0ff;
         border: 0px none #ffffff;
         border-radius: 50px;
       }
@@ -160,7 +168,7 @@
         background: #000000;
       }
       ::-webkit-scrollbar-track {
-        background: #666666;
+        background: none;
         border: 0px none #ffffff;
         border-radius: 50px;
       }

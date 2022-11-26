@@ -3,8 +3,6 @@ import { Menu, MenuHTML, upgradeHTML } from "./menu";
 
 export async function selectDrone() {
   const menu = new Menu();
-  menu.style.background = "rgba(0, 0, 0, 0.75)";
-  menu.style.borderRadius = "7px";
   menu.style.fontSize = "24px";
 
   let selectedDrone = playerDrones[0];
