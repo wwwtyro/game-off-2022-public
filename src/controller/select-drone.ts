@@ -16,7 +16,7 @@ export async function selectDrone(resources: Resources) {
     if (!drone.available()) {
       container.style.filter = "grayscale(100%) brightness(200%) brightness(70%) sepia(100%)";
     }
-    const droneImage = cloneCanvas((resources.sprites as Record<string, Sprite>)[drone.spriteId].original);
+    const droneImage = cloneCanvas((resources.sprites as Record<string, Sprite>)[drone.spriteId].albedo.original);
     droneImage.style.width = "128px";
     const droneName = document.createElement("div");
     droneName.innerText = drone.name;

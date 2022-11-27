@@ -15,15 +15,13 @@ export async function loadingScreen() {
 export type Resources = Awaited<ReturnType<typeof loadResources>>;
 
 export interface Texture {
-  original: HTMLImageElement;
+  original: HTMLCanvasElement;
   powerOfTwo: HTMLCanvasElement;
-  powerOfTwoNormal: HTMLCanvasElement;
 }
 
 export interface Sprite {
-  original: HTMLCanvasElement;
-  powerOfTwo: HTMLCanvasElement;
-  powerOfTwoNormal: HTMLCanvasElement;
+  albedo: Texture;
+  normal: Texture;
   outline: vec2[];
   radius: number;
   scale: number;
@@ -54,10 +52,12 @@ export async function loadResources(callback: (fraction: number) => void) {
     enemy04: loadSprite("enemy-04-diffuse.png", "enemy-04-normal.png", 1),
     enemyCore00: loadSprite("enemy-core-00-diffuse.png", "enemy-core-00-normal.png", 3),
     core0: loadSprite("tribase-u1-d0.png", "st1normal.png", 3.0),
-    sand0: loadTexture("Sand_001_COLOR.png", "Sand_001_NRM.png"),
-    noise0: loadTexture("noise-2048.png", "noise-2048.png"),
-    metal0: loadTexture("Metal_Plate_047_basecolor.jpg", "Metal_Plate_047_normal.jpg"),
-    arrow0: loadTexture("orb-direction.png", "orb-direction.png"),
+    sand0albedo: loadTexture("Sand_001_COLOR.png"),
+    sand0normal: loadTexture("Sand_001_NRM.png"),
+    metal0albedo: loadTexture("Metal_Plate_047_basecolor.jpg"),
+    metal0normal: loadTexture("Metal_Plate_047_normal.jpg"),
+    noise0: loadTexture("noise-2048.png"),
+    arrow0: loadTexture("orb-direction.png"),
     laserWarningIcon: loadIcon("laser-warning.svg", weaponColor),
     laserBlastIcon: loadIcon("laser-blast.svg", weaponColor),
     laserTurretIcon: loadIcon("laser-turret.svg", weaponColor),
@@ -107,9 +107,11 @@ export async function loadResources(callback: (fraction: number) => void) {
       enemyCore00: (await promises["enemyCore00"]) as Sprite,
     },
     textures: {
-      sand0: (await promises["sand0"]) as Texture,
+      sand0albedo: (await promises["sand0albedo"]) as Texture,
+      sand0normal: (await promises["sand0normal"]) as Texture,
+      metal0albdeo: (await promises["metal0albedo"]) as Texture,
+      metal0normal: (await promises["metal0normal"]) as Texture,
       noise0: (await promises["noise0"]) as Texture,
-      metal0: (await promises["metal0"]) as Texture,
       arrow0: (await promises["arrow0"]) as Texture,
     },
     icons: {
@@ -216,21 +218,19 @@ function patchNormals(canvas: HTMLCanvasElement) {
   ctx.putImageData(imageData, 0, 0);
 }
 
-async function loadTexture(url: string, urlNormal: string): Promise<Texture> {
-  const [original, normal] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
+async function loadTexture(url: string): Promise<Texture> {
+  const original = await loadImage(url);
 
   const powerOfTwo = pot(original);
-  const powerOfTwoNormal = pot(normal);
 
   const texture: Texture = {
-    original,
+    original: imageToCanvas(original),
     powerOfTwo,
-    powerOfTwoNormal,
   };
   return texture;
 }
 
-function padImage(img: HTMLImageElement, padding = 8) {
+function imageToCanvas(img: HTMLImageElement, padding = 0) {
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) {
@@ -243,11 +243,10 @@ function padImage(img: HTMLImageElement, padding = 8) {
 }
 
 async function loadSprite(url: string, urlNormal: string, scale: number): Promise<Sprite> {
-  const [originalImage, normal] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
-
-  const original = padImage(originalImage);
-
-  const powerOfTwo = pot(original);
+  const [originalImage, normalImage] = await Promise.all([loadImage(url), loadImage(urlNormal)]);
+  const original = imageToCanvas(originalImage, 8);
+  const powerOfTwoOriginal = pot(original);
+  const normal = imageToCanvas(normalImage, 8);
   const powerOfTwoNormal = pot(normal);
   patchNormals(powerOfTwoNormal);
 
@@ -262,9 +261,14 @@ async function loadSprite(url: string, urlNormal: string, scale: number): Promis
   const length = Math.max(...outline.map((p) => p[1])) - Math.min(...outline.map((p) => p[1]));
 
   const sprite: Sprite = {
-    original,
-    powerOfTwo,
-    powerOfTwoNormal,
+    albedo: {
+      original,
+      powerOfTwo: powerOfTwoOriginal,
+    },
+    normal: {
+      original: normal,
+      powerOfTwo: powerOfTwoNormal,
+    },
     outline,
     radius,
     scale,

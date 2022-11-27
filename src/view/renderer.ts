@@ -225,10 +225,10 @@ export class Renderer {
       },
 
       uniforms: {
-        tSand: this.getTexture(resources.textures.sand0.powerOfTwo),
-        tSandNormal: this.getTexture(resources.textures.sand0.powerOfTwoNormal),
-        tMetal: this.getTexture(resources.textures.metal0.powerOfTwo),
-        tMetalNormal: this.getTexture(resources.textures.metal0.powerOfTwoNormal),
+        tSand: this.getTexture(resources.textures.sand0albedo.powerOfTwo),
+        tSandNormal: this.getTexture(resources.textures.sand0normal.powerOfTwo),
+        tMetal: this.getTexture(resources.textures.metal0albdeo.powerOfTwo),
+        tMetalNormal: this.getTexture(resources.textures.metal0normal.powerOfTwo),
         tNoise: this.getTexture(resources.textures.noise0.powerOfTwo),
         tShadow: this.fbShadow[0],
         offset: this.regl.prop<any, any>("offset"),
@@ -362,12 +362,12 @@ export class Renderer {
       mat4.translate(model, model, [state.player.position[0] - 0.25, state.player.position[1] - 0.25, 0]);
       mat4.rotateZ(model, model, state.player.rotation);
       mat4.scale(model, model, [
-        (state.player.sprite.scale * state.player.sprite.original.width) / state.player.sprite.original.height,
+        (state.player.sprite.scale * state.player.sprite.albedo.original.width) / state.player.sprite.albedo.original.height,
         state.player.sprite.scale,
         1,
       ]);
       this.renderShadow({
-        albedo: this.getTexture(state.player.sprite.powerOfTwo),
+        albedo: this.getTexture(state.player.sprite.albedo.powerOfTwo),
         model,
         view,
         projection,
@@ -378,12 +378,12 @@ export class Renderer {
         mat4.translate(model, model, [droid.position[0] - 0.25, droid.position[1] - 0.25, 0]);
         mat4.rotateZ(model, model, droid.rotation);
         mat4.scale(model, model, [
-          (droid.sprite.scale * droid.sprite.original.width) / droid.sprite.original.height,
+          (droid.sprite.scale * droid.sprite.albedo.original.width) / droid.sprite.albedo.original.height,
           droid.sprite.scale,
           1,
         ]);
         this.renderShadow({
-          albedo: this.getTexture(droid.sprite.powerOfTwo),
+          albedo: this.getTexture(droid.sprite.albedo.powerOfTwo),
           model,
           view,
           projection,
@@ -397,12 +397,12 @@ export class Renderer {
       mat4.translate(model, model, [enemy.position[0] - 0.25, enemy.position[1] - 0.25, 0]);
       mat4.rotateZ(model, model, enemy.rotation);
       mat4.scale(model, model, [
-        (enemy.sprite.scale * enemy.sprite.original.width) / enemy.sprite.original.height,
+        (enemy.sprite.scale * enemy.sprite.albedo.original.width) / enemy.sprite.albedo.original.height,
         enemy.sprite.scale,
         1,
       ]);
       this.renderShadow({
-        albedo: this.getTexture(enemy.sprite.powerOfTwo),
+        albedo: this.getTexture(enemy.sprite.albedo.powerOfTwo),
         model,
         view,
         projection,
@@ -468,13 +468,13 @@ export class Renderer {
       mat4.translate(model, model, [enemy.position[0], enemy.position[1], 0]);
       mat4.rotateZ(model, model, enemy.rotation);
       mat4.scale(model, model, [
-        (enemy.sprite.scale * enemy.sprite.original.width) / enemy.sprite.original.height,
+        (enemy.sprite.scale * enemy.sprite.albedo.original.width) / enemy.sprite.albedo.original.height,
         enemy.sprite.scale,
         1,
       ]);
       this.renderSprite({
-        albedo: this.getTexture(enemy.sprite.powerOfTwo),
-        normal: this.getTexture(enemy.sprite.powerOfTwoNormal),
+        albedo: this.getTexture(enemy.sprite.albedo.powerOfTwo),
+        normal: this.getTexture(enemy.sprite.normal.powerOfTwo),
         rotation: enemy.rotation,
         model,
         view,
@@ -517,13 +517,13 @@ export class Renderer {
       mat4.translate(model, model, [state.player.position[0], state.player.position[1], 0]);
       mat4.rotateZ(model, model, state.player.rotation);
       mat4.scale(model, model, [
-        (state.player.sprite.scale * state.player.sprite.original.width) / state.player.sprite.original.height,
+        (state.player.sprite.scale * state.player.sprite.albedo.original.width) / state.player.sprite.albedo.original.height,
         state.player.sprite.scale,
         1,
       ]);
       this.renderSprite({
-        albedo: this.getTexture(state.player.sprite.powerOfTwo),
-        normal: this.getTexture(state.player.sprite.powerOfTwoNormal),
+        albedo: this.getTexture(state.player.sprite.albedo.powerOfTwo),
+        normal: this.getTexture(state.player.sprite.normal.powerOfTwo),
         rotation: state.player.rotation,
         model,
         view,
@@ -535,13 +535,13 @@ export class Renderer {
         mat4.translate(model, model, [droid.position[0], droid.position[1], 0]);
         mat4.rotateZ(model, model, droid.rotation);
         mat4.scale(model, model, [
-          (droid.sprite.scale * droid.sprite.original.width) / droid.sprite.original.height,
+          (droid.sprite.scale * droid.sprite.albedo.original.width) / droid.sprite.albedo.original.height,
           droid.sprite.scale,
           1,
         ]);
         this.renderSprite({
-          albedo: this.getTexture(droid.sprite.powerOfTwo),
-          normal: this.getTexture(droid.sprite.powerOfTwoNormal),
+          albedo: this.getTexture(droid.sprite.albedo.powerOfTwo),
+          normal: this.getTexture(droid.sprite.normal.powerOfTwo),
           rotation: droid.rotation,
           model,
           view,
