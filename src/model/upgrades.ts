@@ -123,7 +123,7 @@ export const upgrades: Upgrade[] = [
     frequency: 1,
     permable: true,
     available: (drone: Drone) => {
-      return drone.turningSpeed < 30;
+      return drone.turningSpeed < 10;
     },
     _upgrade: (drone: Drone) => {
       drone.turningSpeed++;
