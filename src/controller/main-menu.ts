@@ -1,4 +1,5 @@
 import { getPermanentUpgrades } from "../model/upgrades";
+import { about } from "./about";
 import { game } from "./game";
 import { instructions } from "./instructions";
 import { intro } from "./intro";
@@ -34,6 +35,13 @@ export async function mainMenu(resources: Resources) {
     new MenuButton("Instructions", async () => {
       menu.hide();
       await instructions();
+      menu.show();
+    })
+  );
+  menu.addItem(
+    new MenuButton("About", async () => {
+      menu.hide();
+      await about();
       menu.show();
     })
   );
