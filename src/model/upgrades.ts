@@ -199,7 +199,7 @@ export const upgrades: Upgrade[] = [
     description: "Adds an additional battle droid to your fleet.",
     id: "battle droid",
     icon: "deliveryDroneIcon",
-    frequency: 0.1,
+    frequency: 0.25,
     permable: true,
     playerOnly: true,
     available: (drone: Drone) => drone.droids.length < 32,
