@@ -29,13 +29,13 @@ import { winGame } from "./win-game";
 const PLAYER_TARGETTING_DISTANCE = 6;
 
 function initLevel(state: State, resources: Resources) {
-  const bossLevels = 10;
+  const bossLevels = 5;
   const coreCount = state.level % bossLevels === 0 ? Math.floor(state.level / bossLevels) + 1 : 1;
   const coreSprite = resources.sprites.enemyCore00;
   const coreRadius = 0.5 * coreCount * coreSprite.radius;
   const coreCenter = vec2.random(vec2.create(), Math.random() * 32);
-  while (vec2.distance(coreCenter, state.player.position) < 16) {
-    vec2.random(coreCenter, Math.random() * 32);
+  while (vec2.distance(coreCenter, state.player.position) < 16 + coreRadius) {
+    vec2.random(coreCenter, Math.random() * (32 + coreRadius));
   }
   state.enemies.length = 0;
   for (let i = 0; i < coreCount; i++) {
@@ -49,6 +49,9 @@ function initLevel(state: State, resources: Resources) {
     state.enemies.push(enemyCore);
     const children: Drone[] = [];
     let pointsLeft = state.level;
+    if (state.level === 100) {
+      pointsLeft = 400;
+    }
     while (pointsLeft > 0) {
       const points = Math.max(1, Math.round(Math.random() * pointsLeft));
       pointsLeft -= points;
@@ -678,7 +681,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
             canvas.style.opacity = `${100 * (1.0 - (dt - 7000) / 3000)}%`;
           }
           if (Math.random() < 1 / 5) {
-            addExplosion(state, vec2RandomOffset(state.player.position, 2 * state.camera.fov), 0.1 + Math.random());
+            addExplosion(state, vec2RandomOffset(state.player.position, 1 * state.camera.fov), 0.1 + Math.random());
             state.camera.shake = 1;
             resources.sounds.explode0.play();
           }
