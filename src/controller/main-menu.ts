@@ -7,6 +7,7 @@ import { Resources } from "./loading";
 import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
 import { optionsMenu } from "./options-menu";
 import { selectDrone } from "./select-drone";
+import { tip } from "./tip";
 
 export async function mainMenu(resources: Resources) {
   const menu = new Menu();
@@ -18,6 +19,7 @@ export async function mainMenu(resources: Resources) {
       resources.sounds.music.play();
       await intro();
       const selectedDrone = await selectDrone(resources);
+      await tip();
       await game(resources, selectedDrone);
       document.getElementById("render-canvas")!.style.display = "none";
       resources.sounds.music.stop();
