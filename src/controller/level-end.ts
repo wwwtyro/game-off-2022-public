@@ -9,15 +9,20 @@ export async function levelEnd(state: State, resources: Resources) {
   menu.style.background = "rgba(0, 0, 0, 0.5)";
   menu.style.borderRadius = "7px";
   menu.style.fontSize = "24px";
-  menu.addItem(new MenuHTML(`<div style="text-align: center"><img src="static/upgrade.png" class="title"></div>`));
+  menu.addItem(
+    new MenuHTML(`
+    <div style="text-align: center"><img src="static/upgrade.png" class="title"></div>
+    <div style="text-align: center; font-size: 75%">Select an upgrade.</div>
+  `)
+  );
   for (const upgrade of selectedUpgrades) {
-    menu.addItem(
-      new MenuDOM(upgradeDom(upgrade), () => {
-        resources.sounds.powerup1.play();
-        upgradeDrone(upgrade, state.player);
-        menu.exit();
-      })
-    );
+    const button = new MenuDOM(upgradeDom(upgrade), () => {
+      resources.sounds.powerup1.play();
+      upgradeDrone(upgrade, state.player);
+      menu.exit();
+    });
+    button.element.classList.add("upgrade-select");
+    menu.addItem(button);
   }
   menu.addItem(new MenuUpgrades(state.player.tempUpgrades));
   await menu.enter();

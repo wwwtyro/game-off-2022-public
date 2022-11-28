@@ -8,19 +8,23 @@ export async function permanentUpgrade(state: State, resources: Resources) {
   const selectedUpgrades = getRandomUpgrades(state.player, 3, true);
   const menu = new Menu();
   menu.addItem(
-    new MenuHTML(`<div style="text-align: center"><img src="static/permanent-upgrade.png" class="title" width=256></div>`)
+    new MenuHTML(`
+    <div style="text-align: center"><img src="static/permanent-upgrade.png" class="title" width=256></div>
+    <div style="text-align: center; font-size: 75%; color: yellow">Select a permanent upgrade.</div>
+
+    `)
   );
   for (const upgrade of selectedUpgrades) {
-    menu.addItem(
-      new MenuDOM(upgradeDom(upgrade), () => {
-        resources.sounds.powerup1.play();
-        upgradeDrone(upgrade, state.player);
-        permanentUpgrades.push(upgrade);
-        localStorage.setItem("permanentUpgrades", JSON.stringify(permanentUpgrades.map((u) => u.id)));
-        state.newPermanentUpgrades.push(upgrade);
-        menu.exit();
-      })
-    );
+    const button = new MenuDOM(upgradeDom(upgrade), () => {
+      resources.sounds.powerup1.play();
+      upgradeDrone(upgrade, state.player);
+      permanentUpgrades.push(upgrade);
+      localStorage.setItem("permanentUpgrades", JSON.stringify(permanentUpgrades.map((u) => u.id)));
+      state.newPermanentUpgrades.push(upgrade);
+      menu.exit();
+    });
+    button.element.classList.add("upgrade-select");
+    menu.addItem(button);
   }
   menu.addItem(new MenuUpgrades(permanentUpgrades));
   await menu.enter();

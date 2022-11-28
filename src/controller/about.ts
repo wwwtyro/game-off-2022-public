@@ -14,7 +14,7 @@ export async function about() {
       Title and theme taken from the provided
       <a href="https://github.com/leereilly/list-of-english-cliches/blob/main/cliches.txt">list of clichés</a>.
     </p>
-    <table style="margin: auto; border-spacing: 16px;">
+    <table style="margin: auto; border-spacing: 16px; text-shadow: 2px 2px 0px #000">
       <tr><td colspan=2 style="color: yellow; text-align: center; font-size: 150%">Credits</td></tr>
       <tr>
         <td>Music</td>
@@ -37,10 +37,18 @@ export async function about() {
         <td><a href="https://3dtextures.me/">3DTextures.me</a></td>
       </tr>
       <tr>
+        <td>Background Artwork</td>
+        <td><a href="https://stability.ai/blog/stable-diffusion-public-release">Stable Diffusion</a></td>
+      </tr>
+      <tr>
         <td>Decorative Text</td>
         <td><a href="https://cooltext.com/">CoolText.com</a></td>
       </tr>
       <tr><td colspan=2 style="color: yellow; text-align: center; font-size: 150%">Tech Stack</td></tr>
+      <tr>
+        <td>Language</td>
+        <td><a href="https://www.typescriptlang.org/">Typescript</a></td>
+      </tr>
       <tr>
         <td>WebGL Library</td>
         <td><a href="https://github.com/regl-project/regl">regl 👑</a></td>
