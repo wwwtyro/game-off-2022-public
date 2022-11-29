@@ -1,5 +1,5 @@
 import { State } from "../model/state";
-import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
+import { MenuButton, Menu, MenuHTML, MenuDOM, upgradeListDom } from "./menu";
 
 export async function winGame(state: State) {
   const menu = new Menu();
@@ -19,11 +19,12 @@ export async function winGame(state: State) {
       Thank you for your service. What you have accomplished will help defend our planet from the
       newly-discovered alien vessels approaching our planet even now. You will not be forgotten.
     </p>
+    <br>
   `)
   );
   if (state.newPermanentUpgrades.length > 0) {
     menu.addItem(new MenuHTML('<div style="text-align: center">New Permanent Upgrades</div>'));
-    menu.addItem(new MenuUpgrades(state.newPermanentUpgrades));
+    menu.addItem(new MenuDOM(upgradeListDom(state.newPermanentUpgrades, false)));
   }
   menu.addItem(
     new MenuButton("Continue", async () => {

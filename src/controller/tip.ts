@@ -5,7 +5,7 @@ const tips = [
   "You'll start off very weak, die early and a lot, but you will become exponentially more powerful as you collect permanent upgrades across multiple runs.",
   "The rate at which you collect permanent upgrades increases as you collect more permanent upgrades.",
   "Droid beams are 1/10th as powerful as yours, but you can have more than ten of them.",
-  "Special beam upgrades such as Stun and Richochet also apply to droid beams.",
+  "<span style='color: #F0F; font-weight: bold;'>Special beam upgrades</span> such as <span style='color: #F0F; font-weight: bold;'>Stun</span> and <span style='color: #F0F; font-weight: bold;'>Richochet</span> also apply to droid beams.",
   "Armor upgrades provide more defense than shield upgrades, but armor must be repaired by spending an upgrade while shields recharge automatically.",
   "It's a good idea to balance your upgrades. If you have ten power upgrades and one firing rate upgrade, taking another power upgrade will increase your DPS by 10%, but taking another firing rate upgrade will increase it by 100%.",
   "Many upgrades have limits. If you reach those limits, they will not consume space on your upgrade lottery.",
@@ -19,12 +19,12 @@ const tips = [
   "Enemy cores have no shields, so they can always eventually be destroyed.",
   "Enemy drones blow up shortly after their their parent core is destroyed.",
   "If you're having trouble hitting enemy drones with your beams, try getting a Rotation Speed upgrade.",
-  "Rare (magenta) upgrades such as Ricochet and Splash cannot be made permanent.",
+  "<span style='color: #F0F; font-weight: bold;'>Special upgrades</span> such as <span style='color: #F0F; font-weight: bold;'>Ricochet</span> and <span style='color: #F0F; font-weight: bold;'>Splash</span> cannot be made permanent.",
   "You have a one in ten chance of getting a permanent upgrade after each level.",
   "The instructions panel lists all available upgrades.",
-  "You should probably always take any special (magenta) upgrades you're offered.",
-  "The Repair Armor upgrade only shows up in the lottery if your armor is damaged. It can consume a lottery slot after the next level each time you don't take it.",
-  "All unlocked drones come with at least one special (magenta) upgrade.",
+  "You should probably always take any <span style='color: #F0F; font-weight: bold;'>special upgrades</span> you're offered.",
+  "The Repair Armor upgrade only shows up in the lottery if your armor is damaged.",
+  "All unlocked drones come with at least one <span style='color: #F0F; font-weight: bold;'>special upgrade</span>.",
 ];
 
 export async function tip() {
