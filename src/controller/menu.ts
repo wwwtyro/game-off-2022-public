@@ -29,7 +29,7 @@ export function upgradeDom(upgrade: Upgrade) {
   title.innerText = upgrade.label;
   const description = document.createElement("div");
   description.style.fontSize = "12px";
-  description.innerText = upgrade.description;
+  description.innerText = `${upgrade.description} Max: ${upgrade.max === Infinity ? "∞" : upgrade.max}`;
   container.appendChild(icon);
   container.appendChild(textContainer);
   textContainer.appendChild(title);
@@ -141,27 +141,24 @@ export function upgradeListDom(upgrades: Upgrade[]) {
   container.style.display = "flex";
   container.style.justifyContent = "center";
   container.style.flexWrap = "wrap";
-  container.style.width = `${48 * 5}px`;
+  container.style.width = `${48 * 6}px`;
   for (const [upgrade, count] of upgradeCount.entries()) {
     const div = document.createElement("div");
     div.style.display = "block";
-    div.style.position = "relative";
+    div.style.textAlign = "center";
     div.style.margin = "8px";
     div.title = `${upgrade.label}: ${upgrade.description}`;
     container.appendChild(div);
     const icon = getIcon(upgrade.icon);
     icon.style.width = "32px";
+    icon.style.marginBottom = "-8px";
     div.appendChild(icon);
     const countDiv = document.createElement("div");
-    countDiv.innerText = `${count}`;
+    countDiv.innerText = `${count}/${upgrade.max === Infinity ? "∞" : upgrade.max}`;
+    countDiv.style.textAlign = "center";
     countDiv.style.color = "#FFF";
     countDiv.style.fontSize = "12px";
     countDiv.style.fontWeight = "bolder";
-    countDiv.style.textShadow = "1px 1px 0px #000";
-    countDiv.style.display = "inline-block";
-    countDiv.style.position = "absolute";
-    countDiv.style.bottom = "0";
-    countDiv.style.right = "0";
     div.appendChild(countDiv);
   }
   return container;

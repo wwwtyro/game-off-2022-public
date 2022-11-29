@@ -27,6 +27,7 @@ export interface Upgrade {
   readonly id: UpgradeId;
   readonly icon: string;
   readonly frequency: number;
+  readonly max: number;
   readonly available: (drone: Drone) => boolean;
   readonly _upgrade: (drone: Drone) => void;
   readonly permable: boolean;
@@ -41,9 +42,10 @@ export const upgrades: Upgrade[] = [
     id: "beam rate",
     icon: "laserWarningIcon",
     frequency: 1,
+    max: 20,
     permable: true,
     available: (drone: Drone) => {
-      return drone.ionCannonFiringRate < 20;
+      return drone.ionCannonFiringRate < 21;
     },
     _upgrade: (drone: Drone) => {
       drone.ionCannonFiringRate++;
@@ -55,6 +57,7 @@ export const upgrades: Upgrade[] = [
     id: "beam power",
     icon: "laserBlastIcon",
     frequency: 1,
+    max: Infinity,
     permable: true,
     available: () => true,
     _upgrade: (drone: Drone) => {
@@ -67,9 +70,10 @@ export const upgrades: Upgrade[] = [
     id: "additional cannon",
     icon: "laserTurretIcon",
     frequency: 0.1,
+    max: 10,
     permable: true,
     available: (drone: Drone) => {
-      return drone.ionCannons < 10;
+      return drone.ionCannons < 11;
     },
     _upgrade: (drone: Drone) => {
       drone.ionCannons++;
@@ -81,9 +85,10 @@ export const upgrades: Upgrade[] = [
     id: "beam speed",
     icon: "laserPrecisionIcon",
     frequency: 1,
+    max: 20,
     permable: true,
     available: (drone: Drone) => {
-      return drone.ionCannonBeamSpeed < 20;
+      return drone.ionCannonBeamSpeed < 21;
     },
     _upgrade: (drone: Drone) => {
       drone.ionCannonBeamSpeed++;
@@ -95,6 +100,7 @@ export const upgrades: Upgrade[] = [
     id: "missile rate",
     icon: "rocketIcon",
     frequency: 0.25,
+    max: 30,
     permable: true,
     available: (drone: Drone) => {
       return drone.missileFiringRate < 30;
@@ -109,6 +115,7 @@ export const upgrades: Upgrade[] = [
     id: "missile power",
     icon: "incomingRocketIcon",
     frequency: 0.1,
+    max: Infinity,
     permable: true,
     available: (drone: Drone) => drone.missileFiringRate > 0,
     _upgrade: (drone: Drone) => {
@@ -121,9 +128,10 @@ export const upgrades: Upgrade[] = [
     id: "rotation speed",
     icon: "clockwiseRotationIcon",
     frequency: 1,
+    max: 10,
     permable: true,
     available: (drone: Drone) => {
-      return drone.turningSpeed < 10;
+      return drone.turningSpeed < 11;
     },
     _upgrade: (drone: Drone) => {
       drone.turningSpeed++;
@@ -135,9 +143,10 @@ export const upgrades: Upgrade[] = [
     id: "acceleration",
     icon: "speedometerIcon",
     frequency: 1,
+    max: 5,
     permable: true,
     available: (drone: Drone) => {
-      return drone.acceleration < 5;
+      return drone.acceleration < 6;
     },
     _upgrade: (drone: Drone) => {
       drone.acceleration++;
@@ -149,6 +158,7 @@ export const upgrades: Upgrade[] = [
     id: "armor",
     icon: "armorUpgradeIcon",
     frequency: 1,
+    max: Infinity,
     permable: true,
     available: () => true,
     _upgrade: (drone: Drone) => {
@@ -162,6 +172,7 @@ export const upgrades: Upgrade[] = [
     id: "repair armor",
     icon: "mightySpannerIcon",
     frequency: 1,
+    max: Infinity,
     permable: false,
     oneOff: true,
     playerOnly: true,
@@ -176,6 +187,7 @@ export const upgrades: Upgrade[] = [
     id: "shields",
     icon: "shieldcombIcon",
     frequency: 1,
+    max: Infinity,
     permable: true,
     available: () => true,
     _upgrade: (drone: Drone) => {
@@ -188,6 +200,7 @@ export const upgrades: Upgrade[] = [
     id: "shield recharge",
     icon: "electricalCrescentIcon",
     frequency: 1,
+    max: Infinity,
     permable: true,
     available: (drone: Drone) => drone.maxShields > 0,
     _upgrade: (drone: Drone) => {
@@ -200,6 +213,7 @@ export const upgrades: Upgrade[] = [
     id: "battle droid",
     icon: "deliveryDroneIcon",
     frequency: 0.25,
+    max: 32,
     permable: true,
     playerOnly: true,
     available: (drone: Drone) => drone.droids.length < 32,
@@ -213,6 +227,7 @@ export const upgrades: Upgrade[] = [
     id: "ricochet",
     icon: "laserSparksIcon",
     frequency: 0.01,
+    max: 1,
     permable: false,
     playerOnly: true,
     available: (drone: Drone) => drone.ricochet === false,
@@ -226,6 +241,7 @@ export const upgrades: Upgrade[] = [
     id: "stun",
     icon: "sunbeamsIcon",
     frequency: 0.01,
+    max: 1,
     permable: false,
     playerOnly: true,
     available: (drone: Drone) => drone.stun === false,
@@ -239,6 +255,7 @@ export const upgrades: Upgrade[] = [
     id: "impact",
     icon: "gooeyImpactIcon",
     frequency: 0.01,
+    max: 1,
     permable: false,
     playerOnly: true,
     available: (drone: Drone) => drone.impact === false,
@@ -252,6 +269,7 @@ export const upgrades: Upgrade[] = [
     id: "splash damage",
     icon: "dropletSplashIcon",
     frequency: 0.01,
+    max: 1,
     permable: false,
     playerOnly: true,
     available: (drone: Drone) => drone.splash === false,
@@ -265,6 +283,7 @@ export const upgrades: Upgrade[] = [
     id: "droid deflection",
     icon: "divertIcon",
     frequency: 0.01,
+    max: 1,
     permable: false,
     playerOnly: true,
     available: (drone: Drone) => drone.deflect === false,
