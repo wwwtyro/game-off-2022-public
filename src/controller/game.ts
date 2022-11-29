@@ -423,7 +423,7 @@ export async function game(resources: Resources, playerDrone: PlayerDrone) {
     // Fire player missiles.
     if (!state.player.dead && state.time.now - state.player.missileLastFired > 10 / state.player.missileFiringRate) {
       const target = randomChoice(state.enemies);
-      if (target && vec2.distance(state.player.position, target.position) < PLAYER_TARGETTING_DISTANCE) {
+      if (target && vec2.distance(state.player.position, target.position) < 1.5 * PLAYER_TARGETTING_DISTANCE) {
         state.missiles.push({
           position: vec2.clone(state.player.position),
           velocity: vec2.create(),
