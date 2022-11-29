@@ -1,5 +1,5 @@
 import { State } from "../model/state";
-import { MenuButton, Menu, MenuHTML, MenuUpgrades } from "./menu";
+import { MenuButton, Menu, MenuHTML, MenuDOM, upgradeListDom } from "./menu";
 
 export async function loseGame(state: State) {
   const menu = new Menu();
@@ -15,7 +15,7 @@ export async function loseGame(state: State) {
   );
   if (state.newPermanentUpgrades.length > 0) {
     menu.addItem(new MenuHTML('<div style="text-align: center">New Permanent Upgrades</div>'));
-    menu.addItem(new MenuUpgrades(state.newPermanentUpgrades));
+    menu.addItem(new MenuDOM(upgradeListDom(state.newPermanentUpgrades, false)));
   }
   menu.addItem(
     new MenuButton("Continue", async () => {

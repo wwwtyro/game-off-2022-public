@@ -126,7 +126,7 @@ export class MenuSlider extends MenuItem {
   }
 }
 
-export function upgradeListDom(upgrades: Upgrade[]) {
+export function upgradeListDom(upgrades: Upgrade[], showMax: boolean) {
   const container = document.createElement("div");
   upgrades.sort((a, b) => (a.frequency > b.frequency ? -1 : 1));
   const upgradeCount = new Map<Upgrade, number>();
@@ -154,7 +154,11 @@ export function upgradeListDom(upgrades: Upgrade[]) {
     icon.style.marginBottom = "-8px";
     div.appendChild(icon);
     const countDiv = document.createElement("div");
-    countDiv.innerText = `${count}/${upgrade.max === Infinity ? "∞" : upgrade.max}`;
+    if (showMax) {
+      countDiv.innerText = `${count}/${upgrade.max === Infinity ? "∞" : upgrade.max}`;
+    } else {
+      countDiv.innerText = `${count}`;
+    }
     countDiv.style.textAlign = "center";
     countDiv.style.color = "#FFF";
     countDiv.style.fontSize = "12px";
@@ -167,7 +171,7 @@ export function upgradeListDom(upgrades: Upgrade[]) {
 export class MenuUpgrades extends MenuItem {
   constructor(upgrades: Upgrade[]) {
     super();
-    this.div = upgradeListDom(upgrades);
+    this.div = upgradeListDom(upgrades, true);
   }
 }
 
