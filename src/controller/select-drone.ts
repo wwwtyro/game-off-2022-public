@@ -23,7 +23,7 @@ export async function selectDrone(resources: Resources) {
     const upgrades = document.createElement("div");
     upgrades.style.display = "flex";
     upgrades.style.justifyContent = "center";
-    const upgradeList = upgradeListDom(drone.getUpgrades());
+    const upgradeList = upgradeListDom(drone.getUpgrades(), false);
     upgradeList.style.marginTop = "0px";
     upgrades.appendChild(upgradeList);
     const unlock = document.createElement("div");
