@@ -17,7 +17,7 @@ export async function levelEnd(state: State, resources: Resources) {
   );
   for (const upgrade of selectedUpgrades) {
     const button = new MenuDOM(upgradeDom(upgrade), () => {
-      resources.sounds.powerup1.play();
+      resources.sounds.powerup0.play();
       upgradeDrone(upgrade, state.player);
       menu.exit();
     });

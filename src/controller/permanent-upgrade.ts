@@ -16,7 +16,7 @@ export async function permanentUpgrade(state: State, resources: Resources) {
   );
   for (const upgrade of selectedUpgrades) {
     const button = new MenuDOM(upgradeDom(upgrade), () => {
-      resources.sounds.powerup1.play();
+      resources.sounds.powerup0.play();
       upgradeDrone(upgrade, state.player);
       permanentUpgrades.push(upgrade);
       localStorage.setItem("permanentUpgrades", JSON.stringify(permanentUpgrades.map((u) => u.id)));
